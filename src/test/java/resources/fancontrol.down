@@ -1,0 +1,15 @@
+# hwmon2/pwm1 -> Case Fans
+# hwmon2/pwm2 -> CPU Fan
+# hwmon3/temp1_input -> GPU Temperature
+# down
+INTERVAL=10
+DEVPATH=hwmon2=devices/platform/nct6775.656 hwmon3=devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0
+DEVNAME=hwmon2=nct6799 hwmon3=amdgpu
+FCTEMPS=hwmon2/pwm1=hwmon3/temp1_input hwmon2/pwm2=hwmon2/temp8_input
+FCFANS=hwmon2/pwm1=hwmon2/fan1_input hwmon2/pwm2=hwmon2/fan2_input
+MINTEMP=hwmon2/pwm1=50 hwmon2/pwm2=50
+MAXTEMP=hwmon2/pwm1=80 hwmon2/pwm2=89
+MINSTART=hwmon2/pwm1=20 hwmon2/pwm2=20
+MINSTOP=hwmon2/pwm1=65 hwmon2/pwm2=65
+MINPWM=hwmon2/pwm1=65 hwmon2/pwm2=65
+MAXPWM=hwmon2/pwm1=240 hwmon2/pwm2=240
