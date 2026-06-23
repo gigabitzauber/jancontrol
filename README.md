@@ -1,21 +1,21 @@
-# JanControl CLI (scaffold)
+# JanControl
 
-Minimal scaffold for a Java 25 + Spring Boot 4.x CLI application.
+Prototype to replace [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) with a tool that supports a more convenient config DSL.
 
-Build
+It also supports more than one input per fan.
+
+## Build
 
 ```bash
 mvn -U -DskipTests package
 ```
 
-Run
-
-Make sure you run with preview features enabled for Java 25:
+## Run
 
 ```bash
-java --enable-preview -jar target/jancontrol-0.1.0-SNAPSHOT.jar run-fan 3
+java -jar jancontrol-0.0.1-SNAPSHOT.jar <config_file>
 ```
 
-Notes
-- This scaffold follows a small package layout: `command`, `service`, `domain`, `infrastructure`.
-- Hardware adapters should be added under `infrastructure` and injected into services.
+## Note on chosen technology
+
+Arguably Java and Spring Boot are a bad choice for such a tool. However, this has been chosen because this tool serves as a training project. Think of it as a Java/SpringBoot Kata.
