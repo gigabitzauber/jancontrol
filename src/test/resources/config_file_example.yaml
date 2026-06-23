@@ -1,0 +1,16 @@
+fans:
+  - device:
+      name: "CPU Fan"
+      sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
+    dependsOn:
+      - name: "CPU Temp"
+        sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
+    curve:
+      - temp: 46
+        rpm: 20
+      - temp: 60
+        rpm: 28
+      - temp: 82
+        rpm: 72
+      - temp: 95
+        rpm: 95

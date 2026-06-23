@@ -1,19 +1,21 @@
 package de.mosig.gigabitzauber.jancontrol;
 
+import de.mosig.gigabitzauber.jancontrol.config.JcConfigReader;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.beans.factory.annotation.Autowired;
-import de.mosig.gigabitzauber.jancontrol.command.RunFanCommand;
+import de.mosig.gigabitzauber.jancontrol.command.CruiseCommand;
+import org.springframework.core.io.FileSystemResource;
 
 @SpringBootApplication
 public class JanControlApplication implements CommandLineRunner {
 
-    private final RunFanCommand runFanCommand;
+    private final CruiseCommand cruiseCommand;
 
     @Autowired
-    public JanControlApplication(RunFanCommand runFanCommand) {
-        this.runFanCommand = runFanCommand;
+    public JanControlApplication(CruiseCommand cruiseCommand) {
+        this.cruiseCommand = cruiseCommand;
     }
 
     public static void main(String[] args) {
@@ -21,21 +23,15 @@ public class JanControlApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         if (args.length == 0) {
-            System.out.println("Usage: java -jar jancontrol.jar run-fan <speed>");
+            System.out.println("Usage: java -jar jancontrol.jar <config-file>");
             System.exit(0);
         }
 
-        switch (args[0]) {
-            case "run-fan":
-                int speed = args.length > 1 ? Integer.parseInt(args[1]) : 1;
-                runFanCommand.execute(speed);
-                break;
-            case "help":
-            default:
-                System.out.println("Available commands: run-fan <speed>");
-        }
+        var configResource = new FileSystemResource(args[0]);
+        var config = JcConfigReader.readConfig(configResource);
+        cruiseCommand.execute(config);
 
         System.exit(0);
     }
