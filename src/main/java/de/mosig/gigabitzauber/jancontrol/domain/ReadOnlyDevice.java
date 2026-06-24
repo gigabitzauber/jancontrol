@@ -29,7 +29,7 @@ public class ReadOnlyDevice extends Device {
 
         try {
             return Integer.parseInt(rawValue);
-        }  catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             throw new JcException("Value of device " + getName() + " is not a number.", e);
         }
     }

@@ -4,6 +4,7 @@ import de.mosig.gigabitzauber.jancontrol.domain.JcConfig;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -12,13 +13,20 @@ import java.nio.charset.StandardCharsets;
 @Component
 public final class JcConfigReader {
 
-    public static JcConfig readConfig(Resource configResource) {
-        var configContent = readRawConfig(configResource);
+    private final LoaderOptions loaderOptions;
 
-        return new Yaml().loadAs(configContent, JcConfig.class);
+    public JcConfigReader() {
+        this.loaderOptions = new LoaderOptions();
+        loaderOptions.setEnumCaseSensitive(false);
     }
 
-    private static String readRawConfig(Resource configResource) {
+    public JcConfig readConfig(Resource configResource) {
+        var configContent = readRawConfig(configResource);
+
+        return new Yaml(loaderOptions).loadAs(configContent, JcConfig.class);
+    }
+
+    private String readRawConfig(Resource configResource) {
         try {
             return configResource.getContentAsString(StandardCharsets.UTF_8);
         } catch (IOException e) {

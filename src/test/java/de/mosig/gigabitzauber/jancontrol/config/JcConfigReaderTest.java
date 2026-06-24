@@ -1,6 +1,8 @@
 package de.mosig.gigabitzauber.jancontrol.config;
 
+import de.mosig.gigabitzauber.jancontrol.domain.Curve;
 import de.mosig.gigabitzauber.jancontrol.domain.CurvePoint;
+import de.mosig.gigabitzauber.jancontrol.domain.CurveType;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
 import de.mosig.gigabitzauber.jancontrol.domain.JcConfig;
 import de.mosig.gigabitzauber.jancontrol.domain.ReadOnlyDevice;
@@ -22,19 +24,22 @@ class JcConfigReaderTest {
             .device(
                 new WriteableDevice("CPU Fan", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"))
             .dependsOn(List.of(
-                new ReadOnlyDevice("CPU Temp","/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
-            .curve(Set.of(
-                new CurvePoint(46, 20),
-                new CurvePoint(60, 28),
-                new CurvePoint(82, 72),
-                new CurvePoint(95, 95)
-            ))
+                new ReadOnlyDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
+            .curve(Curve.builder()
+                .type(CurveType.LINEAR)
+                .points(
+                    Set.of(
+                        new CurvePoint(46, 20),
+                        new CurvePoint(60, 28),
+                        new CurvePoint(82, 72),
+                        new CurvePoint(95, 95)
+                    )).build())
             .build()
     ));
 
     @Test
     void test_read_config_happy_path() {
-        var fan = JcConfigReader.readConfig(CONFIG_FILE_EXAMPLE);
+        var fan = new JcConfigReader().readConfig(CONFIG_FILE_EXAMPLE);
 
         assertThat(fan).isEqualTo(EXPECTED_CONFIG);
     }
