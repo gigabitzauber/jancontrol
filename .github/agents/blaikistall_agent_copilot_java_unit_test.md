@@ -58,7 +58,7 @@ Also follow the FIRST principle: Tests must be:
 
 ## Reduce redundancy
 
-Try to reduce redundancy as good as possible. This helps users to better understand the test code. Extract redundant pieces of test setup code and assertion code into private helper methods. If such a method contains setup of mocks, than call the method "simulateXY", where XY is the kind of mock it creates. When extracting values into constants, then these fields must always be private static final.
+Try to reduce redundancy as good as possible. This helps users to better understand the test code. Extract redundant pieces of test setup code and assertion code into private helper methods. If such a method contains setup of mocks, than call the method "simulateXY", where XY is the kind of mock it creates. When extracting values into constants, then these fields must always be private static final. When using local variables, try to use type inference, i. e. use Java's var-keyword as much as possible.
 
 ## Framework usage
 

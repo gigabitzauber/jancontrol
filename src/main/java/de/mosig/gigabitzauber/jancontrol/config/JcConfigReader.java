@@ -1,29 +1,32 @@
 package de.mosig.gigabitzauber.jancontrol.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import de.mosig.gigabitzauber.jancontrol.domain.JcConfig;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Component;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-@Component
 public final class JcConfigReader {
 
-    private final LoaderOptions loaderOptions;
+    private final YAMLMapper mapper;
 
-    public JcConfigReader() {
-        this.loaderOptions = new LoaderOptions();
-        loaderOptions.setEnumCaseSensitive(false);
+    @Autowired
+    public JcConfigReader(YAMLMapper yamlMapper) {
+        this.mapper = yamlMapper;
     }
 
     public JcConfig readConfig(Resource configResource) {
         var configContent = readRawConfig(configResource);
 
-        return new Yaml(loaderOptions).loadAs(configContent, JcConfig.class);
+        try {
+            return mapper.readValue(configContent, JcConfig.class);
+        } catch (JsonProcessingException e) {
+            throw new JcException("Could not read config file.", e);
+        }
     }
 
     private String readRawConfig(Resource configResource) {

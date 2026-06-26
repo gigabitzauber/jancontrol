@@ -11,10 +11,12 @@ import org.springframework.core.io.FileSystemResource;
 @SpringBootApplication
 public class JanControlApplication implements CommandLineRunner {
 
+    private final JcConfigReader configReader;
     private final CruiseCommand cruiseCommand;
 
     @Autowired
-    public JanControlApplication(CruiseCommand cruiseCommand) {
+    public JanControlApplication(JcConfigReader configReader, CruiseCommand cruiseCommand) {
+        this.configReader = configReader;
         this.cruiseCommand = cruiseCommand;
     }
 
@@ -30,7 +32,7 @@ public class JanControlApplication implements CommandLineRunner {
         }
 
         var configResource = new FileSystemResource(args[0]);
-        var config = new JcConfigReader().readConfig(configResource);
+        var config = configReader.readConfig(configResource);
         cruiseCommand.execute(config);
 
         System.exit(0);
