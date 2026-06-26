@@ -18,6 +18,6 @@ public class Curve {
     private Set<CurvePoint> points = new HashSet<>();
 
     public int getY(int x) {
-        return type.getInterpolator(this).interpolate(x);
+        return type.createInterpolator(this).interpolate(x);
     }
 }

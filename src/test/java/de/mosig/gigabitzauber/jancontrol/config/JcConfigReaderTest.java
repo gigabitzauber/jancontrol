@@ -2,7 +2,7 @@ package de.mosig.gigabitzauber.jancontrol.config;
 
 import de.mosig.gigabitzauber.jancontrol.domain.Curve;
 import de.mosig.gigabitzauber.jancontrol.domain.CurvePoint;
-import de.mosig.gigabitzauber.jancontrol.domain.CurveType;
+import de.mosig.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
 import de.mosig.gigabitzauber.jancontrol.domain.JcConfig;
 import de.mosig.gigabitzauber.jancontrol.domain.ReadOnlyDevice;
@@ -26,7 +26,7 @@ class JcConfigReaderTest {
             .dependsOn(List.of(
                 new ReadOnlyDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
             .curve(Curve.builder()
-                .type(CurveType.LINEAR)
+                .type(CurveTypes.LINEAR)
                 .points(
                     Set.of(
                         new CurvePoint(46, 20),
