@@ -15,7 +15,7 @@ import java.util.List;
 public class Fan {
 
     private WriteableDevice device;
+    private Curve curve;
     @Builder.Default
     private List<ReadOnlyDevice> dependsOn = new ArrayList<>();
-    private Curve curve;
 }
