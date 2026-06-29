@@ -8,27 +8,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JcConfigTest {
 
-    private final JcConfig underTest = new JcConfig();
+    private final JcConfig underTest = new JcConfig(Set.of());
 
     @Test
     void test_noArgsConstructor() {
-        assertThat(underTest.getFans()).isEmpty();
+        assertThat(underTest.fans()).isEmpty();
     }
 
     @Test
     void test_allArgsConstructor() {
-        var expectedFans = Set.of(new Fan());
+        var expectedFans = Set.of(Fan.builder().build());
         var localUnderTest = new JcConfig(expectedFans);
 
-        assertThat(localUnderTest.getFans()).isEqualTo(expectedFans);
-    }
-
-    @Test
-    void test_setGetFans() {
-        var expectedFans = Set.of(new Fan());
-
-        underTest.setFans(expectedFans);
-
-        assertThat(underTest.getFans()).isEqualTo(expectedFans);
+        assertThat(localUnderTest.fans()).isEqualTo(expectedFans);
     }
 }

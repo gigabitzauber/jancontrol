@@ -5,56 +5,29 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class FanTest {
 
-    private final Fan underTest = new Fan();
+    private final Fan underTest = Fan.builder().build();
 
     @Test
     void test_noArgsConstructor() {
-
-        assertThat(underTest.getDependsOn()).isEmpty();
-        assertThat(underTest.getDevice()).isNull();
-        assertThat(underTest.getCurve()).isNull();
+        assertThat(underTest.dependsOn()).isEmpty();
+        assertThat(underTest.device()).isNull();
+        assertThat(underTest.curve()).isNull();
     }
 
     @Test
     void test_allArgsConstructor() {
-        var device = new WriteableDevice();
-        var curve = new Curve();
-        var dependsOn = List.of(new ReadOnlyDevice());
+        var device = mock(WriteableDevice.class);
+        var curve = Curve.builder().build();
+        var dependsOn = List.of(mock(ReadOnlyDevice.class));
 
         var localUnderTest = new Fan(device, curve, dependsOn);
 
-        assertThat(localUnderTest.getDevice()).isEqualTo(device);
-        assertThat(localUnderTest.getCurve()).isEqualTo(curve);
-        assertThat(localUnderTest.getDependsOn()).isEqualTo(dependsOn);
-    }
-
-    @Test
-    void test_setGetDevice() {
-        var expectedDevice = new WriteableDevice();
-
-        underTest.setDevice(expectedDevice);
-
-        assertThat(underTest.getDevice()).isEqualTo(expectedDevice);
-    }
-
-    @Test
-    void test_setGetCurve() {
-        var expectedCurve = new Curve();
-
-        underTest.setCurve(expectedCurve);
-
-        assertThat(underTest.getCurve()).isEqualTo(expectedCurve);
-    }
-
-    @Test
-    void test_setGetDependsOn() {
-        var expectedDependsOn = List.of(new ReadOnlyDevice());
-
-        underTest.setDependsOn(expectedDependsOn);
-
-        assertThat(underTest.getDependsOn()).isEqualTo(expectedDependsOn);
+        assertThat(localUnderTest.device()).isEqualTo(device);
+        assertThat(localUnderTest.curve()).isEqualTo(curve);
+        assertThat(localUnderTest.dependsOn()).isEqualTo(dependsOn);
     }
 }

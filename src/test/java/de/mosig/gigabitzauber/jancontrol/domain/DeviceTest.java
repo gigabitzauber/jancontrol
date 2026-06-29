@@ -1,6 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,41 +17,42 @@ class DeviceTest {
 
     @TempDir
     private Path tempDir;
+    private String rawSysFsPath;
+    private Path sysFsPath;
 
-    private final Device underTest = new Device(NAME_EXAMPLE, SYS_FS_PATH_EXAMPLE);
+    private Device underTest;
 
-    @Test
-    void test_getSetName() {
-        var expectedName = "expectedName";
-        underTest.setName(expectedName);
-
-        assertThat(underTest.getName()).isEqualTo(expectedName);
+    @BeforeEach
+    void setUp() throws Exception {
+        sysFsPath = tempDir.resolve(SYS_FS_PATH_EXAMPLE);
+        Files.createFile(sysFsPath);
+        rawSysFsPath = sysFsPath.toString();
+        underTest = new Device(NAME_EXAMPLE, rawSysFsPath) {
+        };
     }
 
     @Test
-    void test_getSetSysFsPath() {
-        var expectedRawPath = "expectedRawPath";
-        underTest.setSysPath(expectedRawPath);
+    void test_getName() {
+        assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
+    }
 
-        assertThat(underTest.getSysPath()).isEqualTo(expectedRawPath);
+    @Test
+    void test_getSysFsPath() {
+        assertThat(underTest.getSysPath()).isEqualTo(rawSysFsPath);
     }
 
     @Test
     void test_getSafeSysFsPath_happy_path() throws Exception {
-        var tmpPath = tempDir.resolve(SYS_FS_PATH_EXAMPLE);
-        Files.createFile(tmpPath);
-        var rawTmpPath = tmpPath.toString();
-        underTest.setSysPath(rawTmpPath);
-
-        assertThat(underTest.safeSysPath()).isEqualTo(tmpPath);
+        assertThat(underTest.safeSysPath()).isEqualTo(sysFsPath);
     }
 
     @Test
     void when_sysFsPath_exists_but_is_not_a_file_then_throw_exception() {
         var tmpPath = tempDir.toString();
-        underTest.setSysPath(tmpPath);
+        var localUnderTest = new Device(NAME_EXAMPLE, tmpPath) {
+        };
 
-        assertThatThrownBy(underTest::safeSysPath)
+        assertThatThrownBy(localUnderTest::safeSysPath)
             .isInstanceOf(JcException.class)
             .hasMessage("Sys fs path is not a file: " + tmpPath);
     }
@@ -58,9 +60,10 @@ class DeviceTest {
     @Test
     void when_sysFsPath_does_not_exist_then_throw_exception() {
         var notFound = "not_found";
-        underTest.setSysPath(notFound);
+        var localUnderTest = new Device(NAME_EXAMPLE, notFound) {
+        };
 
-        assertThatThrownBy(underTest::safeSysPath)
+        assertThatThrownBy(localUnderTest::safeSysPath)
             .isInstanceOf(JcException.class)
             .hasMessage("Could not find sys fs path: " + notFound);
     }

@@ -11,8 +11,8 @@ public final class PieceWiseInterpolator implements JcInterpolator {
 
     public PieceWiseInterpolator(Curve curve) {
         Objects.requireNonNull(curve, "curve must not be null");
-        this.piecesX = curve.getPoints().stream().map(CurvePoint::getTemp).sorted().mapToInt(Integer::intValue).toArray();
-        this.piecesY = curve.getPoints().stream().map(CurvePoint::getRpm).sorted().mapToInt(Integer::intValue).toArray();
+        this.piecesX = curve.points().stream().map(CurvePoint::temp).sorted().mapToInt(Integer::intValue).toArray();
+        this.piecesY = curve.points().stream().map(CurvePoint::rpm).sorted().mapToInt(Integer::intValue).toArray();
     }
 
     @Override

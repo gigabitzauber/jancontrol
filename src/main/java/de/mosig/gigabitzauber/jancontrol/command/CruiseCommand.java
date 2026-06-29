@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CruiseCommand {
     public void execute(JcConfig config) {
-        var fan = config.getFans().stream().findFirst().get();
-        var curve = fan.getCurve();
+        var fan = config.fans().stream().findFirst().get();
+        var curve = fan.curve();
 
         var inputs = new int[]{45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100};
 

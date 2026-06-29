@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
@@ -20,6 +19,10 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CurveTest {
+    private static final Set<CurvePoint> POINTS_EXAMPLE = Set.of(
+        new CurvePoint(20, 100),
+        new CurvePoint(10, 0)
+    );
     @Mock
     private CurveType curveTypeMock;
 
@@ -29,25 +32,17 @@ class CurveTest {
     void setUp() {
         underTest = Curve.builder()
             .type(curveTypeMock)
-            .points(Set.of(
-                new CurvePoint(20, 100),
-                new CurvePoint(10, 0)
-            )).build();
+            .points(POINTS_EXAMPLE).build();
     }
 
     @Test
-    void test_setGetType() {
-        var localCurveMock = mock(CurveType.class);
-
-        underTest.setType(localCurveMock);
-        assertThat(underTest.getType()).isEqualTo(localCurveMock);
+    void test_getType() {
+        assertThat(underTest.type()).isEqualTo(curveTypeMock);
     }
 
     @Test
-    void test_setGetPoints() {
-        var localPoints = new HashSet<CurvePoint>();
-        underTest.setPoints(localPoints);
-        assertThat(underTest.getPoints()).isSameAs(localPoints);
+    void test_getPoints() {
+        assertThat(underTest.points()).isEqualTo(POINTS_EXAMPLE);
     }
 
     @Test

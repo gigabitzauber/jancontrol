@@ -1,23 +1,29 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.IOException;
 import java.nio.file.Files;
 
 @Data
-@NoArgsConstructor
+@Builder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class ReadOnlyDevice extends Device {
+public final class ReadOnlyDevice extends Device {
+    public ReadOnlyDevice() {
+        super();
+    }
+
     public ReadOnlyDevice(String name, String sysPath) {
         super(name, sysPath);
     }
 
+    @JsonIgnore
     public int read() {
         String rawValue = null;
         try {
