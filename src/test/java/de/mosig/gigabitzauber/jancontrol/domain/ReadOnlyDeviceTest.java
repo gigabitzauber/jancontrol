@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -41,15 +43,15 @@ class ReadOnlyDeviceTest {
         assertThat(underTest.getSysPath()).isEqualTo(sysFileExample);
     }
 
-    @Test
-    void test_read_happy_path() throws Exception {
-        var expectedValue = 123;
-        Files.writeString(sysFileExamplePath, String.valueOf(expectedValue));
+    @ParameterizedTest
+    @ValueSource(strings = {"123000", "  123000   ", "\t 123000\n  ", "123000\n"})
+    void test_read_happy_path(String rawValueCandidate) throws Exception {
+        Files.writeString(sysFileExamplePath, rawValueCandidate);
         var underTest = createUnderTest(sysFileExample);
 
         var actualValue = underTest.read();
 
-        assertThat(actualValue).isEqualTo(expectedValue);
+        assertThat(actualValue).isEqualTo(123);
     }
 
     @Test
@@ -59,7 +61,7 @@ class ReadOnlyDeviceTest {
 
         assertThatThrownBy(underTest::read)
             .isInstanceOf(JcException.class)
-            .hasMessage("Value of device " + NAME_EXAMPLE + " is not a number.");
+            .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
     }
 
     @Test
@@ -92,7 +94,7 @@ class ReadOnlyDeviceTest {
             staticFilesMock.when(() -> Files.isDirectory(sysFileExamplePath)).thenCallRealMethod();
             assertThatThrownBy(underTest::read)
                 .isInstanceOf(JcException.class)
-                .hasMessage("Could not read value of device " + NAME_EXAMPLE)
+                .hasMessage("Could not read value of device '" + NAME_EXAMPLE + "'")
                 .hasRootCause(expectedException);
         }
     }

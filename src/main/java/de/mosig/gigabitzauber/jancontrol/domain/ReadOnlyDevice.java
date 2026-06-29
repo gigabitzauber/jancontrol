@@ -29,14 +29,17 @@ public final class ReadOnlyDevice extends Device {
         try {
             rawValue = Files.readString(safeSysPath());
         } catch (IOException e) {
-            throw new JcException("Could not read value of device " + getName(), e);
+            throw new JcException("Could not read value of device '" + getName() + "'", e);
         }
 
-
+        var cleanValueStr = rawValue.strip();
+        var readValue = -1;
         try {
-            return Integer.parseInt(rawValue);
+            readValue = Integer.parseInt(cleanValueStr);
         } catch (NumberFormatException e) {
-            throw new JcException("Value of device " + getName() + " is not a number.", e);
+            throw new JcException("Value of device '" + getName() + "' is not a number.", e);
         }
+
+        return fromValue(readValue);
     }
 }

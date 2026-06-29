@@ -10,6 +10,8 @@ import java.nio.file.Paths;
 
 @Data
 public abstract class Device {
+    private static final int TEMP_CONVERSION_FACTOR = 1000;
+
     private final String name;
     private final String sysPath;
 
@@ -24,7 +26,7 @@ public abstract class Device {
     }
 
     @JsonIgnore
-    public Path safeSysPath() {
+    public final Path safeSysPath() {
         if (this.sysPath == null) {
             throw new JcException("System path is unset");
         }
@@ -36,5 +38,13 @@ public abstract class Device {
         } else {
             return result;
         }
+    }
+
+    public final int toValue(int valueToWrite) {
+        return valueToWrite * TEMP_CONVERSION_FACTOR;
+    }
+
+    public final int fromValue(int readValue) {
+        return readValue / TEMP_CONVERSION_FACTOR;
     }
 }

@@ -34,7 +34,5 @@ public class JanControlApplication implements CommandLineRunner {
         var configResource = new FileSystemResource(args[0]);
         var config = configReader.readConfig(configResource);
         cruiseCommand.execute(config);
-
-        System.exit(0);
     }
 }
