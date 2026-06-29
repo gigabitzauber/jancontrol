@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ class JcConfigReaderIT {
     private static final Resource CONFIG_FILE_EXAMPLE = new ClassPathResource("/config_file_example.yaml");
     private static final JcConfig EXPECTED_CONFIG = new JcConfig(Set.of(
         Fan.builder()
+            .interval(Duration.ofSeconds(3))
             .device(
                 new WriteableDevice("CPU Fan", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"))
             .dependsOn(List.of(
@@ -46,7 +48,6 @@ class JcConfigReaderIT {
     @Test
     void test_read_config_happy_path() {
         var fan = underTest.readConfig(CONFIG_FILE_EXAMPLE);
-
         assertThat(fan).isEqualTo(EXPECTED_CONFIG);
     }
 }

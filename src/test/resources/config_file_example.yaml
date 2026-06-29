@@ -1,5 +1,6 @@
 fans:
-  - device:
+  - interval: "3s"
+    device:
       name: "CPU Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
     dependsOn:
