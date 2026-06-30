@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ReadOnlyDeviceTest {
     private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
+    private static final int OFFSET_EXAMPLE = 11;
 
     @TempDir
     private Path tempDir;
@@ -36,11 +37,12 @@ class ReadOnlyDeviceTest {
     }
 
     @Test
-    void when_constructed_with_name_and_sys_path_then_properties_are_set() {
+    void when_constructed_with_all_args_then_properties_are_set() {
         var underTest = createUnderTest(sysFileExample);
 
         assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
         assertThat(underTest.getSysPath()).isEqualTo(sysFileExample);
+        assertThat(underTest.getOffset()).isEqualTo(OFFSET_EXAMPLE);
     }
 
     @ParameterizedTest
@@ -51,7 +53,7 @@ class ReadOnlyDeviceTest {
 
         var actualValue = underTest.read();
 
-        assertThat(actualValue).isEqualTo(123);
+        assertThat(actualValue).isEqualTo(123 + OFFSET_EXAMPLE);
     }
 
     @Test
@@ -100,6 +102,6 @@ class ReadOnlyDeviceTest {
     }
 
     private ReadOnlyDevice createUnderTest(String devicePath) {
-        return new ReadOnlyDevice(NAME_EXAMPLE, devicePath);
+        return new ReadOnlyDevice(NAME_EXAMPLE, devicePath, OFFSET_EXAMPLE);
     }
 }

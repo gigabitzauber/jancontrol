@@ -30,8 +30,9 @@ class CruiseConfigIT {
             .device(
                 new WriteableDevice("CPU Fan", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"))
             .dependsOn(List.of(
-                new ReadOnlyDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
-            .curve(Curve.builder()
+                new ReadOnlyDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input", 10)))
+            .curves(Set.of(Curve.builder()
+                .ref("CPU Temp")
                 .type(CurveTypes.LINEAR)
                 .points(
                     Set.of(
@@ -39,7 +40,7 @@ class CruiseConfigIT {
                         new CurvePoint(60, 28),
                         new CurvePoint(82, 72),
                         new CurvePoint(95, 95)
-                    )).build())
+                    )).build()))
             .build()
     ));
 

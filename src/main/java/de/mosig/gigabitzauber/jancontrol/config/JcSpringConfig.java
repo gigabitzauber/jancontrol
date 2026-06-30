@@ -3,6 +3,7 @@ package de.mosig.gigabitzauber.jancontrol.config;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
+import de.mosig.gigabitzauber.jancontrol.command.CruiseCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InjectionPoint;
@@ -27,11 +28,15 @@ public class JcSpringConfig {
         return new JcLifecycle(fanCruiseExecutor, log);
     }
 
-
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public Logger log(InjectionPoint injectionPoint) {
         var declaringClass = injectionPoint.getMember().getDeclaringClass();
         return LoggerFactory.getLogger(declaringClass);
+    }
+
+    @Bean
+    public CruiseCommand cruiseCommand(ListeningScheduledExecutorService fanCruiseExecutor, JcLifecycle lifecycle, Logger log) {
+        return new CruiseCommand(fanCruiseExecutor, lifecycle, log);
     }
 }

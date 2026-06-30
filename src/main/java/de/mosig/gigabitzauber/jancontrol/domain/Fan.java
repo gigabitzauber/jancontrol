@@ -5,14 +5,16 @@ import de.mosig.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import lombok.Builder;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 public record Fan(
     @JsonDeserialize(using = JcJacksonConfig.DurationDeserializer.class)
     Duration interval,
     WriteableDevice device,
-    Curve curve,
+    Collection<Curve> curves,
     List<ReadOnlyDevice> dependsOn) {
 
     public static final Duration DEFAULT_INTERVAL = Duration.ofSeconds(5);
@@ -21,6 +23,11 @@ public record Fan(
         if (interval == null) {
             interval = DEFAULT_INTERVAL;
         }
+
+        if (curves == null) {
+            curves = Set.of();
+        }
+        curves = Set.copyOf(curves);
 
         if (dependsOn == null) {
             dependsOn = List.of();

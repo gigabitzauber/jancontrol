@@ -10,6 +10,7 @@ import java.util.Set;
 
 @Builder
 public record Curve(
+    String ref,
     @JsonDeserialize(using = JcJacksonConfig.CurveTypeDeserializer.class)
     CurveType type,
     Collection<CurvePoint> points) {
