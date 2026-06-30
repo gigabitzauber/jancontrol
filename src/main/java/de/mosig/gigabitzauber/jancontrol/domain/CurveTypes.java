@@ -1,7 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
-import de.mosig.gigabitzauber.jancontrol.util.JcInterpolator;
-import de.mosig.gigabitzauber.jancontrol.util.PieceWiseInterpolator;
+import de.mosig.gigabitzauber.jancontrol.interpolation.JcInterpolator;
+import de.mosig.gigabitzauber.jancontrol.interpolation.PieceWiseInterpolator;
 
 import java.util.function.Function;
 

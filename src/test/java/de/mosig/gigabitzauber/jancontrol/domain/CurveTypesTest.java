@@ -1,6 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
-import de.mosig.gigabitzauber.jancontrol.util.PieceWiseInterpolator;
+import de.mosig.gigabitzauber.jancontrol.interpolation.PieceWiseInterpolator;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

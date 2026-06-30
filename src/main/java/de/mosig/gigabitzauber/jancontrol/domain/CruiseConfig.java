@@ -3,8 +3,8 @@ package de.mosig.gigabitzauber.jancontrol.domain;
 import java.util.Collection;
 import java.util.Set;
 
-public record JcConfig(Collection<Fan> fans) {
-    public JcConfig {
+public record CruiseConfig(Collection<Fan> fans) {
+    public CruiseConfig {
         if (fans == null) {
             fans = Set.of();
         }

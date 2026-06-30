@@ -1,6 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
-import de.mosig.gigabitzauber.jancontrol.util.JcInterpolator;
+import de.mosig.gigabitzauber.jancontrol.interpolation.JcInterpolator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

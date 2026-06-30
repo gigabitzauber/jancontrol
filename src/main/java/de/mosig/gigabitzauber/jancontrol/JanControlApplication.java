@@ -1,7 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol;
 
 import de.mosig.gigabitzauber.jancontrol.command.CruiseCommand;
-import de.mosig.gigabitzauber.jancontrol.config.JcConfigReader;
+import de.mosig.gigabitzauber.jancontrol.cruise.CruiseConfigReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -11,11 +11,11 @@ import org.springframework.core.io.FileSystemResource;
 @SpringBootApplication
 public class JanControlApplication implements CommandLineRunner {
 
-    private final JcConfigReader configReader;
+    private final CruiseConfigReader configReader;
     private final CruiseCommand cruiseCommand;
 
     @Autowired
-    public JanControlApplication(JcConfigReader configReader, CruiseCommand cruiseCommand) {
+    public JanControlApplication(CruiseConfigReader configReader, CruiseCommand cruiseCommand) {
         this.configReader = configReader;
         this.cruiseCommand = cruiseCommand;
     }

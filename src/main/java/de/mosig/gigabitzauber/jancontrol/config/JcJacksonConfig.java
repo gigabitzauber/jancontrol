@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.mosig.gigabitzauber.jancontrol.cruise.CruiseConfigReader;
 import de.mosig.gigabitzauber.jancontrol.domain.CurveType;
 import de.mosig.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
@@ -26,8 +27,8 @@ public class JcJacksonConfig {
     }
 
     @Bean
-    public JcConfigReader jcConfigReader(YAMLMapper yamlMapper) {
-        return new JcConfigReader(yamlMapper);
+    public CruiseConfigReader jcConfigReader(YAMLMapper yamlMapper) {
+        return new CruiseConfigReader(yamlMapper);
     }
 
     public static class CurveTypeDeserializer extends StdDeserializer<CurveType> {

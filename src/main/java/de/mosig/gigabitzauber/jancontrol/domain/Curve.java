@@ -5,13 +5,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.mosig.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import lombok.Builder;
 
+import java.util.Collection;
 import java.util.Set;
 
 @Builder
 public record Curve(
     @JsonDeserialize(using = JcJacksonConfig.CurveTypeDeserializer.class)
     CurveType type,
-    Set<CurvePoint> points) {
+    Collection<CurvePoint> points) {
 
     public Curve {
         if (points == null) {

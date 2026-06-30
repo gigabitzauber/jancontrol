@@ -2,7 +2,7 @@ package de.mosig.gigabitzauber.jancontrol.config;
 
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import de.mosig.gigabitzauber.jancontrol.util.JcLifecycle;
+import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InjectionPoint;
@@ -30,7 +30,7 @@ public class JcSpringConfig {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public Logger logger(InjectionPoint injectionPoint) {
+    public Logger log(InjectionPoint injectionPoint) {
         var declaringClass = injectionPoint.getMember().getDeclaringClass();
         return LoggerFactory.getLogger(declaringClass);
     }

@@ -6,9 +6,9 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JcConfigTest {
+class CruiseConfigTest {
 
-    private final JcConfig underTest = new JcConfig(Set.of());
+    private final CruiseConfig underTest = new CruiseConfig(Set.of());
 
     @Test
     void test_noArgsConstructor() {
@@ -18,7 +18,7 @@ class JcConfigTest {
     @Test
     void test_allArgsConstructor() {
         var expectedFans = Set.of(Fan.builder().build());
-        var localUnderTest = new JcConfig(expectedFans);
+        var localUnderTest = new CruiseConfig(expectedFans);
 
         assertThat(localUnderTest.fans()).isEqualTo(expectedFans);
     }

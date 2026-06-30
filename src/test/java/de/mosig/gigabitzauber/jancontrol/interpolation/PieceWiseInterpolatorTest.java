@@ -1,4 +1,4 @@
-package de.mosig.gigabitzauber.jancontrol.util;
+package de.mosig.gigabitzauber.jancontrol.interpolation;
 
 import de.mosig.gigabitzauber.jancontrol.domain.Curve;
 import de.mosig.gigabitzauber.jancontrol.domain.CurvePoint;

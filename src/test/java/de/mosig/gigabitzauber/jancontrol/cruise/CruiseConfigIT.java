@@ -1,10 +1,11 @@
-package de.mosig.gigabitzauber.jancontrol.config;
+package de.mosig.gigabitzauber.jancontrol.cruise;
 
+import de.mosig.gigabitzauber.jancontrol.config.JcJacksonConfig;
+import de.mosig.gigabitzauber.jancontrol.domain.CruiseConfig;
 import de.mosig.gigabitzauber.jancontrol.domain.Curve;
 import de.mosig.gigabitzauber.jancontrol.domain.CurvePoint;
 import de.mosig.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
-import de.mosig.gigabitzauber.jancontrol.domain.JcConfig;
 import de.mosig.gigabitzauber.jancontrol.domain.ReadOnlyDevice;
 import de.mosig.gigabitzauber.jancontrol.domain.WriteableDevice;
 import org.junit.jupiter.api.Test;
@@ -20,10 +21,10 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = JcJacksonConfig.class)
-class JcConfigReaderIT {
+class CruiseConfigIT {
 
     private static final Resource CONFIG_FILE_EXAMPLE = new ClassPathResource("/config_file_example.yaml");
-    private static final JcConfig EXPECTED_CONFIG = new JcConfig(Set.of(
+    private static final CruiseConfig EXPECTED_CONFIG = new CruiseConfig(Set.of(
         Fan.builder()
             .interval(Duration.ofSeconds(3))
             .device(
@@ -43,7 +44,7 @@ class JcConfigReaderIT {
     ));
 
     @Autowired
-    private JcConfigReader underTest;
+    private CruiseConfigReader underTest;
 
     @Test
     void test_read_config_happy_path() {

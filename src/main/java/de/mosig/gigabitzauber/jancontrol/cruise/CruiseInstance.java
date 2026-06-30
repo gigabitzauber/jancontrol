@@ -1,9 +1,8 @@
-package de.mosig.gigabitzauber.jancontrol.util;
+package de.mosig.gigabitzauber.jancontrol.cruise;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
-import de.mosig.gigabitzauber.jancontrol.command.CruiseCommand;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -19,16 +18,16 @@ public final class CruiseInstance implements FutureCallback<Object> {
     private final ListeningScheduledExecutorService executor;
     private final Logger log;
 
-    public CruiseInstance(Fan fan, Duration interval, ListeningScheduledExecutorService executor, Logger log) {
+    public CruiseInstance(Fan fan, ListeningScheduledExecutorService executor, Logger log) {
         this.fan = fan;
-        this.interval = interval;
+        this.interval = fan.interval();
         this.executor = executor;
         this.log = log;
     }
 
     public void schedule() {
         var cruiseHandle = executor.scheduleAtFixedRate(
-            new CruiseCommand.FanCruiseRunnable(fan, log),
+            new SimpleCruiseAlgorithm(fan, log),
             interval.toMillis(),
             interval.toMillis(),
             TimeUnit.MILLISECONDS);

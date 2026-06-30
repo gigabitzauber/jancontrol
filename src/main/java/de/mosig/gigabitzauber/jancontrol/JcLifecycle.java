@@ -1,4 +1,4 @@
-package de.mosig.gigabitzauber.jancontrol.util;
+package de.mosig.gigabitzauber.jancontrol;
 
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import org.slf4j.Logger;
