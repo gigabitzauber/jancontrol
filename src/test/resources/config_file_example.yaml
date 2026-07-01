@@ -5,7 +5,6 @@ fans:
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
     dependsOn:
       - name: "CPU Temp"
-        offset: 10
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
     curves:
       - ref: "CPU Temp"

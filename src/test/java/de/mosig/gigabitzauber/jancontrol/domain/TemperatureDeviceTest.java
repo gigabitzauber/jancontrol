@@ -5,19 +5,19 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class WriteableDeviceTest {
+class TemperatureDeviceTest {
     private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
-    private static final int VALUE_EXAMPLE = 123;
 
     @TempDir
     private Path tempDir;
@@ -36,21 +36,32 @@ class WriteableDeviceTest {
     }
 
     @Test
-    void when_constructed_with_name_and_sys_path_then_properties_are_set() {
+    void when_constructed_with_all_args_then_properties_are_set() {
         var underTest = createUnderTest(sysFileExample);
 
         assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
         assertThat(underTest.getSysPath()).isEqualTo(sysFileExample);
     }
 
-    @Test
-    void test_write_happy_path() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"123000", "  123000   ", "\t 123000\n  ", "123000\n"})
+    void test_read_happy_path(String rawValueCandidate) throws Exception {
+        Files.writeString(sysFileExamplePath, rawValueCandidate);
         var underTest = createUnderTest(sysFileExample);
 
-        underTest.write(VALUE_EXAMPLE);
+        var actualValue = underTest.read();
 
-        var actualValue = Integer.parseInt(Files.readString(sysFileExamplePath));
-        assertThat(actualValue).isEqualTo(VALUE_EXAMPLE);
+        assertThat(actualValue).isEqualTo(123);
+    }
+
+    @Test
+    void when_read_contents_are_not_a_number_then_throw_jc_exception() throws Exception {
+        Files.writeString(sysFileExamplePath, "not a number");
+        var underTest = createUnderTest(sysFileExample);
+
+        assertThatThrownBy(underTest::read)
+            .isInstanceOf(JcException.class)
+            .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
     }
 
     @Test
@@ -58,7 +69,7 @@ class WriteableDeviceTest {
         String fileDoesNotExist = "fileDoesNotExist";
         var underTest = createUnderTest(fileDoesNotExist);
 
-        assertThatThrownBy(() -> underTest.write(VALUE_EXAMPLE))
+        assertThatThrownBy(underTest::read)
             .isInstanceOf(JcException.class)
             .hasMessage("Could not find sys fs path: " + fileDoesNotExist);
     }
@@ -67,31 +78,28 @@ class WriteableDeviceTest {
     void when_file_is_a_directory_then_throw_exception() {
         var underTest = createUnderTest(tempDir.toString());
 
-        assertThatThrownBy(() -> underTest.write(VALUE_EXAMPLE))
+        assertThatThrownBy(underTest::read)
             .isInstanceOf(JcException.class)
             .hasMessage("Sys fs path is not a file: " + tempDir);
     }
 
     @Test
-    void when_writing_fails_then_throw_exception() {
+    void when_reading_fails_then_throw_exception() {
         var underTest = createUnderTest(sysFileExample);
 
         try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
             var expectedException = new IOException("expected exception");
-            staticFilesMock.when(() -> Files.writeString(sysFileExamplePath, VALUE_EXAMPLE + "",
-                StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.SYNC)).thenThrow(expectedException);
+            staticFilesMock.when(() -> Files.readString(sysFileExamplePath)).thenThrow(expectedException);
             staticFilesMock.when(() -> Files.exists(sysFileExamplePath)).thenCallRealMethod();
             staticFilesMock.when(() -> Files.isDirectory(sysFileExamplePath)).thenCallRealMethod();
-            assertThatThrownBy(() -> underTest.write(VALUE_EXAMPLE))
+            assertThatThrownBy(underTest::read)
                 .isInstanceOf(JcException.class)
-                .hasMessage("Could not write to device " + NAME_EXAMPLE)
+                .hasMessage("Could not read value of device '" + NAME_EXAMPLE + "'")
                 .hasRootCause(expectedException);
         }
     }
 
-    private WriteableDevice createUnderTest(String devicePath) {
-        return new WriteableDevice(NAME_EXAMPLE, devicePath);
+    private TemperatureDevice createUnderTest(String devicePath) {
+        return new TemperatureDevice(NAME_EXAMPLE, devicePath);
     }
 }

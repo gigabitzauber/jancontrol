@@ -24,9 +24,9 @@ class FanTest {
     @Test
     void test_allArgsConstructor() {
         var interval = Duration.ofSeconds(3);
-        var device = mock(WriteableDevice.class);
+        var device = mock(RpmDevice.class);
         var curves = Set.of(Curve.builder().build());
-        var dependsOn = List.of(mock(ReadOnlyDevice.class));
+        var dependsOn = List.of(mock(TemperatureDevice.class));
 
         var localUnderTest = new Fan(interval, device, curves, dependsOn);
 

@@ -6,8 +6,8 @@ import de.mosig.gigabitzauber.jancontrol.domain.Curve;
 import de.mosig.gigabitzauber.jancontrol.domain.CurvePoint;
 import de.mosig.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
-import de.mosig.gigabitzauber.jancontrol.domain.ReadOnlyDevice;
-import de.mosig.gigabitzauber.jancontrol.domain.WriteableDevice;
+import de.mosig.gigabitzauber.jancontrol.domain.RpmDevice;
+import de.mosig.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,9 +28,9 @@ class CruiseConfigIT {
         Fan.builder()
             .interval(Duration.ofSeconds(3))
             .device(
-                new WriteableDevice("CPU Fan", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"))
+                new RpmDevice("CPU Fan", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"))
             .dependsOn(List.of(
-                new ReadOnlyDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input", 10)))
+                new TemperatureDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
             .curves(Set.of(Curve.builder()
                 .ref("CPU Temp")
                 .type(CurveTypes.LINEAR)

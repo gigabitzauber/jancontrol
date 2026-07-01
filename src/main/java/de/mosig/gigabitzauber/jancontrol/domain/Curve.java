@@ -16,6 +16,9 @@ public record Curve(
     Collection<CurvePoint> points) {
 
     public Curve {
+        if (type == null) {
+            type = CurveTypes.LINEAR;
+        }
         if (points == null) {
             points = Set.of();
         }

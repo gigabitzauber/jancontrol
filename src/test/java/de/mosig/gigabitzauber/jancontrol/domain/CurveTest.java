@@ -36,6 +36,15 @@ class CurveTest {
     }
 
     @Test
+    void test_noArgConstructor_sets_default_values() {
+        var localUnderTest = Curve.builder().build();
+
+        assertThat(localUnderTest.ref()).isNull();
+        assertThat(localUnderTest.type()).isEqualTo(CurveTypes.LINEAR);
+        assertThat(localUnderTest.points()).isEmpty();
+    }
+
+    @Test
     void test_getType() {
         assertThat(underTest.type()).isEqualTo(curveTypeMock);
     }

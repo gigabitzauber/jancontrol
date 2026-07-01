@@ -12,17 +12,13 @@ import java.nio.file.Files;
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public final class ReadOnlyDevice extends Device {
-    private final int offset;
-
-    public ReadOnlyDevice() {
+public final class TemperatureDevice extends Device {
+    public TemperatureDevice() {
         super();
-        this.offset = 0;
     }
 
-    public ReadOnlyDevice(String name, String sysPath, int offset) {
+    public TemperatureDevice(String name, String sysPath) {
         super(name, sysPath);
-        this.offset = offset;
     }
 
     @JsonIgnore
@@ -37,7 +33,7 @@ public final class ReadOnlyDevice extends Device {
             throw new JcException("Value of device '" + getName() + "' is not a number.", e);
         }
 
-        return (fromValue(readValue) + this.offset);
+        return fromValue(readValue);
     }
 
     @JsonIgnore

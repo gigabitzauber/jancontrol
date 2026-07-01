@@ -13,9 +13,9 @@ import java.util.Set;
 public record Fan(
     @JsonDeserialize(using = JcJacksonConfig.DurationDeserializer.class)
     Duration interval,
-    WriteableDevice device,
+    RpmDevice device,
     Collection<Curve> curves,
-    List<ReadOnlyDevice> dependsOn) {
+    List<TemperatureDevice> dependsOn) {
 
     public static final Duration DEFAULT_INTERVAL = Duration.ofSeconds(5);
 

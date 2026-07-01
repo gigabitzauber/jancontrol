@@ -1,8 +1,8 @@
 package de.mosig.gigabitzauber.jancontrol;
 
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
-import de.mosig.gigabitzauber.jancontrol.domain.ReadOnlyDevice;
-import de.mosig.gigabitzauber.jancontrol.domain.WriteableDevice;
+import de.mosig.gigabitzauber.jancontrol.domain.RpmDevice;
+import de.mosig.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import org.slf4j.Logger;
 import org.springframework.context.Lifecycle;
@@ -60,11 +60,11 @@ public class JcLifecycle implements Lifecycle {
 
     public void register(Fan fan) {
         String fanModeDeviceRawPath = fan.device().getSysPath() + "_enable";
-        var fanModeDeviceRo = new ReadOnlyDevice(fan.device().getName() + " Fan Mode R/O", fanModeDeviceRawPath, 0);
-        var fanModeDevice = new WriteableDevice(fan.device().getName() + " Fan Mode", fanModeDeviceRawPath);
+        var fanModeDeviceRo = new TemperatureDevice(fan.device().getName() + " Fan Mode R/O", fanModeDeviceRawPath);
+        var fanModeDevice = new RpmDevice(fan.device().getName() + " Fan Mode", fanModeDeviceRawPath);
         var origFanMode = fanModeDeviceRo.readRaw();
         fanModeDevice.write(FAN_MODE_MANUAL);
-        var fanDevice = new ReadOnlyDevice(fan.device().getName() + "R/O", fan.device().getSysPath(), 0);
+        var fanDevice = new TemperatureDevice(fan.device().getName() + "R/O", fan.device().getSysPath());
 
         var origRpm = fanDevice.readRaw();
 
@@ -73,7 +73,7 @@ public class JcLifecycle implements Lifecycle {
         registeredFans.add(regFan);
     }
 
-    private static record RegisteredFan(Fan fan, String origRpm, WriteableDevice fanMode, String origFanMode) {
+    private static record RegisteredFan(Fan fan, String origRpm, RpmDevice fanMode, String origFanMode) {
 
     }
 }

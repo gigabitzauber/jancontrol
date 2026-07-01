@@ -15,12 +15,12 @@ import java.nio.file.StandardOpenOption;
 @Builder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public final class WriteableDevice extends Device {
-    public WriteableDevice() {
+public final class RpmDevice extends Device {
+    public RpmDevice() {
         super();
     }
 
-    public WriteableDevice(String name, String sysPath) {
+    public RpmDevice(String name, String sysPath) {
         super(name, sysPath);
     }
 
