@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import de.mosig.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
@@ -50,6 +51,7 @@ class CurveTypeDeserializerTest {
             .hasMessage("Curve type must not be blank");
     }
 
+    @Test
     void when_curve_type_unknown_then_error() throws IOException {
         var unknownCurveType = "unknown";
         when(jsonParserMock.getText()).thenReturn(unknownCurveType);

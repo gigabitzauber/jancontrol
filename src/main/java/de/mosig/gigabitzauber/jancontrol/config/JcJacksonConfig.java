@@ -47,7 +47,7 @@ public class JcJacksonConfig {
                 try {
                     return CurveTypes.valueOf(fixedText);
                 } catch (IllegalArgumentException e) {
-                    throw new JcException("Unknown curve type: " + fixedText, e);
+                    throw new JcException("Unknown curve type: " + rawText, e);
                 }
             }
         }

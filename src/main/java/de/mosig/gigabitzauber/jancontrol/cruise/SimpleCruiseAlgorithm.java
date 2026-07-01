@@ -27,7 +27,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
             curves.stream().filter(curve -> curve.ref().equals(dependant.getName()))
                 .findFirst()
                 .ifPresent(curve -> {
-                    var measurement = dependant.read();
+                    int measurement = dependant.read();
                     var targetRpm = curve.getY(measurement);
                     rpmCandidates.add(new RpmCandidate(dependant.getName(), measurement, targetRpm, targetDeviceName));
                 });

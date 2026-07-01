@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DeviceTest {
-    private static final String NAME_EXAMPLE = "nameExample";
     private static final String SYS_FS_PATH_EXAMPLE = "sysFsPathExample";
 
     @TempDir
@@ -27,13 +26,8 @@ class DeviceTest {
         sysFsPath = tempDir.resolve(SYS_FS_PATH_EXAMPLE);
         Files.createFile(sysFsPath);
         rawSysFsPath = sysFsPath.toString();
-        underTest = new Device(NAME_EXAMPLE, rawSysFsPath) {
+        underTest = new Device(rawSysFsPath) {
         };
-    }
-
-    @Test
-    void test_getName() {
-        assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
     }
 
     @Test
@@ -42,14 +36,14 @@ class DeviceTest {
     }
 
     @Test
-    void test_getSafeSysFsPath_happy_path() throws Exception {
+    void test_getSafeSysFsPath_happy_path() {
         assertThat(underTest.safeSysPath()).isEqualTo(sysFsPath);
     }
 
     @Test
     void when_sysFsPath_exists_but_is_not_a_file_then_throw_exception() {
         var tmpPath = tempDir.toString();
-        var localUnderTest = new Device(NAME_EXAMPLE, tmpPath) {
+        var localUnderTest = new Device(tmpPath) {
         };
 
         assertThatThrownBy(localUnderTest::safeSysPath)
@@ -60,7 +54,7 @@ class DeviceTest {
     @Test
     void when_sysFsPath_does_not_exist_then_throw_exception() {
         var notFound = "not_found";
-        var localUnderTest = new Device(NAME_EXAMPLE, notFound) {
+        var localUnderTest = new Device(notFound) {
         };
 
         assertThatThrownBy(localUnderTest::safeSysPath)

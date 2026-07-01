@@ -1,8 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol;
 
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
-import de.mosig.gigabitzauber.jancontrol.domain.RpmDevice;
-import de.mosig.gigabitzauber.jancontrol.domain.TemperatureDevice;
+import de.mosig.gigabitzauber.jancontrol.domain.RwSysFile;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import org.slf4j.Logger;
 import org.springframework.context.Lifecycle;
@@ -13,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class JcLifecycle implements Lifecycle {
-    private static final int FAN_MODE_MANUAL = 1;
+    private static final String FAN_MODE_MANUAL = "1";
 
     private final ExecutorService fanCruiseExecutor;
     private final Logger log;
@@ -47,8 +46,8 @@ public class JcLifecycle implements Lifecycle {
             }
         } finally {
             for (var registeredFan : this.registeredFans) {
-                registeredFan.fan.device().write(Integer.parseInt(registeredFan.origRpm));
-                registeredFan.fanMode.write(Integer.parseInt(registeredFan.origFanMode));
+                registeredFan.fan.device().write(registeredFan.origRpm);
+                registeredFan.fanModeDevice.writeRaw(registeredFan.origFanMode);
             }
         }
     }
@@ -59,21 +58,18 @@ public class JcLifecycle implements Lifecycle {
     }
 
     public void register(Fan fan) {
-        String fanModeDeviceRawPath = fan.device().getSysPath() + "_enable";
-        var fanModeDeviceRo = new TemperatureDevice(fan.device().getName() + " Fan Mode R/O", fanModeDeviceRawPath);
-        var fanModeDevice = new RpmDevice(fan.device().getName() + " Fan Mode", fanModeDeviceRawPath);
-        var origFanMode = fanModeDeviceRo.readRaw();
-        fanModeDevice.write(FAN_MODE_MANUAL);
-        var fanDevice = new TemperatureDevice(fan.device().getName() + "R/O", fan.device().getSysPath());
-
-        var origRpm = fanDevice.readRaw();
+        String fanModeFileRawPath = fan.device().getSysPath() + "_enable";
+        var fanModeDevice = new RwSysFile(fanModeFileRawPath);
+        var origFanMode = fanModeDevice.readRaw().strip();
+        fanModeDevice.writeRaw(FAN_MODE_MANUAL);
+        var origRpm = fan.device().read();
 
         var regFan = new RegisteredFan(fan, origRpm, fanModeDevice, origFanMode);
         log.info("Registered Fan: {}", regFan);
         registeredFans.add(regFan);
     }
 
-    private static record RegisteredFan(Fan fan, String origRpm, RpmDevice fanMode, String origFanMode) {
+    private static record RegisteredFan(Fan fan, int origRpm, RwSysFile fanModeDevice, String origFanMode) {
 
     }
 }

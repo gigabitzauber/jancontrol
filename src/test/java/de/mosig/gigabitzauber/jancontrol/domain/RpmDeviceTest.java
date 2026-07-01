@@ -86,7 +86,7 @@ class RpmDeviceTest {
             staticFilesMock.when(() -> Files.isDirectory(sysFileExamplePath)).thenCallRealMethod();
             assertThatThrownBy(() -> underTest.write(VALUE_EXAMPLE))
                 .isInstanceOf(JcException.class)
-                .hasMessage("Could not write to device " + NAME_EXAMPLE)
+                .hasMessage("Could not write to file")
                 .hasRootCause(expectedException);
         }
     }

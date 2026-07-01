@@ -2,20 +2,17 @@ package de.mosig.gigabitzauber.jancontrol.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
-import lombok.Builder;
+import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
+import static java.util.Objects.requireNonNull;
 
 @Data
-@Builder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public final class RpmDevice extends Device {
+public final class RpmDevice extends NamedDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
     public RpmDevice() {
         super();
     }
@@ -24,16 +21,25 @@ public final class RpmDevice extends Device {
         super(name, sysPath);
     }
 
+    @Override
     @JsonIgnore
-    public void write(int value) {
+    public void write(Integer value) {
+        requireNonNull(value, "value must not be null");
         var rawValue = Integer.toString(value);
+        JcIoUtil.writeString(safeSysPath(), rawValue);
+    }
+
+    @Override
+    public Integer read() {
+        String rawValue = JcIoUtil.readString(safeSysPath());
+        var cleanValueStr = rawValue.strip();
+        var readValue = -1;
         try {
-            Files.writeString(safeSysPath(), rawValue,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.SYNC);
-        } catch (IOException e) {
-            throw new JcException("Could not write to device " + getName(), e);
+            readValue = Integer.parseInt(cleanValueStr);
+        } catch (NumberFormatException e) {
+            throw new JcException("Value of device '" + getName() + "' is not a number.", e);
         }
+
+        return readValue;
     }
 }

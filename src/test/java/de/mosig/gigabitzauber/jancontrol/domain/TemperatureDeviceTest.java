@@ -94,7 +94,7 @@ class TemperatureDeviceTest {
             staticFilesMock.when(() -> Files.isDirectory(sysFileExamplePath)).thenCallRealMethod();
             assertThatThrownBy(underTest::read)
                 .isInstanceOf(JcException.class)
-                .hasMessage("Could not read value of device '" + NAME_EXAMPLE + "'")
+                .hasMessage("Could not read value from file")
                 .hasRootCause(expectedException);
         }
     }
