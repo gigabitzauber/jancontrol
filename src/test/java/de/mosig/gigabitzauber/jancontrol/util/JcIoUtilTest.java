@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -167,7 +168,9 @@ class JcIoUtilTest {
             staticFilesMock.when(() -> Files.exists(fileExamplePath)).thenReturn(existsFlag);
             staticFilesMock.when(() -> Files.isDirectory(fileExamplePath)).thenReturn(directoryFlag);
             staticFilesMock.when(() -> Files.isReadable(fileExamplePath)).thenReturn(readableFlag);
-            assertThatNoException().isThrownBy(() -> JcIoUtil.assertReadable(fileExamplePath));
+            var actualResultRef = new AtomicReference<Path>();
+            assertThatNoException().isThrownBy(() -> actualResultRef.set(JcIoUtil.assertReadable(fileExamplePath)));
+            assertThat(actualResultRef.get()).isEqualTo(fileExamplePath);
         }
     }
 
@@ -204,7 +207,9 @@ class JcIoUtilTest {
             staticFilesMock.when(() -> Files.exists(fileExamplePath)).thenReturn(existsFlag);
             staticFilesMock.when(() -> Files.isDirectory(fileExamplePath)).thenReturn(directoryFlag);
             staticFilesMock.when(() -> Files.isWritable(fileExamplePath)).thenReturn(writeableFlag);
-            assertThatNoException().isThrownBy(() -> JcIoUtil.assertWritable(fileExamplePath));
+            var resultRef = new AtomicReference<Path>();
+            assertThatNoException().isThrownBy(() -> resultRef.set(JcIoUtil.assertWritable(fileExamplePath)));
+            assertThat(resultRef.get()).isEqualTo(fileExamplePath);
         }
     }
 

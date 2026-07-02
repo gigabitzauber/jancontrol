@@ -1,15 +1,15 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
-import de.mosig.gigabitzauber.jancontrol.error.JcException;
+import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DeviceTest {
     private static final String SYS_FS_PATH_EXAMPLE = "sysFsPathExample";
@@ -36,29 +36,30 @@ class DeviceTest {
     }
 
     @Test
-    void test_getSafeSysFsPath_happy_path() {
-        assertThat(underTest.safeSysPath()).isEqualTo(sysFsPath);
+    void test_safeReadableSysPath_happy_path() {
+        assertThat(underTest.safeReadableSysPath()).isEqualTo(sysFsPath);
     }
 
     @Test
-    void when_sysFsPath_exists_but_is_not_a_file_then_throw_exception() {
-        var tmpPath = tempDir.toString();
-        var localUnderTest = new Device(tmpPath) {
-        };
-
-        assertThatThrownBy(localUnderTest::safeSysPath)
-            .isInstanceOf(JcException.class)
-            .hasMessage("Sys fs path is not a file: " + tmpPath);
+    void test_safeWritableSysPath_happy_path() {
+        assertThat(underTest.safeWritableSysPath()).isEqualTo(sysFsPath);
     }
 
     @Test
-    void when_sysFsPath_does_not_exist_then_throw_exception() {
-        var notFound = "not_found";
-        var localUnderTest = new Device(notFound) {
-        };
+    void test_safeReadableSysPath_calls_assertReadable() {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            underTest.safeReadableSysPath();
 
-        assertThatThrownBy(localUnderTest::safeSysPath)
-            .isInstanceOf(JcException.class)
-            .hasMessage("Could not find sys fs path: " + notFound);
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(sysFsPath));
+        }
+    }
+
+    @Test
+    void test_safeWritableSysPath_calls_assertReadable() {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            underTest.safeWritableSysPath();
+
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertWritable(sysFsPath));
+        }
     }
 }

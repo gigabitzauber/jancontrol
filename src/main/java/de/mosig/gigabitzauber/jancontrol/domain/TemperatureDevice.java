@@ -24,7 +24,7 @@ public final class TemperatureDevice extends NamedDevice implements TypedReadabl
     @Override
     @JsonIgnore
     public Integer read() {
-        String rawValue = JcIoUtil.readString(safeSysPath());
+        String rawValue = JcIoUtil.readString(safeReadableSysPath());
 
         var cleanValueStr = rawValue.strip();
         var readValue = -1;

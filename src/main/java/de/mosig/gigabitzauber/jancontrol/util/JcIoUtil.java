@@ -36,7 +36,7 @@ public final class JcIoUtil {
         }
     }
 
-    public static void assertReadable(Path path) {
+    public static Path assertReadable(Path path) {
         requireNonNull(path, "path must not be null");
 
         assertExistingFile(path);
@@ -44,16 +44,20 @@ public final class JcIoUtil {
         if (!Files.isReadable(path)) {
             throw new JcException("Path is not readable: " + path);
         }
+
+        return path;
     }
 
-    public static void assertWritable(Path path) {
+    public static Path assertWritable(Path path) {
         requireNonNull(path, "path must not be null");
-        
+
         assertExistingFile(path);
 
         if (!Files.isWritable(path)) {
             throw new JcException("Path is not writable: " + path);
         }
+
+        return path;
     }
 
     private static void assertExistingFile(Path path) {

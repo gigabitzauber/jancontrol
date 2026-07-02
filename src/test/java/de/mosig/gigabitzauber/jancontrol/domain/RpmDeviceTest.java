@@ -5,6 +5,7 @@ import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
@@ -41,24 +42,24 @@ class RpmDeviceTest {
     @MethodSource("writeSuccessCombinations")
     void test_write_happy_path(int percentage, String expectedRawValue) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
-                .thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedRawValue))
                 .thenAnswer(_ -> null);
 
             underTest.write(percentage);
 
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verify(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedRawValue));
         }
     }
 
     @Test
-    void when_file_is_not_readable_then_exception_is_thrown() {
+    void when_file_is_not_writable_then_write_throws_exception() {
         var expectedException = new JcException("expected exception");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE))
                 .thenThrow(expectedException);
 
             assertThatThrownBy(() -> underTest.write(0)).isSameAs(expectedException);
@@ -70,8 +71,8 @@ class RpmDeviceTest {
         var expectedException = new JcException("expected exception");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
-                .thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, "0"))
                 .thenThrow(expectedException);
 
@@ -81,19 +82,102 @@ class RpmDeviceTest {
 
     @ParameterizedTest
     @ValueSource(ints = {-1, 101})
-    void test_write_failure_path(int percentage) {
+    void when_value_is_out_of_range_then_write_throws_exception(int percentage) {
         assertThatThrownBy(() -> underTest.write(percentage))
             .isInstanceOf(JcException.class)
             .hasMessage("rpm value out of range [0, 100]: " + percentage);
     }
 
-    // Percentage, raw value
+    @ParameterizedTest
+    @MethodSource("readSuccessCombinations")
+    void test_read_happy_path(String rawValue, int expectedPercentage) {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
+            staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenReturn(rawValue);
+
+            var actualPercentage = underTest.read();
+            assertThat(actualPercentage).isEqualTo(expectedPercentage);
+
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE));
+        }
+    }
+
+    @Test
+    void when_file_is_not_readable_then_read_throws_exception() {
+        var expectedException = new JcException("expected exception");
+
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenThrow(expectedException);
+
+            assertThatThrownBy(underTest::read).isSameAs(expectedException);
+        }
+    }
+
+    @Test
+    void when_read_fails_then_exception_is_thrown() {
+        var expectedException = new JcException("expected exception");
+
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
+            staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE))
+                .thenThrow(expectedException);
+
+            assertThatThrownBy(underTest::read).isSameAs(expectedException);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"-1", "256"})
+    void when_value_is_out_of_range_then_read_throws_exception(String rawValue) {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
+            staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(rawValue);
+
+            assertThatThrownBy(underTest::read)
+                .isInstanceOf(JcException.class)
+                .hasMessage("rpm raw value out of range [0, 255]: " + rawValue);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"   ", "NaN"})
+    @EmptySource
+    void when_read_value_is_nan_then_exception_is_thrown(String rawValue) {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
+            staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(rawValue);
+
+            assertThatThrownBy(underTest::read)
+                .isInstanceOf(JcException.class)
+                .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
+        }
+    }
+
+    // percentage, raw value
     private static Stream<Arguments> writeSuccessCombinations() {
         return Stream.of(
             arguments(0, "0"),
             // 51% of 255 is 130,05. Since we always round up, the raw value is supposed to be 131.
             arguments(51, "131"),
             arguments(100, "255")
+        );
+    }
+
+    // raw value, percentage
+    private static Stream<Arguments> readSuccessCombinations() {
+        return Stream.of(
+            arguments("0", 0),
+            // 51% of 255 is 130,05. Since we always round up, the raw value is supposed to be 131.
+            arguments("131", 51),
+            arguments("255", 100)
         );
     }
 }

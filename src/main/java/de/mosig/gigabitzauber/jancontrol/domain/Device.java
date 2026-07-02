@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static de.mosig.gigabitzauber.jancontrol.util.JcIoUtil.assertReadable;
+import static de.mosig.gigabitzauber.jancontrol.util.JcIoUtil.assertWritable;
 
 @Data
 public abstract class Device {
@@ -22,12 +23,19 @@ public abstract class Device {
     }
 
     @JsonIgnore
-    protected final Path safeSysPath() {
+    protected final Path safeReadableSysPath() {
+        return assertReadable(safeSysPath());
+    }
+
+    @JsonIgnore
+    protected final Path safeWritableSysPath() {
+        return assertWritable(safeSysPath());
+    }
+
+    private Path safeSysPath() {
         if (this.sysPath == null) {
-            throw new JcException("System path is unset");
+            throw new JcException("Sys path is unset");
         }
-        var result = Paths.get(this.sysPath);
-        assertReadable(result);
-        return result;
+        return Paths.get(this.sysPath);
     }
 }

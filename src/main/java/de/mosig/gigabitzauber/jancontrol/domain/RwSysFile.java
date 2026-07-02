@@ -12,12 +12,12 @@ public class RwSysFile extends Device implements RawReadableDevice, RawWriteable
 
     @Override
     public String readRaw() {
-        return JcIoUtil.readString(safeSysPath());
+        return JcIoUtil.readString(safeReadableSysPath());
     }
 
     @Override
     public void writeRaw(String rawValue) {
         requireNonNull(rawValue, "rawValue must not be null");
-        JcIoUtil.writeString(safeSysPath(), rawValue);
+        JcIoUtil.writeString(safeWritableSysPath(), rawValue);
     }
 }

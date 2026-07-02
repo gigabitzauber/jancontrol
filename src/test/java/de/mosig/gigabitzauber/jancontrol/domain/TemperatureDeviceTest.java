@@ -4,6 +4,7 @@ import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
@@ -40,9 +41,11 @@ class TemperatureDeviceTest {
         assertThat(actualValue).isEqualTo(123);
     }
 
-    @Test
-    void when_read_contents_are_not_a_number_then_throw_jc_exception() {
-        assertThatThrownBy(() -> executeReadOpSuccess("notANumber"))
+    @ParameterizedTest
+    @ValueSource(strings = {"   ", "NaN"})
+    @EmptySource
+    void when_read_contents_are_not_a_number_then_throw_jc_exception(String rawValue) {
+        assertThatThrownBy(() -> executeReadOpSuccess(rawValue))
             .isInstanceOf(JcException.class)
             .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
     }
@@ -55,7 +58,8 @@ class TemperatureDeviceTest {
 
     private Integer executeReadOpSuccess(String contents) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE)).thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenReturn(contents);
             return underTest.read();
         }
@@ -63,7 +67,8 @@ class TemperatureDeviceTest {
 
     private void executeReadOpFail(RuntimeException expectedException) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE)).thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenThrow(expectedException);
             underTest.read();
         }
