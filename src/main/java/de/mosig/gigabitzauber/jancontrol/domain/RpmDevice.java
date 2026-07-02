@@ -1,6 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Range;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 import lombok.Data;
@@ -13,6 +14,11 @@ import static java.util.Objects.requireNonNull;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public final class RpmDevice extends NamedDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
+    /*
+     * Seems like RPM values are stored in a byte. Full speed = 255, half speed = 127 etc.
+     */
+    private static final int HIGHEST_POSSIBLE_RAW_RPM_VALUE = 255;
+
     public RpmDevice() {
         super();
     }
@@ -25,8 +31,14 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
     @JsonIgnore
     public void write(Integer value) {
         requireNonNull(value, "value must not be null");
-        var rawValue = Integer.toString(value);
-        JcIoUtil.writeString(safeSysPath(), rawValue);
+
+        if (Range.closed(0, 100).contains(value)) {
+            var rawValue = (int) Math.ceil(((double) value / 100) * HIGHEST_POSSIBLE_RAW_RPM_VALUE);
+            JcIoUtil.writeString(safeSysPath(), rawValue + "");
+        } else {
+            throw new JcException("rpm value out of range [0, 100]: " + value);
+        }
+
     }
 
     @Override

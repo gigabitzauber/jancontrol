@@ -1,97 +1,99 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class RpmDeviceTest {
     private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
-    private static final int VALUE_EXAMPLE = 123;
+    private static final String SYS_FILE_EXAMPLE = "sysFileExample";
+    private static final Path SYS_FILE_PATH_EXAMPLE = Paths.get(SYS_FILE_EXAMPLE);
 
-    @TempDir
-    private Path tempDir;
-    private String sysFileExample;
-    private Path sysFileExamplePath;
+    private final RpmDevice underTest = new RpmDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE);
 
-    @BeforeEach
-    void setUp() {
-        sysFileExamplePath = tempDir.resolve(NAME_EXAMPLE);
-        sysFileExample = sysFileExamplePath.toString();
-        try {
-            Files.createFile(sysFileExamplePath);
-        } catch (IOException e) {
-            Assertions.fail("Could not create temp device file.", e);
-        }
+    @Test
+    void should_inherit_from_proper_parents() {
+        assertThat(this.underTest).isInstanceOf(NamedDevice.class);
+        assertThat(this.underTest).isInstanceOf(TypedReadableDevice.class);
+        assertThat(this.underTest).isInstanceOf(TypedWriteableDevice.class);
     }
 
     @Test
     void when_constructed_with_name_and_sys_path_then_properties_are_set() {
-        var underTest = createUnderTest(sysFileExample);
-
         assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
-        assertThat(underTest.getSysPath()).isEqualTo(sysFileExample);
+        assertThat(underTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
     }
 
-    @Test
-    void test_write_happy_path() throws Exception {
-        var underTest = createUnderTest(sysFileExample);
+    @ParameterizedTest
+    @MethodSource("writeSuccessCombinations")
+    void test_write_happy_path(int percentage, String expectedRawValue) {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedRawValue))
+                .thenAnswer(_ -> null);
 
-        underTest.write(VALUE_EXAMPLE);
+            underTest.write(percentage);
 
-        var actualValue = Integer.parseInt(Files.readString(sysFileExamplePath));
-        assertThat(actualValue).isEqualTo(VALUE_EXAMPLE);
-    }
-
-    @Test
-    void when_file_does_not_exist_then_throw_exception() {
-        String fileDoesNotExist = "fileDoesNotExist";
-        var underTest = createUnderTest(fileDoesNotExist);
-
-        assertThatThrownBy(() -> underTest.write(VALUE_EXAMPLE))
-            .isInstanceOf(JcException.class)
-            .hasMessage("Could not find sys fs path: " + fileDoesNotExist);
-    }
-
-    @Test
-    void when_file_is_a_directory_then_throw_exception() {
-        var underTest = createUnderTest(tempDir.toString());
-
-        assertThatThrownBy(() -> underTest.write(VALUE_EXAMPLE))
-            .isInstanceOf(JcException.class)
-            .hasMessage("Sys fs path is not a file: " + tempDir);
-    }
-
-    @Test
-    void when_writing_fails_then_throw_exception() {
-        var underTest = createUnderTest(sysFileExample);
-
-        try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
-            var expectedException = new IOException("expected exception");
-            staticFilesMock.when(() -> Files.writeString(sysFileExamplePath, VALUE_EXAMPLE + "",
-                StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.SYNC)).thenThrow(expectedException);
-            staticFilesMock.when(() -> Files.exists(sysFileExamplePath)).thenCallRealMethod();
-            staticFilesMock.when(() -> Files.isDirectory(sysFileExamplePath)).thenCallRealMethod();
-            assertThatThrownBy(() -> underTest.write(VALUE_EXAMPLE))
-                .isInstanceOf(JcException.class)
-                .hasMessage("Could not write to file")
-                .hasRootCause(expectedException);
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedRawValue));
         }
     }
 
-    private RpmDevice createUnderTest(String devicePath) {
-        return new RpmDevice(NAME_EXAMPLE, devicePath);
+    @Test
+    void when_file_is_not_readable_then_exception_is_thrown() {
+        var expectedException = new JcException("expected exception");
+
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenThrow(expectedException);
+
+            assertThatThrownBy(() -> underTest.write(0)).isSameAs(expectedException);
+        }
+    }
+
+    @Test
+    void when_write_fails_then_exception_is_thrown() {
+        var expectedException = new JcException("expected exception");
+
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+                .thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, "0"))
+                .thenThrow(expectedException);
+
+            assertThatThrownBy(() -> underTest.write(0)).isSameAs(expectedException);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 101})
+    void test_write_failure_path(int percentage) {
+        assertThatThrownBy(() -> underTest.write(percentage))
+            .isInstanceOf(JcException.class)
+            .hasMessage("rpm value out of range [0, 100]: " + percentage);
+    }
+
+    // Percentage, raw value
+    private static Stream<Arguments> writeSuccessCombinations() {
+        return Stream.of(
+            arguments(0, "0"),
+            // 51% of 255 is 130,05. Since we always round up, the raw value is supposed to be 131.
+            arguments(51, "131"),
+            arguments(100, "255")
+        );
     }
 }
