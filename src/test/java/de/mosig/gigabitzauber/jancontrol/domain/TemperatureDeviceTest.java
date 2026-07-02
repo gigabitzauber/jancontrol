@@ -1,105 +1,71 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TemperatureDeviceTest {
     private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
+    private static final String SYS_FILE_EXAMPLE = "sysFileExample";
+    private static final Path SYS_FILE_PATH_EXAMPLE = Paths.get(SYS_FILE_EXAMPLE);
 
-    @TempDir
-    private Path tempDir;
-    private String sysFileExample;
-    private Path sysFileExamplePath;
+    private final TemperatureDevice underTest = new TemperatureDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE);
 
-    @BeforeEach
-    void setUp() {
-        sysFileExamplePath = tempDir.resolve(NAME_EXAMPLE);
-        sysFileExample = sysFileExamplePath.toString();
-        try {
-            Files.createFile(sysFileExamplePath);
-        } catch (IOException e) {
-            Assertions.fail("Could not create temp device file.", e);
-        }
+    @Test
+    void should_inherit_from_proper_parents() {
+        assertThat(this.underTest).isInstanceOf(NamedDevice.class);
+        assertThat(this.underTest).isInstanceOf(TypedReadableDevice.class);
     }
 
     @Test
     void when_constructed_with_all_args_then_properties_are_set() {
-        var underTest = createUnderTest(sysFileExample);
-
         assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
-        assertThat(underTest.getSysPath()).isEqualTo(sysFileExample);
+        assertThat(underTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"123000", "  123000   ", "\t 123000\n  ", "123000\n"})
-    void test_read_happy_path(String rawValueCandidate) throws Exception {
-        Files.writeString(sysFileExamplePath, rawValueCandidate);
-        var underTest = createUnderTest(sysFileExample);
-
-        var actualValue = underTest.read();
+    void test_read_happy_path(String rawValueCandidate) {
+        var actualValue = executeReadOpSuccess(rawValueCandidate);
 
         assertThat(actualValue).isEqualTo(123);
     }
 
     @Test
-    void when_read_contents_are_not_a_number_then_throw_jc_exception() throws Exception {
-        Files.writeString(sysFileExamplePath, "not a number");
-        var underTest = createUnderTest(sysFileExample);
-
-        assertThatThrownBy(underTest::read)
+    void when_read_contents_are_not_a_number_then_throw_jc_exception() {
+        assertThatThrownBy(() -> executeReadOpSuccess("notANumber"))
             .isInstanceOf(JcException.class)
             .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
     }
 
     @Test
-    void when_file_does_not_exist_then_throw_exception() {
-        String fileDoesNotExist = "fileDoesNotExist";
-        var underTest = createUnderTest(fileDoesNotExist);
-
-        assertThatThrownBy(underTest::read)
-            .isInstanceOf(JcException.class)
-            .hasMessage("Could not find sys fs path: " + fileDoesNotExist);
+    void when_read_fails_then_throw_exception() {
+        var expectedException = new JcException("expected exception");
+        assertThatThrownBy(() -> executeReadOpFail(expectedException)).isSameAs(expectedException);
     }
 
-    @Test
-    void when_file_is_a_directory_then_throw_exception() {
-        var underTest = createUnderTest(tempDir.toString());
-
-        assertThatThrownBy(underTest::read)
-            .isInstanceOf(JcException.class)
-            .hasMessage("Sys fs path is not a file: " + tempDir);
-    }
-
-    @Test
-    void when_reading_fails_then_throw_exception() {
-        var underTest = createUnderTest(sysFileExample);
-
-        try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
-            var expectedException = new IOException("expected exception");
-            staticFilesMock.when(() -> Files.readString(sysFileExamplePath)).thenThrow(expectedException);
-            staticFilesMock.when(() -> Files.exists(sysFileExamplePath)).thenCallRealMethod();
-            staticFilesMock.when(() -> Files.isDirectory(sysFileExamplePath)).thenCallRealMethod();
-            assertThatThrownBy(underTest::read)
-                .isInstanceOf(JcException.class)
-                .hasMessage("Could not read value from file")
-                .hasRootCause(expectedException);
+    private Integer executeReadOpSuccess(String contents) {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE)).thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenReturn(contents);
+            return underTest.read();
         }
     }
 
-    private TemperatureDevice createUnderTest(String devicePath) {
-        return new TemperatureDevice(NAME_EXAMPLE, devicePath);
+    private void executeReadOpFail(RuntimeException expectedException) {
+        try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE)).thenAnswer(_ -> null);
+            staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenThrow(expectedException);
+            underTest.read();
+        }
     }
 }
