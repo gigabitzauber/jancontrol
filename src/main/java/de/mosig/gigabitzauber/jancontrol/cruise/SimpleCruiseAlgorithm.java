@@ -37,10 +37,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
             log.info("Cruise command got interrupted. Shutting down..");
         } else {
             var newRpm = Collections.max(rpmCandidates);
-            var targetRpmValue = (int) Math.ceil(((double) newRpm.targetRpm / 100) * 255);
-            if (targetRpmValue > 255) {
-                targetRpmValue = 255;
-            }
+            var targetRpmValue = newRpm.targetRpm;
             if (targetRpmValue < 20) {
                 targetRpmValue = 20;
             }

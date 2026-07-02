@@ -65,7 +65,6 @@ public class JcLifecycle implements Lifecycle {
         var origRpm = fan.device().read();
 
         var regFan = new RegisteredFan(fan, origRpm, fanModeDevice, origFanMode);
-        log.info("Registered Fan: {}", regFan);
         registeredFans.add(regFan);
     }
 
