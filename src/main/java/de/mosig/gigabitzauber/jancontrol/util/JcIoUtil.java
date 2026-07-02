@@ -10,6 +10,10 @@ import java.nio.file.StandardOpenOption;
 import static java.util.Objects.requireNonNull;
 
 public final class JcIoUtil {
+
+    private JcIoUtil() {
+    }
+
     public static String readString(Path path) {
         requireNonNull(path, "path must not be null");
         try {
@@ -21,7 +25,7 @@ public final class JcIoUtil {
 
     public static void writeString(Path path, String value) {
         requireNonNull(path, "path must not be null");
-        requireNonNull(value, "rawValue must not be null");
+        requireNonNull(value, "value must not be null");
         try {
             Files.writeString(path, value,
                 StandardOpenOption.WRITE,
@@ -29,6 +33,34 @@ public final class JcIoUtil {
                 StandardOpenOption.SYNC);
         } catch (IOException e) {
             throw new JcException("Could not write to file", e);
+        }
+    }
+
+    public static void assertReadable(Path path) {
+        requireNonNull(path, "path must not be null");
+
+        assertExistingFile(path);
+
+        if (!Files.isReadable(path)) {
+            throw new JcException("Path is not readable: " + path);
+        }
+    }
+
+    public static void assertWritable(Path path) {
+        requireNonNull(path, "path must not be null");
+        
+        assertExistingFile(path);
+
+        if (!Files.isWritable(path)) {
+            throw new JcException("Path is not writable: " + path);
+        }
+    }
+
+    private static void assertExistingFile(Path path) {
+        if (!Files.exists(path)) {
+            throw new JcException("Path does not exist: " + path);
+        } else if (Files.isDirectory(path)) {
+            throw new JcException("Path is not a file: " + path);
         }
     }
 }
