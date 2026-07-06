@@ -1,26 +1,22 @@
 package de.mosig.gigabitzauber.jancontrol.cruise;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import de.mosig.gigabitzauber.jancontrol.domain.CruiseConfig;
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
 
 public final class CruiseConfigReader {
 
     private final YAMLMapper mapper;
-    @Getter
-    private CruiseConfig config = new CruiseConfig(Set.of());
 
     @Autowired
     public CruiseConfigReader(YAMLMapper yamlMapper) {
-        this.mapper = yamlMapper;
+        this.mapper = requireNonNull(yamlMapper, "mapper must not be null");
     }
 
     public CruiseConfig readConfig(Resource configResource) {
@@ -29,19 +25,18 @@ public final class CruiseConfigReader {
         CruiseConfig result = null;
         try {
             result = mapper.readValue(configContent, CruiseConfig.class);
-        } catch (JsonProcessingException e) {
-            throw new JcException("Could not read config file.", e);
+        } catch (Exception e) {
+            throw new JcException("Config file contains faulty YAML", e);
         }
 
-        this.config = result;
         return result;
     }
 
     private String readRawConfig(Resource configResource) {
         try {
             return configResource.getContentAsString(StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new JcException("Could not read config resource", e);
+        } catch (Exception e) {
+            throw new JcException("Could not read config file", e);
         }
     }
 }
