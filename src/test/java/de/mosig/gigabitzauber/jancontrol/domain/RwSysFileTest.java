@@ -2,6 +2,7 @@ package de.mosig.gigabitzauber.jancontrol.domain;
 
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -84,5 +85,10 @@ class RwSysFileTest {
             staticJcIoUtilMock.verify(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verifyNoMoreInteractions();
         }
+    }
+
+    @Test
+    void test_equals_and_hashCode_contract() {
+        EqualsVerifier.forClass(RwSysFile.class).verify();
     }
 }

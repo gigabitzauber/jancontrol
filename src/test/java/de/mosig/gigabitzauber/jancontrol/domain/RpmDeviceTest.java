@@ -2,6 +2,7 @@ package de.mosig.gigabitzauber.jancontrol.domain;
 
 import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -159,6 +160,11 @@ class RpmDeviceTest {
                 .isInstanceOf(JcException.class)
                 .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
         }
+    }
+
+    @Test
+    void test_equals_and_hashCode_contract() {
+        EqualsVerifier.forClass(RpmDevice.class).withRedefinedSuperclass().verify();
     }
 
     // percentage, raw value

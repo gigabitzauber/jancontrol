@@ -1,5 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,5 +24,10 @@ class CurvePointTest {
 
         assertThat(localUnderTest.temp()).isEqualTo(TEMP_EXAMPLE);
         assertThat(localUnderTest.rpm()).isEqualTo(RPM_EXAMPLE);
+    }
+    
+    @Test
+    void test_equals_and_hashCode_contract() {
+        EqualsVerifier.forClass(CurvePoint.class).verify();
     }
 }

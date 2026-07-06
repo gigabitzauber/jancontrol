@@ -1,5 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -21,5 +22,10 @@ class CruiseConfigTest {
         var localUnderTest = new CruiseConfig(expectedFans);
 
         assertThat(localUnderTest.fans()).isEqualTo(expectedFans);
+    }
+
+    @Test
+    void test_equalsHashCodeContract() {
+        EqualsVerifier.forClass(CruiseConfig.class).verify();
     }
 }

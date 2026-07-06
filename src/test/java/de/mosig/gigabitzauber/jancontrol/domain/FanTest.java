@@ -1,5 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -34,5 +35,10 @@ class FanTest {
         assertThat(localUnderTest.device()).isEqualTo(device);
         assertThat(localUnderTest.curves()).isEqualTo(curves);
         assertThat(localUnderTest.dependsOn()).isEqualTo(dependsOn);
+    }
+
+    @Test
+    void test_equals_and_hashCode_contract() {
+        EqualsVerifier.forClass(Fan.class).verify();
     }
 }

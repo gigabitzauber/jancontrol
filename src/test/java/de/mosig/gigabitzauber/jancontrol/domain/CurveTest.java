@@ -1,6 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
 import de.mosig.gigabitzauber.jancontrol.interpolation.JcInterpolator;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,6 +74,11 @@ class CurveTest {
         assertThat(underTest.getY(xCandidate)).isEqualTo(expectedResult);
 
         verify(localInterpolatorMock).interpolate(xCandidate);
+    }
+
+    @Test
+    void test_equals_and_hashCode_contract() {
+        EqualsVerifier.forClass(Curve.class).verify();
     }
 
     private JcInterpolator simulateInterpolator() {

@@ -4,7 +4,7 @@ import de.mosig.gigabitzauber.jancontrol.util.JcIoUtil;
 
 import static java.util.Objects.requireNonNull;
 
-public class RwSysFile extends Device implements RawReadableDevice, RawWriteableDevice {
+public final class RwSysFile extends Device implements RawReadableDevice, RawWriteableDevice {
 
     public RwSysFile(String rawPath) {
         super(rawPath);
