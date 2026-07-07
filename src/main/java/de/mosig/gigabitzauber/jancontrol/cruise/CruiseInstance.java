@@ -8,8 +8,9 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.requireNonNull;
 
 public final class CruiseInstance implements FutureCallback<Object> {
 
@@ -18,13 +19,17 @@ public final class CruiseInstance implements FutureCallback<Object> {
     private final ListeningScheduledExecutorService executor;
     private final Logger log;
 
-    public CruiseInstance(Fan fan, ListeningScheduledExecutorService executor, Logger log) {
-        this.fan = fan;
+    private CruiseInstance(Fan fan, ListeningScheduledExecutorService executor, Logger log) {
+        this.fan = requireNonNull(fan, "fan must not be null");
         this.interval = fan.interval();
-        this.executor = executor;
-        this.log = log;
+        this.executor = requireNonNull(executor, "executor must not be null");
+        this.log = requireNonNull(log, "log must not be null");
     }
 
+    public static CruiseInstance create(Fan fan, ListeningScheduledExecutorService executor, Logger log) {
+        return new CruiseInstance(fan, executor, log);
+    }
+    
     public void schedule() {
         var cruiseHandle = executor.scheduleAtFixedRate(
             new SimpleCruiseAlgorithm(fan, log),
@@ -32,7 +37,7 @@ public final class CruiseInstance implements FutureCallback<Object> {
             interval.toMillis(),
             TimeUnit.MILLISECONDS);
 
-        Futures.addCallback(cruiseHandle, this, Executors.newSingleThreadScheduledExecutor());
+        Futures.addCallback(cruiseHandle, this, executor);
     }
 
     @Override
@@ -42,7 +47,7 @@ public final class CruiseInstance implements FutureCallback<Object> {
 
     @Override
     public void onFailure(@Nullable Throwable t) {
-        log.error("Cruise command encountered error", t);
+        log.error("Encountered error when working with fan", t);
         schedule();
     }
 }
