@@ -1,5 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol.cruise;
 
+import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
 import de.mosig.gigabitzauber.jancontrol.domain.Curve;
 import de.mosig.gigabitzauber.jancontrol.domain.CurvePoint;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
@@ -27,18 +28,27 @@ class SimpleCruiseAlgorithmTest {
     private static final Fan FAN_EXAMPLE = Fan.builder().interval(Duration.ofSeconds(10)).build();
 
     @Mock
+    private JcLifecycle lifecycleMock;
+    @Mock
     private Logger logMock;
 
     @Test
     void does_not_support_null_fan() {
-        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(null, logMock))
+        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(null, lifecycleMock, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("fan must not be null");
     }
 
     @Test
+    void does_not_support_null_lifecycle() {
+        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(FAN_EXAMPLE, null, logMock))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("lifecycle must not be null");
+    }
+
+    @Test
     void does_not_support_null_log() {
-        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(FAN_EXAMPLE, null))
+        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(FAN_EXAMPLE, lifecycleMock, null))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("log must not be null");
     }
@@ -66,7 +76,7 @@ class SimpleCruiseAlgorithmTest {
             .dependsOn(List.of(temperatureDevice))
             .curves(List.of(curve))
             .build();
-        var localUnderTest = new SimpleCruiseAlgorithm(fan, logMock);
+        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
 
         localUnderTest.run();
         verify(rpmDevice).write(expectedLowerRpmThreshold);
@@ -102,7 +112,7 @@ class SimpleCruiseAlgorithmTest {
             .dependsOn(List.of(dependantA, dependantB))
             .curves(List.of(curveA, curveB))
             .build();
-        var localUnderTest = new SimpleCruiseAlgorithm(fan, logMock);
+        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
 
         localUnderTest.run();
 

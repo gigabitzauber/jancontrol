@@ -35,7 +35,7 @@ public class JcSpringConfig {
     }
 
     @Bean
-    public CruiseCommand cruiseCommand(ListeningScheduledExecutorService fanCruiseExecutor, JcLifecycle lifecycle, Logger log) {
-        return new CruiseCommand(fanCruiseExecutor, lifecycle, log);
+    public CruiseCommand cruiseCommand(JcLifecycle lifecycle) {
+        return new CruiseCommand(lifecycle);
     }
 }

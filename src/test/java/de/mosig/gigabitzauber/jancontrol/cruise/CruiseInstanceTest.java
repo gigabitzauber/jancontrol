@@ -3,6 +3,7 @@ package de.mosig.gigabitzauber.jancontrol.cruise;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableScheduledFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,8 @@ class CruiseInstanceTest {
     private static final Fan FAN_EXAMPLE = Fan.builder().interval(DURATION_EXAMPLE).build();
 
     @Mock
+    private JcLifecycle lifecycleMock;
+    @Mock
     private ListeningScheduledExecutorService executorMock;
     @Mock
     private Logger logMock;
@@ -38,26 +41,33 @@ class CruiseInstanceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = CruiseInstance.create(FAN_EXAMPLE, executorMock, logMock);
+        underTest = CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, executorMock, logMock);
     }
 
     @Test
     void test_does_not_support_null_fan() {
-        assertThatThrownBy(() -> CruiseInstance.create(null, executorMock, logMock))
+        assertThatThrownBy(() -> CruiseInstance.create(null, lifecycleMock, executorMock, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("fan must not be null");
     }
 
     @Test
+    void test_does_not_support_null_lifecycle() {
+        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, null, executorMock, logMock))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("lifecycle must not be null");
+    }
+
+    @Test
     void test_does_not_support_null_executor() {
-        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, null, logMock))
+        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, null, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("executor must not be null");
     }
 
     @Test
     void test_does_not_support_null_logger() {
-        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, executorMock, null))
+        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, executorMock, null))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("log must not be null");
     }
@@ -67,7 +77,7 @@ class CruiseInstanceTest {
         var objMock = mock(Object.class);
 
         underTest.onSuccess(objMock);
-        verifyNoInteractions(objMock, executorMock, logMock);
+        verifyNoInteractions(objMock, lifecycleMock, executorMock, logMock);
     }
 
     @Test
@@ -78,7 +88,7 @@ class CruiseInstanceTest {
 
         verify(executorMock).scheduleAtFixedRate(
             any(SimpleCruiseAlgorithm.class),
-            eq(DURATION_EXAMPLE.toMillis()),
+            eq(0L),
             eq(DURATION_EXAMPLE.toMillis()),
             eq(TimeUnit.MILLISECONDS));
     }

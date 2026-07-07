@@ -1,6 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol.cruise;
 
 import com.google.common.collect.Range;
+import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
 import org.slf4j.Logger;
 
@@ -14,10 +15,12 @@ public final class SimpleCruiseAlgorithm implements Runnable {
     private static final Range<Integer> VALID_WRITE_RANGE = Range.closed(20, 100);
 
     private final Fan fan;
+    private final JcLifecycle lifecycle;
     private final Logger log;
 
-    public SimpleCruiseAlgorithm(Fan fan, Logger log) {
+    public SimpleCruiseAlgorithm(Fan fan, JcLifecycle lifecycle, Logger log) {
         this.fan = requireNonNull(fan, "fan must not be null");
+        this.lifecycle = requireNonNull(lifecycle, "lifecycle must not be null");
         this.log = requireNonNull(log, "log must not be null");
     }
 
@@ -44,6 +47,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
             var newRpm = Collections.max(rpmCandidates);
             var targetRpmValue = safeGetTargetRpm(newRpm);
             fan.device().write(targetRpmValue);
+            lifecycle.record(newRpm.dependantName, newRpm.measurement);
             log.debug(newRpm.toString());
         }
     }
