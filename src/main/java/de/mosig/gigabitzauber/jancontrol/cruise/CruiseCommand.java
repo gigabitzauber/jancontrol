@@ -1,4 +1,4 @@
-package de.mosig.gigabitzauber.jancontrol.config;
+package de.mosig.gigabitzauber.jancontrol.cruise;
 
 import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
 import de.mosig.gigabitzauber.jancontrol.domain.CruiseConfig;

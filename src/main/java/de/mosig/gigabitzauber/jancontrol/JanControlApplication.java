@@ -1,6 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol;
 
-import de.mosig.gigabitzauber.jancontrol.config.CruiseCommand;
+import de.mosig.gigabitzauber.jancontrol.cruise.CruiseCommand;
 import de.mosig.gigabitzauber.jancontrol.cruise.CruiseConfigReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

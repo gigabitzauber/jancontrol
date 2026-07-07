@@ -1,7 +1,6 @@
 package de.mosig.gigabitzauber.jancontrol.cruise;
 
 import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
-import de.mosig.gigabitzauber.jancontrol.config.CruiseCommand;
 import de.mosig.gigabitzauber.jancontrol.domain.CruiseConfig;
 import de.mosig.gigabitzauber.jancontrol.domain.Fan;
 import org.junit.jupiter.api.Test;

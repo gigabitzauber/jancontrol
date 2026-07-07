@@ -3,6 +3,7 @@ package de.mosig.gigabitzauber.jancontrol.config;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import de.mosig.gigabitzauber.jancontrol.JcLifecycle;
+import de.mosig.gigabitzauber.jancontrol.cruise.CruiseCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InjectionPoint;

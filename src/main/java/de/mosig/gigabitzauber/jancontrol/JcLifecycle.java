@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class JcLifecycle implements Lifecycle {
-    private static final String FAN_MODE_MANUAL = "1";
+    static final String FAN_MODE_MANUAL = "1";
 
     private final ListeningScheduledExecutorService fanCruiseExecutor;
     private final Logger log;
