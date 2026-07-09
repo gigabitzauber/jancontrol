@@ -8,6 +8,7 @@ import de.mosig.gigabitzauber.jancontrol.domain.Fan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -86,11 +88,15 @@ class CruiseInstanceTest {
 
         underTest.schedule();
 
+        var initialDelayCaptor = ArgumentCaptor.forClass(long.class);
         verify(executorMock).scheduleAtFixedRate(
             any(SimpleCruiseAlgorithm.class),
-            eq(0L),
+            initialDelayCaptor.capture(),
             eq(DURATION_EXAMPLE.toMillis()),
             eq(TimeUnit.MILLISECONDS));
+
+        assertThat(initialDelayCaptor.getValue())
+            .isBetween(0L, (long) CruiseInstance.INITIAL_DELAY_UPPER_BOUND_MILLIS);
     }
 
     @Test

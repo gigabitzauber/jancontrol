@@ -9,7 +9,6 @@ import de.mosig.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
@@ -19,6 +18,9 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -119,8 +121,28 @@ class SimpleCruiseAlgorithmTest {
         verify(rpmDevice).write(expectedDeviceRpm);
     }
 
+    @Test
+    void when_curve_cannot_be_matched_to_dependants_then_do_nothing() {
+        var dependant = mock(TemperatureDevice.class);
+        var rpmDevice = simulateRpmDevice("rpmDeviceMock");
+        var curve = Curve.builder()
+            .ref("unknown dependant")
+            .points(Set.of(new CurvePoint(30, 100)))
+            .build();
+        var fan = Fan.builder()
+            .device(rpmDevice)
+            .dependsOn(List.of(dependant))
+            .curves(List.of(curve))
+            .build();
+        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
+
+        localUnderTest.run();
+
+        verify(rpmDevice, never()).write(anyInt());
+    }
+
     private TemperatureDevice simulateTemperatureDevice(String name, Integer... measurements) {
-        var result = Mockito.mock(TemperatureDevice.class);
+        var result = mock(TemperatureDevice.class);
         when(result.getName()).thenReturn(name);
         var otherMeasurements = Arrays.copyOfRange(measurements, 1, measurements.length);
         when(result.read()).thenReturn(measurements[0], otherMeasurements);
@@ -129,7 +151,7 @@ class SimpleCruiseAlgorithmTest {
     }
 
     private RpmDevice simulateRpmDevice(String name) {
-        var result = Mockito.mock(RpmDevice.class);
+        var result = mock(RpmDevice.class);
         when(result.getName()).thenReturn(name);
 
         return result;

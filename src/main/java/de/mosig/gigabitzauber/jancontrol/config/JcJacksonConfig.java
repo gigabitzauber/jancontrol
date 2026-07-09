@@ -1,7 +1,10 @@
 package de.mosig.gigabitzauber.jancontrol.config;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,6 +15,7 @@ import de.mosig.gigabitzauber.jancontrol.error.JcException;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.annotation.DurationFormat;
 import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.io.IOException;
@@ -31,9 +35,9 @@ public class JcJacksonConfig {
         return new CruiseConfigReader(yamlMapper);
     }
 
-    public static class CurveTypeDeserializer extends StdDeserializer<CurveType> {
+    public static final class CurveTypeDeserializer extends StdDeserializer<CurveType> {
 
-        protected CurveTypeDeserializer() {
+        CurveTypeDeserializer() {
             super(CurveType.class);
         }
 
@@ -53,9 +57,9 @@ public class JcJacksonConfig {
         }
     }
 
-    public static class DurationDeserializer extends StdDeserializer<Duration> {
+    public static final class DurationDeserializer extends StdDeserializer<Duration> {
 
-        protected DurationDeserializer() {
+        DurationDeserializer() {
             super(Duration.class);
         }
 
@@ -67,6 +71,17 @@ public class JcJacksonConfig {
             } else {
                 return DurationFormatterUtils.detectAndParse(p.getText());
             }
+        }
+    }
+
+    public static final class DurationSerializer extends JsonSerializer<Duration> {
+        @Override
+        public void serialize(Duration value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            String serializedValue = null;
+            if (value != null) {
+                serializedValue = DurationFormatterUtils.print(value, DurationFormat.Style.SIMPLE, DurationFormat.Unit.SECONDS);
+            }
+            gen.writeString(serializedValue);
         }
     }
 }

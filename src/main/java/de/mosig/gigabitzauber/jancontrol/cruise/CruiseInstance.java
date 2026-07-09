@@ -9,11 +9,14 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
 
 public final class CruiseInstance implements FutureCallback<Object> {
+
+    static final int INITIAL_DELAY_UPPER_BOUND_MILLIS = 666;
 
     private final Fan fan;
     private final Duration interval;
@@ -34,9 +37,10 @@ public final class CruiseInstance implements FutureCallback<Object> {
     }
 
     public void schedule() {
+        var initialDelayMillis = new Random().nextInt(INITIAL_DELAY_UPPER_BOUND_MILLIS);
         var cruiseHandle = executor.scheduleAtFixedRate(
             new SimpleCruiseAlgorithm(fan, lifecycle, log),
-            0,
+            initialDelayMillis,
             interval.toMillis(),
             TimeUnit.MILLISECONDS);
 

@@ -1,6 +1,7 @@
 package de.mosig.gigabitzauber.jancontrol.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.mosig.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import lombok.Builder;
 
@@ -12,6 +13,7 @@ import java.util.Set;
 @Builder
 public record Fan(
     @JsonDeserialize(using = JcJacksonConfig.DurationDeserializer.class)
+    @JsonSerialize(using = JcJacksonConfig.DurationSerializer.class)
     Duration interval,
     RpmDevice device,
     Collection<Curve> curves,

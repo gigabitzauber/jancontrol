@@ -36,6 +36,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
                 .findFirst()
                 .ifPresent(curve -> {
                     int measurement = dependant.read();
+                    lifecycle.record(dependant.getName(), measurement);
                     var targetRpm = curve.getY(measurement);
                     rpmCandidates.add(new RpmCandidate(dependant.getName(), measurement, targetRpm, targetDeviceName));
                 });
@@ -43,16 +44,15 @@ public final class SimpleCruiseAlgorithm implements Runnable {
 
         if (Thread.currentThread().isInterrupted()) {
             log.info("Cruise command got interrupted. Shutting down..");
-        } else {
+        } else if (!rpmCandidates.isEmpty()) {
             var newRpm = Collections.max(rpmCandidates);
-            var targetRpmValue = safeGetTargetRpm(newRpm);
-            fan.device().write(targetRpmValue);
-            lifecycle.record(newRpm.dependantName, newRpm.measurement);
-            log.debug(newRpm.toString());
+            var safeNewRpm = safeGetTargetRpm(newRpm);
+            fan.device().write(safeNewRpm.targetRpm);
+            log.debug(safeNewRpm.toString());
         }
     }
 
-    private int safeGetTargetRpm(RpmCandidate newRpm) {
+    private RpmCandidate safeGetTargetRpm(RpmCandidate newRpm) {
         var targetRpmValue = newRpm.targetRpm;
         if (!VALID_WRITE_RANGE.contains(targetRpmValue)) {
             log.warn("Calculated RPM value for {} exceeds safe limits.", newRpm.targetDeviceName);
@@ -69,11 +69,16 @@ public final class SimpleCruiseAlgorithm implements Runnable {
             }
         }
 
-        return targetRpmValue;
+        return new RpmCandidate(newRpm, targetRpmValue);
     }
 
-    private static record RpmCandidate(
+    public static record RpmCandidate(
         String dependantName, int measurement, int targetRpm, String targetDeviceName) implements Comparable<RpmCandidate> {
+
+        public RpmCandidate(RpmCandidate other, int targetRpmOverride) {
+            this(other.dependantName, other.measurement, targetRpmOverride, other.targetDeviceName);
+        }
+
         @Override
         public int compareTo(RpmCandidate other) {
             return this.targetRpm - other.targetRpm;

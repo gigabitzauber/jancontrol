@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.logging.LogLevel;
+import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.core.io.FileSystemResource;
 
 @SpringBootApplication
@@ -13,11 +15,13 @@ public class JanControlApplication implements CommandLineRunner {
 
     private final CruiseConfigReader configReader;
     private final CruiseCommand cruiseCommand;
+    private final LoggingSystem loggingSystem;
 
     @Autowired
-    public JanControlApplication(CruiseConfigReader configReader, CruiseCommand cruiseCommand) {
+    public JanControlApplication(CruiseConfigReader configReader, CruiseCommand cruiseCommand, LoggingSystem loggingSystem) {
         this.configReader = configReader;
         this.cruiseCommand = cruiseCommand;
+        this.loggingSystem = loggingSystem;
     }
 
     public static void main(String[] args) {
@@ -29,10 +33,14 @@ public class JanControlApplication implements CommandLineRunner {
         if (args.length == 0) {
             System.out.println("Usage: java -jar jancontrol.jar <config-file>");
             System.exit(0);
+        } else if (args.length == 2 && args[1].equals("-v")) {
+            loggingSystem.setLogLevel("de.mosig", LogLevel.DEBUG);
         }
 
         var configResource = new FileSystemResource(args[0]);
         var config = configReader.readConfig(configResource);
         cruiseCommand.execute(config);
+
+
     }
 }
