@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- It's a CLI app, so it needs to call System.exit when it's done. -->
+    <Match>
+        <Class name="de.gigabitzauber.jancontrol.JanControlApplication"/>
+        <!-- This is a constructor match -->
+        <Method name="run" params="java.lang.String[]"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+
+    <!-- We need to use LoggingSystem nevertheless. It's the Spring way of doing things. -->
+    <Match>
+        <Class name="de.gigabitzauber.jancontrol.JanControlApplication"/>
+        <!-- This is a constructor match -->
+        <Method name="&lt;init&gt;"
+                params="de.gigabitzauber.jancontrol.cruise.CruiseConfigReader, de.gigabitzauber.jancontrol.cruise.CruiseCommand, org.springframework.boot.logging.LoggingSystem"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- False positive. -->
+    <Match>
+        <Class name="de.gigabitzauber.jancontrol.domain.Fan"/>
+        <Method name="device" params=""/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+
+    <!-- False positive. -->
+    <Match>
+        <Class name="de.gigabitzauber.jancontrol.domain.Fan"/>
+        <!-- This is a constructor match -->
+        <Method name="&lt;init&gt;"
+                params="java.time.Duration, de.gigabitzauber.jancontrol.domain.RpmDevice, java.util.Collection, java.util.List"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>

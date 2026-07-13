@@ -17,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 public final class CruiseInstance implements FutureCallback<Object> {
 
     static final int INITIAL_DELAY_UPPER_BOUND_MILLIS = 666;
+    private static final Random RND = new Random();
 
     private final Fan fan;
     private final Duration interval;
@@ -37,7 +38,7 @@ public final class CruiseInstance implements FutureCallback<Object> {
     }
 
     public void schedule() {
-        var initialDelayMillis = new Random().nextInt(INITIAL_DELAY_UPPER_BOUND_MILLIS);
+        var initialDelayMillis = RND.nextInt(INITIAL_DELAY_UPPER_BOUND_MILLIS);
         var cruiseHandle = executor.scheduleAtFixedRate(
             new SimpleCruiseAlgorithm(fan, lifecycle, log),
             initialDelayMillis,

@@ -3,22 +3,73 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.gigabitzauber</groupId>
+    <parent>
+        <groupId>de.gigabitzauber</groupId>
+        <artifactId>gigabit-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
     <artifactId>jancontrol</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <name>Jancontrol</name>
+    <description>Java based Fancontrol replacement</description>
+
+    <licenses>
+        <license>
+            <name>GNU GENERAL PUBLIC LICENSE Version 3</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <url>https://github.com/gigabitzauber/jancontrol</url>
+    <inceptionYear>2026</inceptionYear>
+
+    <organization>
+        <name>Gigabitzauber</name>
+        <url>https://github.com/gigabitzauber</url>
+    </organization>
+    <scm>
+        <connection>scm:git:https://github.com/gigabitzauber/jancontrol.git</connection>
+        <developerConnection>scm:git:https://github.com/gigabitzauber/jancontrol.git</developerConnection>
+        <url>https://github.com/gigabitzauber/jancontrol</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/gigabitzauber/jancontrol/issues</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <id>gigabitzauber</id>
+            <name>Gigabitzauber</name>
+            <organization>Gigabitzauber</organization>
+            <organizationUrl>https://github.com/gigabitzauber</organizationUrl>
+            <email>gigabitzauber@posteo.de</email>
+            <timezone>Europe/Berlin</timezone>
+            <url>https://github.com/gigabitzauber</url>
+        </developer>
+    </developers>
+
     <properties>
         <java.version>25</java.version>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring.boot.version>4.1.0</spring.boot.version>
+
+        <spotbugs.plugin.version>4.10.3.0</spotbugs.plugin.version>
+        <spotbugs.version>4.10.3</spotbugs.version>
+        <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
+
+        <spring-boot.version>4.1.0</spring-boot.version>
         <equalsverifier.version>4.5</equalsverifier.version>
         <mockito-core.version>5.23.0</mockito-core.version>
         <guava.version>33.6.0-jre</guava.version>
-        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
-        <maven.surefire.plugin.version>3.6.0-M1</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.6.0-M1</maven.failsafe.plugin.version>
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.6.0-M1</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.6.0-M1</maven-failsafe-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -26,7 +77,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -67,14 +118,82 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs</artifactId>
+            <version>4.10.3</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>prepare-unit-tests</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>jacoco-site</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report</goal>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <rule>
+                                        <limits>
+                                            <limit>
+                                                <counter>LINE</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>90%</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <release>${java.version}</release>
                     <annotationProcessorPaths>
@@ -85,23 +204,22 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
+                    <!-- $argLine is 'injected' by JaCoCo and contains instructions to set up its agent -->
+                    <!--suppress UnresolvedMavenProperty -->
                     <argLine>
                         -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito-core.version}/mockito-core-${mockito-core.version}.jar
                         -Xshare:off
+                        ${argLine}
                     </argLine>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven.failsafe.plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -116,18 +234,19 @@
                     </includes>
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
+                    <!-- $argLine is 'injected' by JaCoCo and contains instructions to set up its agent -->
+                    <!--suppress UnresolvedMavenProperty -->
                     <argLine>
                         -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito-core.version}/mockito-core-${mockito-core.version}.jar
                         -Xshare:off
+                        ${argLine}
                     </argLine>
                     <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
                 <configuration>
                     <mainClass>de.gigabitzauber.jancontrol.JanControlApplication</mainClass>
                 </configuration>
@@ -138,6 +257,31 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+                    <xmlOutput>false</xmlOutput>
+                    <htmlOutput>false</htmlOutput>
+                </configuration>
+            </plugin>
+            <!-- Show active profiles during build -->
+            <plugin>
+                <artifactId>maven-help-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
