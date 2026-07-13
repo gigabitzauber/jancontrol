@@ -1,0 +1,23 @@
+package de.gigabitzauber.jancontrol.cruise;
+
+import de.gigabitzauber.jancontrol.JcLifecycle;
+import de.gigabitzauber.jancontrol.domain.CruiseConfig;
+
+import static java.util.Objects.requireNonNull;
+
+public final class CruiseCommand {
+
+    private final JcLifecycle lifecycle;
+
+    public CruiseCommand(JcLifecycle lifecycle) {
+        this.lifecycle = requireNonNull(lifecycle, "lifecycle must not be null");
+    }
+
+    public void execute(CruiseConfig config) {
+        requireNonNull(config, "config must not be null");
+
+        for (var fan : config.fans()) {
+            lifecycle.register(fan);
+        }
+    }
+}
