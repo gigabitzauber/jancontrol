@@ -85,8 +85,9 @@ jobs:
           token: ${{ secrets.JANCONTROL_RELEASE_TOKEN }}
           files: |
             target/${{ steps.release_notes.outputs.jc_name }}-*.jar
-            target/${{ steps.release_notes.outputs.jc_name }}-*.asc
+            target/${{ steps.release_notes.outputs.jc_name }}-*.jar.asc
             target/${{ steps.release_notes.outputs.jc_name }}-*.sha256
+            target/${{ steps.release_notes.outputs.jc_name }}-*.jar.sha256
           body_path: release_notes.md
           draft: false
           prerelease: false
