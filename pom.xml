@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -59,6 +58,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <!-- Make sure we can use variables like ${variable.name} in resource files. -->
+        <!-- False positive finding by IntelliJ -->
+        <!--suppress UnresolvedMavenProperty -->
+        <resource.delimiter>${*}</resource.delimiter>
+
         <spotbugs.plugin.version>4.10.3.0</spotbugs.plugin.version>
         <spotbugs.version>4.10.3</spotbugs.version>
         <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
@@ -67,6 +71,7 @@
         <equalsverifier.version>4.5</equalsverifier.version>
         <mockito-core.version>5.23.0</mockito-core.version>
         <guava.version>33.6.0-jre</guava.version>
+        <maven-resources-plugin.version>3.4.0</maven-resources-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.6.0-M1</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.6.0-M1</maven-failsafe-plugin.version>
@@ -126,8 +131,23 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven-resources-plugin.version}</version>
+                    <configuration>
+                        <propertiesEncoding>UTF-8</propertiesEncoding>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -191,6 +211,10 @@
         </pluginManagement>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
