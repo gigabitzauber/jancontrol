@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
-    <!-- It's a CLI app, so it needs to call System.exit when it's done. -->
-    <Match>
-        <Class name="de.gigabitzauber.jancontrol.JanControlApplication"/>
-        <!-- This is a constructor match -->
-        <Method name="run" params="java.lang.String[]"/>
-        <Bug pattern="DM_EXIT"/>
-    </Match>
-
     <!-- We need to use LoggingSystem nevertheless. It's the Spring way of doing things. -->
     <Match>
         <Class name="de.gigabitzauber.jancontrol.JanControlApplication"/>
