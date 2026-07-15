@@ -62,24 +62,30 @@ jobs:
           JC_NAME="jancontrol"
           echo "jc_name=$JC_NAME" >> $GITHUB_OUTPUT
           JC_HASH_FILE_NAME=${{ steps.create_hash_file.outputs.hash_file_name }}
-          echo "### Jancontrol ${JC_VERSION} Release Notes" > release_notes.md
-          echo "" >> release_notes.md
-          echo "Report bugs to [github.com/gigabitzauber/jancontrol/issues](https://github.com/gigabitzauber/jancontrol/issues)." >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Artifacts" >> release_notes.md
-          echo "- \`${JC_NAME}-${JC_VERSION}.jar\` - Executable JAR" >> release_notes.md
-          echo "- \`${JC_NAME}-${JC_VERSION}.jar.asc\` - Executable JAR's GPG signature" >> release_notes.md
-          echo "- \`${JC_NAME}-${JC_VERSION}-sources.jar\` - Source code" >> release_notes.md
-          echo "- \`${JC_NAME}-${JC_VERSION}-sources.jar.asc\` - Source code's GPG signature" >> release_notes.md
-          echo "- \`${JC_HASH_FILE_NAME}\` - SHA 256 hashes for all artifacts" >> release_notes.md
-          echo "- \`${JC_HASH_FILE_NAME}.asc\` - Hash file's GPG signature" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Verification" >> release_notes.md
-          echo "All artifacts are signed with GPG. To verify:" >> release_notes.md
-          echo "\`\`\`bash" >> release_notes.md
-          echo "gpg --verify <artifact>.asc" >> release_notes.md
-          echo "sha256sum -c ${JC_HASH_FILE_NAME}" >> release_notes.md
-          echo "\`\`\`" >> release_notes.md
+          RELEASE_NOTES_FILE="release_notes.md"
+          echo "### Jancontrol ${JC_VERSION} Release Notes" > "${RELEASE_NOTES_FILE}"
+          echo "" >> "${RELEASE_NOTES_FILE}"
+          echo "Report bugs to [github.com/gigabitzauber/jancontrol/issues](https://github.com/gigabitzauber/jancontrol/issues)." >> "${RELEASE_NOTES_FILE}"
+          echo "" >> "${RELEASE_NOTES_FILE}"
+          echo "### Artifacts" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_NAME}-${JC_VERSION}.jar\` - Executable JAR" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_NAME}-${JC_VERSION}.jar.asc\` - Executable JAR's GPG signature" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_NAME}-${JC_VERSION}-sources.jar\` - Source code" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_NAME}-${JC_VERSION}-sources.jar.asc\` - Source code's GPG signature" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_HASH_FILE_NAME}\` - SHA 256 hashes for all artifacts" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_HASH_FILE_NAME}.asc\` - Hash file's GPG signature" >> "${RELEASE_NOTES_FILE}"
+          echo "" >> "${RELEASE_NOTES_FILE}"
+          echo "### Verification" >> "${RELEASE_NOTES_FILE}"
+          echo "All artifacts are signed with GPG. To verify:" >> "${RELEASE_NOTES_FILE}"
+          echo "\`\`\`bash" >> "${RELEASE_NOTES_FILE}"
+          echo "gpg --verify <artifact>.asc" >> "${RELEASE_NOTES_FILE}"
+          echo "sha256sum -c ${JC_HASH_FILE_NAME}" >> "${RELEASE_NOTES_FILE}"
+          echo "\`\`\`" >> "${RELEASE_NOTES_FILE}"
+          echo "" >> "${RELEASE_NOTES_FILE}"
+          echo "### Run" >> "${RELEASE_NOTES_FILE}"
+          echo "\`\`\`bash" >> "${RELEASE_NOTES_FILE}"
+          echo "java -jar jancontrol-${JC_VERSION}.jar <config_file> -v" >> "${RELEASE_NOTES_FILE}"
+          echo "\`\`\`" >> "${RELEASE_NOTES_FILE}"
 
       - name: Create GitHub Release with artifacts
         uses: softprops/action-gh-release@v3
