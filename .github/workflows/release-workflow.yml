@@ -24,6 +24,8 @@ jobs:
         env:
           SIGN_KEY: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY }}
           SIGN_KEY_PASS: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_PASSPHRASE }}
+          # Fix warning about using sun.misc.Unsafe caused by Lombok
+          MAVEN_OPTS: "--sun-misc-unsafe-memory-access=allow"
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v7
