@@ -16,7 +16,7 @@ import java.util.Arrays;
 @SpringBootApplication
 public class JanControlApplication implements CommandLineRunner {
 
-    private static final String MY_VER = "0.2.2";
+    private static final String MY_VER = "0.2.3-SNAPSHOT";
     private static final String MY_PACKAGE = "de.gigabitzauber.jancontrol";
     private static final String VERBOSE_FLAG = "-v";
 
