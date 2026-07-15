@@ -32,7 +32,7 @@ calc_next_version() {
 bump_version() {
   mvn versions:set -DnewVersion="$1" -DgenerateBackupPoms=false
   # Update version in README.md
-  sed -i -E "s|java -jar jancontrol-[^[:space:]]+\.jar <config-file>|java -jar jancontrol-$1.jar <config-file>|" README.md
+  sed -i -E "s|jancontrol-[^[:space:]]+\.jar|jancontrol-$1.jar|" README.md
   # Update version in JanControlApplication.java
   sed -i -E "s/(private static final String MY_VER = \")[^\"]+(\";)/\1$1\2/" src/main/java/de/gigabitzauber/jancontrol/JanControlApplication.java
 
