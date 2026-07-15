@@ -1,5 +1,7 @@
-# This is a real word example of a configuration file for controlling multiple fans based on multiple temperature inputs. The configuration is designed to control a CPU fan based on CPU temp and a case fan based on the temperatures of the CPU, GPU, and case.
-# The hardware this example was used on is an ASUS motherboard with nct6775 sensor chip, hosting an AMD Ryzen 7 7800X3D CPU and an AMD Radeon RX 7900 XT GPU in a case with multiple 120mm Noctua fans.
+# This is a real word example of a configuration file for controlling multiple fans based on multiple temperature inputs.
+# The configuration is designed to control a CPU fan based on CPU temp and a case fan based on the temperatures of the CPU, GPU, and case.
+# The hardware this example was used on is an ASUS motherboard with nct6775 sensor chip, hosting an
+# AMD Ryzen 7 7800X3D CPU and an AMD Radeon RX 7900 XT GPU in a case with multiple 120mm Noctua fans.
 fans:
   - device:
       name: "CPU Fan"

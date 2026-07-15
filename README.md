@@ -5,17 +5,28 @@ that supports a more powerful and convenient config DSL.
 
 It also supports more than one input per fan.
 
-**WARNING:** Use at your own risk! This is an alpha prototype. It may damage things, because it writes directly to device
-files in /sys. You have been warned!
+**WARNING:** Use at your own risk! The app may damage things, because it writes directly to device files in /sys. You
+have been warned!
 
 ## Home
 
-[github/gigabitzauber/jancontrol](https://github.com/gigabitzauber/jancontrol) - [gigabitzauber.de](https://gigabitzauber.de)
+[github.com/gigabitzauber/jancontrol](https://github.com/gigabitzauber/jancontrol) - [gigabitzauber.de](https://gigabitzauber.de)
 
 ## Build
 
+The sources come with [Maven Wrapper](https://maven.apache.org/tools/wrapper) attached. If you don't have Maven
+installed, you can use the wrapper to build the project.
+
+Linux/Mac:
+
 ```bash
-mvn -U clean package
+./mvnw -U clean package
+```
+
+Windows:
+
+```bash
+mvnw.cmd -U clean package
 ```
 
 Please note that if you get a warning like this:

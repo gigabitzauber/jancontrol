@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-# Usage: bump_version <version> <part>
+# Usage: calc_next_version <version> <part>
 # part: major, minor, or patch
-bump_version() {
+calc_next_version() {
     local version=$1
     local part=$2
 
@@ -28,6 +28,17 @@ bump_version() {
 
     echo "${parts[0]}.${parts[1]}.${parts[2]}"
 }
+
+bump_version() {
+  mvn versions:set -DnewVersion="$1" -DgenerateBackupPoms=false
+  # Update README.md
+  sed -i -E "s|java -jar jancontrol-[^[:space:]]+\.jar <config_file>|java -jar jancontrol-$1.jar <config_file>|" README.md
+
+  git add pom.xml
+  git add README.md
+  git commit -m "$2"
+}
+
 
 if [[ -v GITHUB_ACTIONS ]]; then
   echo "This script is supposed to be run locally. Exiting."
@@ -60,11 +71,10 @@ fi
 
 # Remove SNAPSHOT suffix if present
 RELEASE_VERSION=${PROJECT_VERSION%-SNAPSHOT}
-mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
 
 echo "Pushing release ${RELEASE_VERSION}.."
-git add pom.xml
-git commit -m "Release $RELEASE_VERSION"
+bump_version "$RELEASE_VERSION" "Release $RELEASE_VERSION"
+
 git checkout main
 git merge $orig_branch
 git tag -a "v$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
@@ -72,16 +82,14 @@ git push origin main --follow-tags
 
 git checkout $orig_branch
 if [ "$orig_branch" == "develop" ]; then
-  NEXT_VERSION="$(bump_version $RELEASE_VERSION minor)-SNAPSHOT"
+  NEXT_VERSION="$(calc_next_version $RELEASE_VERSION minor)-SNAPSHOT"
 elif [ "$orig_branch" == "patch" ]; then
-  NEXT_VERSION="$(bump_version $RELEASE_VERSION patch)-SNAPSHOT"
+  NEXT_VERSION="$(calc_next_version $RELEASE_VERSION patch)-SNAPSHOT"
 else
   echo "Unexpected branch '$orig_branch'. Exiting."
   exit 1
 fi
 echo "Pushing new snapshot version ${NEXT_VERSION}.."
 
-mvn versions:set -DnewVersion="${NEXT_VERSION}" -DgenerateBackupPoms=false
-git add pom.xml
-git commit -m "Next snapshot: ${NEXT_VERSION}"
+bump_version "$NEXT_VERSION" "Next snapshot: ${NEXT_VERSION}"
 git push origin $orig_branch
