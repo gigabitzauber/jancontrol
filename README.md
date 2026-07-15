@@ -44,7 +44,7 @@ See [Lombok Issues](https://github.com/projectlombok/lombok/issues/3852#issuecom
 ## Run
 
 ```bash
-java -jar jancontrol-0.0.1-SNAPSHOT.jar <config_file>
+java -jar jancontrol-0.2.0.jar <config_file>
 ```
 
 ## Debug mode / Verbose output
@@ -52,7 +52,7 @@ java -jar jancontrol-0.0.1-SNAPSHOT.jar <config_file>
 The command line switch `-v` activates verbose output.
 
 ```bash
-java -jar jancontrol-0.0.1-SNAPSHOT.jar <config_file> -v
+java -jar jancontrol-0.2.0.jar <config_file> -v
 ```
 
 ## How it works
