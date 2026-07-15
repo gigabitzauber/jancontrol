@@ -1,0 +1,66 @@
+# This is a real word example of a configuration file for controlling multiple fans based on multiple temperature inputs. The configuration is designed to control a CPU fan based on CPU temp and a case fan based on the temperatures of the CPU, GPU, and case.
+# The hardware this example was used on is an ASUS motherboard with nct6775 sensor chip, hosting an AMD Ryzen 7 7800X3D CPU and an AMD Radeon RX 7900 XT GPU in a case with multiple 120mm Noctua fans.
+fans:
+  - device:
+      name: "CPU Fan"
+      sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
+    dependsOn:
+      - name: "CPU Temp"
+        sysPath: "/sys/devices/platform/asus-ec-sensors/hwmon/hwmon7/temp2_input"
+    curves:
+      - ref: "CPU Temp"
+        points:
+          - temp: 46
+            rpm: 20
+          - temp: 60
+            rpm: 33
+          - temp: 78
+            rpm: 75
+          - temp: 95
+            rpm: 95
+    interval: "20s"
+  - device:
+      name: "Case Fan"
+      sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm1"
+    dependsOn:
+      - name: "Case Temp"
+        sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp1_input"
+      - name: "GPU Temp"
+        sysPath: "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon/hwmon3/temp1_input"
+      - name: "CPU Temp"
+        sysPath: "/sys/devices/platform/asus-ec-sensors/hwmon/hwmon7/temp2_input"
+    curves:
+      - ref: "Case Temp"
+        points:
+          - temp: 38
+            rpm: 25
+          - temp: 46
+            rpm: 66
+          - temp: 49
+            rpm: 75
+          - temp: 52
+            rpm: 80
+          - temp: 60
+            rpm: 95
+      - ref: "GPU Temp"
+        type: "linear"
+        points:
+          - temp: 48
+            rpm: 25
+          - temp: 69
+            rpm: 66
+          - temp: 73
+            rpm: 75
+          - temp: 80
+            rpm: 90
+      - ref: "CPU Temp"
+        points:
+          - temp: 46
+            rpm: 20
+          - temp: 75
+            rpm: 50
+          - temp: 84
+            rpm: 50
+          - temp: 89
+            rpm: 60
+    interval: "10s"

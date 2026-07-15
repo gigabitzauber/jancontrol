@@ -1,17 +1,21 @@
 # JanControl
 
 Prototype to replace [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) with a tool
-that supports a more convenient config DSL.
+that supports a more powerful and convenient config DSL.
 
 It also supports more than one input per fan.
 
-*WARNING:* Use at your own risk! This is an alpha prototype. It may damage things, because it writes directly to device
+**WARNING:** Use at your own risk! This is an alpha prototype. It may damage things, because it writes directly to device
 files in /sys. You have been warned!
+
+## Home
+
+[github/gigabitzauber/jancontrol](https://github.com/gigabitzauber/jancontrol) - [gigabitzauber.de](https://gigabitzauber.de)
 
 ## Build
 
 ```bash
-mvn -U -DskipTests package
+mvn -U clean package
 ```
 
 Please note that if you get a warning like this:
@@ -31,6 +35,22 @@ See [Lombok Issues](https://github.com/projectlombok/lombok/issues/3852#issuecom
 ```bash
 java -jar jancontrol-0.0.1-SNAPSHOT.jar <config_file>
 ```
+
+## Debug mode / Verbose output
+
+The command line switch `-v` activates verbose output.
+
+```bash
+java -jar jancontrol-0.0.1-SNAPSHOT.jar <config_file> -v
+```
+
+## How it works
+
+See [docs/how_to_use.md](docs/how_to_use.md) for details on how configuration works.
+
+## Examples
+
+See `docs/examples` for example configuration files.
 
 ## Note on chosen technology
 
