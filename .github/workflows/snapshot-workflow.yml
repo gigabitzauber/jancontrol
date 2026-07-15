@@ -12,9 +12,9 @@ jobs:
     steps:
       - run: echo "This job was automatically triggered by a ${{ github.event_name }} event."
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-package: 'jdk'
@@ -24,3 +24,6 @@ jobs:
       - name: Build & Test
         run: |
           mvn -B -U clean package
+        env:
+          # Fix warning about using sun.misc.Unsafe caused by Lombok
+          MAVEN_OPTS: "--sun-misc-unsafe-memory-access=allow"

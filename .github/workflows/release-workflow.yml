@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-package: 'jdk'
@@ -26,7 +26,7 @@ jobs:
           SIGN_KEY_PASS: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_PASSPHRASE }}
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_PASSPHRASE }}
