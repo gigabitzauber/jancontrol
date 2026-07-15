@@ -84,7 +84,7 @@ jobs:
           echo "" >> "${RELEASE_NOTES_FILE}"
           echo "### Run" >> "${RELEASE_NOTES_FILE}"
           echo "\`\`\`bash" >> "${RELEASE_NOTES_FILE}"
-          echo "java -jar jancontrol-${JC_VERSION}.jar <config_file> -v" >> "${RELEASE_NOTES_FILE}"
+          echo "java -jar jancontrol-${JC_VERSION}.jar <config_file>" >> "${RELEASE_NOTES_FILE}"
           echo "\`\`\`" >> "${RELEASE_NOTES_FILE}"
 
       - name: Create GitHub Release with artifacts

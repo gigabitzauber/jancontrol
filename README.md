@@ -47,7 +47,7 @@ See [Lombok Issues](https://github.com/projectlombok/lombok/issues/3852#issuecom
 java -jar jancontrol-0.2.2-SNAPSHOT.jar <config_file>
 ```
 
-## Debug mode / Verbose output
+### Debug mode / Verbose output
 
 The command line switch `-v` activates verbose output.
 
@@ -55,7 +55,7 @@ The command line switch `-v` activates verbose output.
 java -jar jancontrol-0.2.2-SNAPSHOT.jar <config_file> -v
 ```
 
-## How it works
+## Configure
 
 See [docs/how_to_use.md](docs/how_to_use.md) for details on how configuration works.
 
