@@ -1,12 +1,12 @@
 # JanControl
 
-Prototype to replace [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) with a tool
-that supports a more powerful and convenient config DSL.
+A replacement for [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) with an app that
+supports a more convenient and powerful config DSL.
 
 It also supports more than one input per fan.
 
-**WARNING:** Use at your own risk! The app may damage things, because it writes directly to device files in /sys. You
-have been warned!
+**WARNING:** Make sure, you are using proper values in the config! There are basic validations in place, but it is not
+yet foolproof. In particular curve integrity is currently not checked at all. You have been warned!
 
 ## Home
 
