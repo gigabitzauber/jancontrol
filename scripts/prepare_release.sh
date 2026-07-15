@@ -32,7 +32,7 @@ calc_next_version() {
 bump_version() {
   mvn versions:set -DnewVersion="$1" -DgenerateBackupPoms=false
   # Update README.md
-  sed -i -E "s|java -jar jancontrol-[^[:space:]]+\.jar <config_file>|java -jar jancontrol-$1.jar <config_file>|" README.md
+  sed -i -E "s|java -jar jancontrol-[^[:space:]]+\.jar <config-file>|java -jar jancontrol-$1.jar <config-file>|" README.md
 
   git add pom.xml
   git add README.md

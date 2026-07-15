@@ -179,7 +179,7 @@ class JanControlIT {
     private void startApp(Path configFilePath) {
         testExecutor.submit(() -> ctx.set(new SpringApplicationBuilder(JanControlApplication.class)
             .web(WebApplicationType.NONE)
-            .run(configFilePath.toString(), "-v")));
+            .run("-v", configFilePath.toString())));
     }
 
     private Path createConfig() throws Exception {

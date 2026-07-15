@@ -11,10 +11,14 @@ import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.core.io.FileSystemResource;
 
+import java.util.Arrays;
+
 @SpringBootApplication
 public class JanControlApplication implements CommandLineRunner {
 
+    private static final String MY_VER = "0.2.2-SNAPSHOT";
     private static final String MY_PACKAGE = "de.gigabitzauber.jancontrol";
+    private static final String VERBOSE_FLAG = "-v";
 
     private final CruiseConfigReader configReader;
     private final CruiseCommand cruiseCommand;
@@ -28,27 +32,49 @@ public class JanControlApplication implements CommandLineRunner {
     }
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            System.out.println("Usage: java -jar jancontrol.jar <config-file>");
+        if (flagActive(args, "--version")) {
+            printVersion();
             System.exit(0);
         }
-        boolean startupInfoFlag = verboseEnabled(args);
+
+        if (args.length == 0 || flagActive(args, "-h") || flagActive(args, "--help") || noConfigFileSpecified(args)) {
+            printVersion();
+            System.err.println();
+            System.err.println("Usage: java -jar jancontrol.jar [options] <config-file>");
+            System.err.println();
+            System.err.println("Options:");
+            System.err.println("-h | --help ... show this help");
+            System.err.println("-v ... activate verbose mode");
+            System.err.println("--version ... show version");
+            System.exit(0);
+        }
+
+        boolean verboseFlag = flagActive(args, "-v");
         new SpringApplicationBuilder(JanControlApplication.class)
-            .logStartupInfo(startupInfoFlag)
+            .logStartupInfo(verboseFlag)
             .run(args);
     }
 
-    private static boolean verboseEnabled(String[] args) {
-        return args.length == 2 && args[1].equals("-v");
+    private static void printVersion() {
+        System.err.println("jancontrol v" + MY_VER);
+    }
+
+    private static boolean noConfigFileSpecified(String[] args) {
+        return args.length == 0 || args[args.length - 1].startsWith("-");
+    }
+
+    private static boolean flagActive(String[] args, String flag) {
+        return Arrays.asList(args).contains(flag);
     }
 
     @Override
     public void run(String @NonNull ... args) {
-        if (verboseEnabled(args)) {
+        if (flagActive(args, VERBOSE_FLAG)) {
             loggingSystem.setLogLevel(MY_PACKAGE, LogLevel.DEBUG);
         }
 
-        var configResource = new FileSystemResource(args[0]);
+        var rawConfigFilePath = args[args.length - 1];
+        var configResource = new FileSystemResource(rawConfigFilePath);
         var config = configReader.readConfig(configResource);
         cruiseCommand.execute(config);
     }
