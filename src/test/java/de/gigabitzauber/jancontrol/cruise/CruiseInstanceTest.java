@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Modifier;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +25,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,50 +43,61 @@ class CruiseInstanceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, executorMock, logMock);
+        underTest = CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, logMock);
+    }
+
+    @Test
+    void must_be_tool_class() {
+        var modifiers = CruiseInstance.class.getModifiers();
+
+        assertThat(Modifier.isPublic(modifiers)).isTrue();
+        assertThat(Modifier.isFinal(modifiers)).isTrue();
+
+        var constructors = CruiseInstance.class.getDeclaredConstructors();
+        assertThat(constructors).hasSize(1);
+        assertThat(Modifier.isPrivate(constructors[0].getModifiers())).isTrue();
     }
 
     @Test
     void test_does_not_support_null_fan() {
-        assertThatThrownBy(() -> CruiseInstance.create(null, lifecycleMock, executorMock, logMock))
+        assertThatThrownBy(() -> CruiseInstance.create(null, lifecycleMock, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("fan must not be null");
     }
 
     @Test
     void test_does_not_support_null_lifecycle() {
-        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, null, executorMock, logMock))
+        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, null, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("lifecycle must not be null");
     }
 
     @Test
-    void test_does_not_support_null_executor() {
-        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, null, logMock))
+    void test_schedule_does_not_support_null_executor() {
+        assertThatThrownBy(() -> underTest.schedule(null, lifecycleMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("executor must not be null");
     }
 
     @Test
-    void test_does_not_support_null_logger() {
-        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, executorMock, null))
+    void test_schedule_does_not_support_null_callback() {
+        assertThatThrownBy(() -> underTest.schedule(executorMock, null))
             .isInstanceOf(NullPointerException.class)
-            .hasMessage("log must not be null");
+            .hasMessage("callback must not be null");
     }
 
     @Test
-    void onSuccess_does_nothing() {
-        var objMock = mock(Object.class);
-
-        underTest.onSuccess(objMock);
-        verifyNoInteractions(objMock, lifecycleMock, executorMock, logMock);
+    void test_does_not_support_null_logger() {
+        assertThatThrownBy(() -> CruiseInstance.create(FAN_EXAMPLE, lifecycleMock, null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("log must not be null");
     }
 
     @Test
     void test_schedule_schedules_simpleAlgo() {
         simulateFuture();
 
-        underTest.schedule();
+        underTest.schedule(executorMock, lifecycleMock);
 
         var initialDelayCaptor = ArgumentCaptor.forClass(long.class);
         verify(executorMock).scheduleAtFixedRate(
@@ -104,8 +115,8 @@ class CruiseInstanceTest {
         var scheduledFuture = simulateFuture();
 
         try (var staticFuturesMock = mockStatic(Futures.class)) {
-            underTest.schedule();
-            staticFuturesMock.verify(() -> Futures.addCallback(scheduledFuture, underTest, executorMock));
+            underTest.schedule(executorMock, lifecycleMock);
+            staticFuturesMock.verify(() -> Futures.addCallback(scheduledFuture, lifecycleMock, executorMock));
         }
     }
 

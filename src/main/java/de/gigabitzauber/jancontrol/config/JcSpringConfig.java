@@ -20,7 +20,7 @@ public class JcSpringConfig {
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public ListeningScheduledExecutorService fanCruiseExecutor() {
-        return MoreExecutors.listeningDecorator(Executors.newSingleThreadScheduledExecutor());
+        return MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(10));
     }
 
     @Bean

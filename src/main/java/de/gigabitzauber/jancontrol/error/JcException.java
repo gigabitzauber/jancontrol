@@ -2,7 +2,7 @@ package de.gigabitzauber.jancontrol.error;
 
 import java.util.Objects;
 
-public final class JcException extends RuntimeException {
+public class JcException extends RuntimeException {
     public JcException() {
         super("Unexpected error");
     }

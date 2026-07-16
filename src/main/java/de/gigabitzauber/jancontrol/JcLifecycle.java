@@ -1,10 +1,15 @@
 package de.gigabitzauber.jancontrol;
 
+import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
+import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.domain.Fan;
-import de.gigabitzauber.jancontrol.domain.RwSysFile;
+import de.gigabitzauber.jancontrol.domain.FanModes;
+import de.gigabitzauber.jancontrol.domain.RegisteredFan;
 import de.gigabitzauber.jancontrol.error.JcException;
+import de.gigabitzauber.jancontrol.error.JcSchedulableException;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.springframework.context.Lifecycle;
 
@@ -14,9 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class JcLifecycle implements Lifecycle {
-    static final String FAN_MODE_MANUAL = "1";
-
+public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     private final ListeningScheduledExecutorService fanCruiseExecutor;
     private final Logger log;
 
@@ -56,8 +59,8 @@ public class JcLifecycle implements Lifecycle {
 
     private void restoreOldFanConfig() {
         for (var registeredFan : this.registeredFans) {
-            registeredFan.fan.device().write(registeredFan.origRpm);
-            registeredFan.fanModeDevice.writeRaw(registeredFan.origFanMode);
+            registeredFan.fan().device().write(registeredFan.origRpmPercent());
+            registeredFan.fan().setMode(registeredFan.origMode());
         }
     }
 
@@ -74,16 +77,13 @@ public class JcLifecycle implements Lifecycle {
     }
 
     public void register(Fan fan) {
-        String fanModeFileRawPath = fan.device().getSysPath() + "_enable";
-        var fanModeDevice = new RwSysFile(fanModeFileRawPath);
-        var origFanMode = fanModeDevice.readRaw().strip();
-        fanModeDevice.writeRaw(FAN_MODE_MANUAL);
         var origRpm = fan.device().read();
 
-        var regFan = new RegisteredFan(fan, origRpm, fanModeDevice, origFanMode);
+        var regFan = new RegisteredFan(fan, origRpm, fan.getCurrentMode());
         registeredFans.add(regFan);
 
-        CruiseInstance.create(fan, this, fanCruiseExecutor, log).schedule();
+        CruiseInstance.create(fan, this, log).schedule(fanCruiseExecutor, this);
+        ModeEnforcer.create(fan, FanModes.MANUAL).schedule(fanCruiseExecutor, this);
     }
 
     public synchronized void record(String dependantName, int measurement) {
@@ -93,7 +93,17 @@ public class JcLifecycle implements Lifecycle {
         });
     }
 
-    private static record RegisteredFan(Fan fan, int origRpm, RwSysFile fanModeDevice, String origFanMode) {
+    @Override
+    public void onSuccess(Object result) {
 
+    }
+
+    @Override
+    public void onFailure(@NonNull Throwable t) {
+        log.error("Encountered unexpected error", t);
+
+        if (t instanceof JcSchedulableException e) {
+            e.getParent().schedule(fanCruiseExecutor, this);
+        }
     }
 }

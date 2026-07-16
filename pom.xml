@@ -282,30 +282,9 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
-                    <xmlOutput>false</xmlOutput>
-                    <htmlOutput>false</htmlOutput>
-                </configuration>
-            </plugin>
             <!-- Show active profiles during build -->
             <plugin>
                 <artifactId>maven-help-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
             <!-- We do not need Javadoc for now -->
             <plugin>
@@ -322,4 +301,41 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>jc-full</id>
+            <activation>
+                <property>
+                    <name>!jc.quick</name>
+                </property>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+                            <xmlOutput>false</xmlOutput>
+                            <htmlOutput>false</htmlOutput>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

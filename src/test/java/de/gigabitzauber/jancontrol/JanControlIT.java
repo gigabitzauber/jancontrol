@@ -7,6 +7,7 @@ import de.gigabitzauber.jancontrol.domain.Curve;
 import de.gigabitzauber.jancontrol.domain.CurvePoint;
 import de.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.gigabitzauber.jancontrol.domain.Fan;
+import de.gigabitzauber.jancontrol.domain.FanModes;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import org.assertj.core.api.Assertions;
@@ -161,6 +162,29 @@ class JanControlIT {
         assertOutput(output, "Highest measurement for tempDeviceC: 72");
     }
 
+    @Test
+    void when_mode_file_is_altered_then_change_it_back(CapturedOutput output) throws Exception {
+        var configFilePath = createConfig();
+        startApp(configFilePath);
+
+        write(tempDeviceFilePathA, "40000");
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 25, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+
+        write(rpmDeviceModeFilePathA, FanModes.SMART_FAN_IV.rawValue());
+        assertOutput(output, "Encountered external change of fan mode for " + RPM_DEVICE_NAME_A + ". Enforcing mode " + FanModes.MANUAL);
+        assertFileContent(rpmDeviceModeFilePathA, FanModes.MANUAL.rawValue());
+
+        write(tempDeviceFilePathA, "50000");
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+    }
+
+    private void assertFileContent(Path filePath, String expectedContent) {
+        await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
+            .untilAsserted(() -> assertThat(filePath).content().isEqualTo(expectedContent));
+    }
+
     private void assertAction(CapturedOutput output, SimpleCruiseAlgorithm.RpmCandidate expectedAction) {
         assertOutput(output, expectedAction.toString());
     }
@@ -262,7 +286,8 @@ class JanControlIT {
             Files.writeString(filePath, value,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE);
+                StandardOpenOption.WRITE,
+                StandardOpenOption.SYNC);
         } catch (IOException e) {
             Assertions.fail("Could not write to test data file", e);
         }

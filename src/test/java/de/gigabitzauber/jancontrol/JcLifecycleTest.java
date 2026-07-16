@@ -2,6 +2,7 @@ package de.gigabitzauber.jancontrol;
 
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
+import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
@@ -96,7 +97,7 @@ class JcLifecycleTest {
     }
 
     @Test
-    void should_restore_old_values_when_shutting_down() throws Exception {
+    void should_restore_old_fan_settings_when_shutting_down() throws Exception {
         var targetDeviceRpmFile = tempDir.resolve("target_test_device_rpm_file");
         var oldRpm = "100";
         Files.writeString(targetDeviceRpmFile, oldRpm, CREATE_NEW, WRITE);
@@ -106,13 +107,13 @@ class JcLifecycleTest {
         Files.writeString(targetDeviceModeFile, oldMode, CREATE_NEW, WRITE);
         var fanExample = Fan.builder().device(targetDevice).build();
 
-        try (var staticCruiseMock = mockStatic(CruiseInstance.class)) {
+        try (var staticCruiseMock = mockStatic(CruiseInstance.class); var staticEnforcerMock = mockStatic(ModeEnforcer.class)) {
             var cruiseMock = mock(CruiseInstance.class);
-            staticCruiseMock.when(() -> CruiseInstance.create(any(), any(), any(), any())).thenReturn(cruiseMock);
+            staticCruiseMock.when(() -> CruiseInstance.create(any(), any(), any())).thenReturn(cruiseMock);
+            var enforcerMock = mock(ModeEnforcer.class);
+            staticEnforcerMock.when(() -> ModeEnforcer.create(any(), any())).thenReturn(enforcerMock);
             underTest.register(fanExample);
-
         }
-        assertThat(Files.readString(targetDeviceModeFile)).isEqualTo(JcLifecycle.FAN_MODE_MANUAL);
 
         simulateSuccessfulExecutorTermination();
         underTest.stop();
