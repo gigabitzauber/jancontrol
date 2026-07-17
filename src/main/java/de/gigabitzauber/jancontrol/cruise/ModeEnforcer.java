@@ -14,13 +14,17 @@ public final class ModeEnforcer extends JcSchedulable {
     static final Duration POLL_INTERVAL = Duration.ofMillis(555);
 
     private ModeEnforcer(Fan fan, FanMode modeToEnforce, Logger log) {
-        super(() -> {
-            var currentMode = fan.getCurrentMode();
-            if (currentMode != modeToEnforce) {
-                log.warn("Encountered external change of fan mode for {}. Enforcing mode {}", fan.device().getName(), modeToEnforce);
-                fan.setMode(modeToEnforce);
-            }
-        }, INITIAL_DELAY, POLL_INTERVAL);
+        super(
+            () -> {
+                var currentMode = fan.getCurrentMode();
+                if (currentMode != modeToEnforce) {
+                    log.info("Encountered external change of fan mode for {}. Enforcing mode {}", fan.device().getName(), modeToEnforce);
+                    fan.setMode(modeToEnforce);
+                }
+            },
+            "mode enforcer",
+            INITIAL_DELAY,
+            POLL_INTERVAL);
     }
 
     public static ModeEnforcer create(Fan fan, FanMode modeToEnforce, Logger log) {

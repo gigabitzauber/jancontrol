@@ -96,10 +96,11 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
 
     @Override
     public void onFailure(@NonNull Throwable t) {
-        log.error("Encountered unexpected error", t);
-
         if (t instanceof JcSchedulableException e) {
             e.getParent().schedule(fanCruiseExecutor, this);
+            log.error(e.getMessage(), e);
+        } else {
+            log.error("Encountered unexpected error", t);
         }
     }
 }

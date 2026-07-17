@@ -14,13 +14,15 @@ import static java.util.Objects.requireNonNull;
 public abstract class JcSchedulable {
 
     protected final RandomGenerator rnd = RandomGenerator.getDefault();
-    
-    private final Runnable routine;
+
+    private final Runnable op;
+    private final String opName;
     private final Duration initialDelay;
     private final Duration interval;
 
-    protected JcSchedulable(Runnable routine, Duration initialMaxDelay, Duration interval) {
-        this.routine = routine;
+    protected JcSchedulable(Runnable op, String opName, Duration initialMaxDelay, Duration interval) {
+        this.op = op;
+        this.opName = opName;
         this.initialDelay = initialMaxDelay;
         this.interval = interval;
     }
@@ -33,9 +35,9 @@ public abstract class JcSchedulable {
         var future = executor.scheduleAtFixedRate(
             () -> {
                 try {
-                    routine.run();
+                    op.run();
                 } catch (Exception e) {
-                    throw new JcSchedulableException("Scheduled routine ran into error", this, e);
+                    throw new JcSchedulableException(this.opName + " ran into error", this, e);
                 }
             },
             initialDelayMillis,

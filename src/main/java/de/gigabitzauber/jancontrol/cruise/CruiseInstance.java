@@ -13,7 +13,11 @@ public final class CruiseInstance extends JcSchedulable {
     static final Duration INITIAL_MAX_DELAY = Duration.ofMillis(666);
 
     private CruiseInstance(Fan fan, JcLifecycle lifecycle, Logger log) {
-        super(new SimpleCruiseAlgorithm(fan, lifecycle, log), INITIAL_MAX_DELAY, fan.interval());
+        super(
+            new SimpleCruiseAlgorithm(fan, lifecycle, log),
+            "fan cruise",
+            INITIAL_MAX_DELAY,
+            fan.interval());
     }
 
     public static CruiseInstance create(Fan fan, JcLifecycle lifecycle, Logger log) {
