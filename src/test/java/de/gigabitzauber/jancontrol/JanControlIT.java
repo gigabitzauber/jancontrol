@@ -160,6 +160,8 @@ class JanControlIT {
         assertOutput(output, "Highest measurement for tempDeviceA: 70");
         assertOutput(output, "Highest measurement for tempDeviceB: 71");
         assertOutput(output, "Highest measurement for tempDeviceC: 72");
+
+        assertNotInFullOutput(output, "Encountered external change of fan mode");
     }
 
     @Test
@@ -175,6 +177,24 @@ class JanControlIT {
         assertOutput(output, "Encountered external change of fan mode for " + RPM_DEVICE_NAME_A + ". Enforcing mode " + FanModes.MANUAL);
         assertFileContent(rpmDeviceModeFilePathA, FanModes.MANUAL.rawValue());
 
+        write(tempDeviceFilePathA, "50000");
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+    }
+
+    @Test
+    void when_cruise_fails_then_it_is_rescheduled(CapturedOutput output) throws Exception {
+        var configFilePath = createConfig();
+        startApp(configFilePath);
+
+        write(tempDeviceFilePathA, "40000");
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 25, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+
+        Files.delete(rpmDeviceFilePathA);
+        assertOutput(output, "Path does not exist: " + rpmDeviceFilePathA);
+
+        write(rpmDeviceFilePathA, "61");
         write(tempDeviceFilePathA, "50000");
         expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
@@ -200,6 +220,11 @@ class JanControlIT {
             });
     }
 
+    private void assertNotInFullOutput(CapturedOutput output, String expectedOutput) {
+        await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
+            .untilAsserted(() -> assertThat(output.getAll()).doesNotContain(expectedOutput));
+    }
+
     private void startApp(Path configFilePath) {
         testExecutor.submit(() -> ctx.set(new SpringApplicationBuilder(JanControlApplication.class)
             .web(WebApplicationType.NONE)
@@ -209,13 +234,13 @@ class JanControlIT {
     private Path createConfig() throws Exception {
         var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString());
         write(rpmDeviceFilePathA, "100");
-        write(rpmDeviceModeFilePathA, "5");
+        write(rpmDeviceModeFilePathA, FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
         write(tempDeviceFilePathA, "30000");
 
         var rpmDeviceB = new RpmDevice(RPM_DEVICE_NAME_B, rpmDeviceFilePathB.toString());
         write(rpmDeviceFilePathB, "100");
-        write(rpmDeviceModeFilePathB, "5");
+        write(rpmDeviceModeFilePathB, FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceB = new TemperatureDevice(TEMP_DEVICE_NAME_B, tempDeviceFilePathB.toString());
         write(tempDeviceFilePathB, "10000");
 

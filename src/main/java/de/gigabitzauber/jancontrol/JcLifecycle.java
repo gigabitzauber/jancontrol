@@ -58,10 +58,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     }
 
     private void restoreOldFanConfig() {
-        for (var registeredFan : this.registeredFans) {
-            registeredFan.fan().device().write(registeredFan.origRpmPercent());
-            registeredFan.fan().setMode(registeredFan.origMode());
-        }
+        registeredFans.forEach(RegisteredFan::restoreOrigSettings);
     }
 
     private void printStats() {
@@ -77,13 +74,12 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     }
 
     public void register(Fan fan) {
-        var origRpm = fan.device().read();
+        registeredFans.add(new RegisteredFan(fan));
 
-        var regFan = new RegisteredFan(fan, origRpm, fan.getCurrentMode());
-        registeredFans.add(regFan);
+        fan.setMode(FanModes.MANUAL);
 
         CruiseInstance.create(fan, this, log).schedule(fanCruiseExecutor, this);
-        ModeEnforcer.create(fan, FanModes.MANUAL).schedule(fanCruiseExecutor, this);
+        ModeEnforcer.create(fan, FanModes.MANUAL, log).schedule(fanCruiseExecutor, this);
     }
 
     public synchronized void record(String dependantName, int measurement) {

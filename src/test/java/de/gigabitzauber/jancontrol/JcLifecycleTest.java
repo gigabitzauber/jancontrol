@@ -111,7 +111,7 @@ class JcLifecycleTest {
             var cruiseMock = mock(CruiseInstance.class);
             staticCruiseMock.when(() -> CruiseInstance.create(any(), any(), any())).thenReturn(cruiseMock);
             var enforcerMock = mock(ModeEnforcer.class);
-            staticEnforcerMock.when(() -> ModeEnforcer.create(any(), any())).thenReturn(enforcerMock);
+            staticEnforcerMock.when(() -> ModeEnforcer.create(any(), any(), any())).thenReturn(enforcerMock);
             underTest.register(fanExample);
         }
 

@@ -101,13 +101,13 @@ class CruiseInstanceTest {
 
         var initialDelayCaptor = ArgumentCaptor.forClass(long.class);
         verify(executorMock).scheduleAtFixedRate(
-            any(SimpleCruiseAlgorithm.class),
+            any(Runnable.class),
             initialDelayCaptor.capture(),
             eq(DURATION_EXAMPLE.toMillis()),
             eq(TimeUnit.MILLISECONDS));
 
         assertThat(initialDelayCaptor.getValue())
-            .isBetween(0L, (long) CruiseInstance.INITIAL_DELAY_UPPER_BOUND_MILLIS);
+            .isBetween(0L, CruiseInstance.INITIAL_MAX_DELAY.toMillis());
     }
 
     @Test
