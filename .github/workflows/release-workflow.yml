@@ -51,7 +51,7 @@ jobs:
       - name: Calculate version
         id: version
         run: |
-          VERSION=$(sh scripts/get_current_release_version.sh)
+          VERSION=$(bash scripts/get_current_release_version.sh)
           echo "Project version is: ${VERSION}"
           echo "jc_version=$VERSION" >> $GITHUB_OUTPUT
 
