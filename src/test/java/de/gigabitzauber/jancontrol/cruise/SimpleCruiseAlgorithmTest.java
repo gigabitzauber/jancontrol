@@ -56,11 +56,11 @@ class SimpleCruiseAlgorithmTest {
     }
 
     @Test
-    void test_with_one_dependant_and_low_mid_and_high_values() {
+    void test_with_one_dependency_and_low_mid_and_high_values() {
         var lowTempExample = 30;
         var midTempExample = 40;
         var highTempExample = 50;
-        var temperatureDevice = simulateTemperatureDevice("dependantA", lowTempExample, midTempExample, highTempExample);
+        var temperatureDevice = simulateTemperatureDevice("dependencyA", lowTempExample, midTempExample, highTempExample);
         String rpmDeviceName = "rpmDeviceMockA";
         var rpmDevice = simulateRpmDevice(rpmDeviceName);
         var expectedLowerRpmThreshold = 20;
@@ -94,24 +94,24 @@ class SimpleCruiseAlgorithmTest {
     }
 
     @Test
-    void when_multiple_dependants_then_write_highest_rpm() {
+    void when_multiple_dependencies_then_write_highest_rpm() {
         var tempA = 30;
-        var dependantA = simulateTemperatureDevice("dependantA", tempA);
+        var dependencyA = simulateTemperatureDevice("dependencyA", tempA);
         var tempB = 40;
-        var dependantB = simulateTemperatureDevice("dependantB", tempB);
+        var dependencyB = simulateTemperatureDevice("dependencyB", tempB);
         var rpmDevice = simulateRpmDevice("rpmDeviceMockA");
         var expectedDeviceRpm = 50;
         var curveA = Curve.builder()
-            .ref(dependantA.getName())
+            .ref(dependencyA.getName())
             .points(Set.of(new CurvePoint(tempA, expectedDeviceRpm / 2)))
             .build();
         var curveB = Curve.builder()
-            .ref(dependantB.getName())
+            .ref(dependencyB.getName())
             .points(Set.of(new CurvePoint(tempB, expectedDeviceRpm)))
             .build();
         var fan = Fan.builder()
             .device(rpmDevice)
-            .dependsOn(List.of(dependantA, dependantB))
+            .dependsOn(List.of(dependencyA, dependencyB))
             .curves(List.of(curveA, curveB))
             .build();
         var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
@@ -122,16 +122,16 @@ class SimpleCruiseAlgorithmTest {
     }
 
     @Test
-    void when_curve_cannot_be_matched_to_dependants_then_do_nothing() {
-        var dependant = mock(TemperatureDevice.class);
+    void when_curve_cannot_be_matched_to_dependency_then_do_nothing() {
+        var dependency = mock(TemperatureDevice.class);
         var rpmDevice = simulateRpmDevice("rpmDeviceMock");
         var curve = Curve.builder()
-            .ref("unknown dependant")
+            .ref("unknown dependency")
             .points(Set.of(new CurvePoint(30, 100)))
             .build();
         var fan = Fan.builder()
             .device(rpmDevice)
-            .dependsOn(List.of(dependant))
+            .dependsOn(List.of(dependency))
             .curves(List.of(curve))
             .build();
         var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);

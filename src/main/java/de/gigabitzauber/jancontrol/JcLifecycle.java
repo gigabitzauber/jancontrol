@@ -82,8 +82,8 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
         ModeEnforcer.create(fan, FanModes.MANUAL, log).schedule(fanCruiseExecutor, this);
     }
 
-    public synchronized void record(String dependantName, int measurement) {
-        measurementRecord.compute(dependantName, (_, nullableOldMeasurement) -> {
+    public synchronized void record(String dependencyName, int measurement) {
+        measurementRecord.compute(dependencyName, (_, nullableOldMeasurement) -> {
             var oldMeasurement = nullableOldMeasurement == null ? 0 : nullableOldMeasurement;
             return Math.max(oldMeasurement, measurement);
         });

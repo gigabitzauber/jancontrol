@@ -28,18 +28,18 @@ public final class SimpleCruiseAlgorithm implements Runnable {
     @Override
     public void run() {
         var rpmCandidates = new ArrayList<RpmCandidate>();
-        var dependants = fan.dependsOn();
+        var dependencies = fan.dependsOn();
         var curves = fan.curves();
         var targetDeviceName = fan.device().getName();
-        for (var i = 0; i < dependants.size() || Thread.currentThread().isInterrupted(); i++) {
-            var dependant = dependants.get(i);
-            curves.stream().filter(curve -> curve.ref().equals(dependant.getName()))
+        for (var i = 0; i < dependencies.size() || Thread.currentThread().isInterrupted(); i++) {
+            var dependency = dependencies.get(i);
+            curves.stream().filter(curve -> curve.ref().equals(dependency.getName()))
                 .findFirst()
                 .ifPresent(curve -> {
-                    int measurement = dependant.read();
-                    lifecycle.record(dependant.getName(), measurement);
+                    int measurement = dependency.read();
+                    lifecycle.record(dependency.getName(), measurement);
                     var targetRpm = curve.getY(measurement);
-                    rpmCandidates.add(new RpmCandidate(dependant.getName(), measurement, targetRpm, targetDeviceName));
+                    rpmCandidates.add(new RpmCandidate(dependency.getName(), measurement, targetRpm, targetDeviceName));
                 });
         }
 
@@ -74,10 +74,10 @@ public final class SimpleCruiseAlgorithm implements Runnable {
     }
 
     public static record RpmCandidate(
-        String dependantName, int measurement, int targetRpm, String targetDeviceName) implements Comparable<RpmCandidate> {
+        String dependencyName, int measurement, int targetRpm, String targetDeviceName) implements Comparable<RpmCandidate> {
 
         public RpmCandidate(RpmCandidate other, int targetRpmOverride) {
-            this(other.dependantName, other.measurement, targetRpmOverride, other.targetDeviceName);
+            this(other.dependencyName, other.measurement, targetRpmOverride, other.targetDeviceName);
         }
 
         @Override
@@ -88,7 +88,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         @Override
         @Nonnull
         public String toString() {
-            return "Setting %s = %d%% | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, dependantName, measurement);
+            return "Setting %s = %d%% | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, dependencyName, measurement);
         }
     }
 }
