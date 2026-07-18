@@ -5,6 +5,7 @@ import de.gigabitzauber.jancontrol.JcLifecycle;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import org.slf4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -47,8 +48,8 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         } else if (!rpmCandidates.isEmpty()) {
             var newRpm = Collections.max(rpmCandidates);
             var safeNewRpm = safeGetTargetRpm(newRpm);
-            fan.device().write(safeNewRpm.targetRpm);
             log.debug(safeNewRpm.toString());
+            fan.device().write(safeNewRpm.targetRpm);
         }
     }
 
@@ -82,6 +83,12 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         @Override
         public int compareTo(RpmCandidate other) {
             return this.targetRpm - other.targetRpm;
+        }
+
+        @Override
+        @Nonnull
+        public String toString() {
+            return "Setting %s = %d%% | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, dependantName, measurement);
         }
     }
 }

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableScheduledFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.JcLifecycle;
 import de.gigabitzauber.jancontrol.domain.Fan;
+import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +31,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CruiseInstanceTest {
     private static final Duration DURATION_EXAMPLE = Duration.ofSeconds(6);
-    private static final Fan FAN_EXAMPLE = Fan.builder().interval(DURATION_EXAMPLE).build();
+    private static final Fan FAN_EXAMPLE = Fan.builder()
+        .interval(DURATION_EXAMPLE)
+        .device(new RpmDevice("rpmDeviceExample", "unused"))
+        .build();
 
     @Mock
     private JcLifecycle lifecycleMock;
