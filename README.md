@@ -1,16 +1,34 @@
 # JanControl
 
-A replacement for [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) with an app that
-supports a more convenient and powerful config DSL.
+A replacement for [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) that supports a
+convenient and more powerful config DSL.
 
 It also supports more than one input per fan.
 
 **WARNING:** Make sure, you are using proper values in the config! There are basic validations in place, but it is not
 yet foolproof. In particular curve integrity is currently not checked at all. You have been warned!
 
+## Table of Contents
+
+<!--ts-->
+
+* [Home](#home)
+* [Build](#build)
+* [Run](#run)
+    * [Debug mode / Verbose output](#debug-mode--verbose-output)
+* [Configure](#configure)
+* [Examples](#examples)
+* [Does it survive Suspend and Hibernation?](#does-it-survive-suspend-and-hibernation)
+* [Note on chosen technology](#note-on-chosen-technology)
+
+<!--te-->
+
+<small>TOC creation kindly provided
+by [github-markdown-toc](https://github.com/ekalinin/github-markdown-toc#installation).</small>
+
 ## Home
 
-[github.com/gigabitzauber/jancontrol](https://github.com/gigabitzauber/jancontrol) - [gigabitzauber.de](https://gigabitzauber.de)
+[github.com/gigabitzauber/jancontrol](https://github.com/gigabitzauber/jancontrol) - [gigabitzauber.de](https://gigabitzauber.de) - [Support me](https://ko-fi.com/gigabitzauber)
 
 ## Build
 
@@ -61,7 +79,12 @@ See [docs/how_to_use.md](docs/how_to_use.md) for details on how configuration wo
 
 ## Examples
 
-See `docs/examples` for example configuration files.
+See folder [docs/examples](docs/examples) for example configuration files.
+
+## Does it survive Suspend and Hibernation?
+
+Yes, since v0.3.0. Suspend / Hibernate usually puts fans back into full auto mode and the tool will recognize this and
+enforce its config.
 
 ## Note on chosen technology
 
