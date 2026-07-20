@@ -45,7 +45,6 @@ fans:
           - temp: 60
             rpm: 95
       - ref: "GPU Temp"
-        type: "linear"
         points:
           - temp: 48
             rpm: 25
