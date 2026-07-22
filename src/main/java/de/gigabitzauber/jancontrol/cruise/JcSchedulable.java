@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
 
 import java.time.Duration;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGenerator;
 
@@ -19,12 +20,19 @@ public abstract class JcSchedulable {
     private final String opName;
     private final Duration initialDelay;
     private final Duration interval;
+    private final String id;
 
     protected JcSchedulable(Runnable op, String opName, Duration initialMaxDelay, Duration interval) {
         this.op = op;
         this.opName = opName;
         this.initialDelay = initialMaxDelay;
         this.interval = interval;
+
+        this.id = "%s@%s".formatted(this.opName, UUID.randomUUID().toString());
+    }
+
+    public final String id() {
+        return id;
     }
 
     public final void schedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback) {

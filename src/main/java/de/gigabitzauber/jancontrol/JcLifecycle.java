@@ -3,6 +3,7 @@ package de.gigabitzauber.jancontrol;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
+import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.FanModes;
@@ -20,11 +21,15 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
+    static final int ERROR_THRESHOLD = 3;
+
     private final ListeningScheduledExecutorService fanCruiseExecutor;
     private final Logger log;
 
     private final Collection<RegisteredFan> registeredFans = new HashSet<>();
     private final Map<String, Integer> measurementRecord = new HashMap<>();
+
+    private final Map<String, Integer> schedulableErrorRecord = new HashMap<>();
 
     public JcLifecycle(ListeningScheduledExecutorService fanCruiseExecutor, Logger log) {
         this.fanCruiseExecutor = fanCruiseExecutor;
@@ -97,10 +102,24 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     @Override
     public void onFailure(@NonNull Throwable t) {
         if (t instanceof JcSchedulableException e) {
+            var failedSchedulable = e.getParent();
+            var newErrorCount = -1;
+            synchronized (schedulableErrorRecord) {
+                newErrorCount = computeNewSchedulableErrorCount(failedSchedulable, e);
+            }
+            if (newErrorCount > ERROR_THRESHOLD) {
+                log.error("Schedulable {} exhausted error threshold of {} for error: {}", failedSchedulable.id(), ERROR_THRESHOLD, e.getMessage(), e);
+            } else {
+                log.debug("Schedulable {} encountered error #{}: {}", failedSchedulable.id(), newErrorCount, t.getMessage());
+            }
             e.getParent().schedule(fanCruiseExecutor, this);
-            log.error(e.getMessage(), e);
         } else {
             log.error("Encountered unexpected error", t);
         }
+    }
+
+    private int computeNewSchedulableErrorCount(JcSchedulable failedSchedulable, JcSchedulableException error) {
+        var errorHash = error.getMessage().hashCode();
+        return schedulableErrorRecord.compute(failedSchedulable.id() + ":" + errorHash, (_, oldErrorCount) -> oldErrorCount == null ? 1 : (oldErrorCount + 1));
     }
 }

@@ -2,10 +2,13 @@ package de.gigabitzauber.jancontrol;
 
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
+import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
+import de.gigabitzauber.jancontrol.error.JcSchedulableException;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -16,6 +19,7 @@ import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
 import org.springframework.context.Lifecycle;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -119,6 +124,85 @@ class JcLifecycleTest {
         underTest.stop();
         assertThat(Files.readString(targetDeviceModeFile)).isEqualTo(oldMode);
         assertThat(Files.readString(targetDeviceRpmFile)).isEqualTo(oldRpm);
+    }
+
+    @Test
+    void when_error_count_of_schedulable_is_below_threshold_then_do_not_throw_but_log_debug_only() {
+        var schedulableExample = simulateSchedulable();
+        var expectedErrorMsg = "expectedErrorMsg";
+        var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
+
+        assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
+
+        // False positive. This is a Mockito verification, not an actual log statement.
+        //noinspection LoggingSimilarMessage
+        verify(logMock).debug("Schedulable {} encountered error #{}: {}", schedulableExample.id(), 1, expectedErrorMsg);
+    }
+
+    @Test
+    void when_error_count_of_schedulable_is_above_threshold_then_log_error() {
+        var schedulableExample = simulateSchedulable();
+        var expectedErrorMsg = "expectedErrorMsg";
+        var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
+
+        for (int i = 0; i <= JcLifecycle.ERROR_THRESHOLD; i++) {
+            assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
+        }
+
+        verify(logMock).error("Schedulable {} exhausted error threshold of {} for error: {}",
+            schedulableExample.id(),
+            JcLifecycle.ERROR_THRESHOLD,
+            schedulableErrorExample.getMessage(),
+            schedulableErrorExample);
+    }
+
+    @Test
+    void different_kinds_of_schedulable_errors_have_their_own_error_counter() {
+        var schedulableExample = simulateSchedulable();
+        var expectedErrorMsgA = "expectedErrorMsgA";
+        var expectedErrorMsgB = "expectedErrorMsgB";
+
+        assertThatNoException().isThrownBy(() -> underTest.onFailure(new JcSchedulableException(expectedErrorMsgA, schedulableExample)));
+        assertThatNoException().isThrownBy(() -> underTest.onFailure(new JcSchedulableException(expectedErrorMsgB, schedulableExample)));
+
+        // False positive. This is a Mockito verification, not an actual log statement.
+        //noinspection LoggingSimilarMessage
+        verify(logMock).debug("Schedulable {} encountered error #{}: {}", schedulableExample.id(), 1, expectedErrorMsgA);
+        // False positive. This is a Mockito verification, not an actual log statement.
+        //noinspection LoggingSimilarMessage
+        verify(logMock).debug("Schedulable {} encountered error #{}: {}", schedulableExample.id(), 1, expectedErrorMsgB);
+    }
+
+    @Test
+    void different_kinds_of_schedulables_have_their_own_error_counter() {
+        var schedulableExampleA = simulateSchedulable();
+        var schedulableExampleB = simulateSchedulable();
+        var expectedErrorMsg = "expectedErrorMsg";
+        var schedulableErrorExampleA = new JcSchedulableException(expectedErrorMsg, schedulableExampleA);
+        var schedulableErrorExampleB = new JcSchedulableException(expectedErrorMsg, schedulableExampleB);
+
+        assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExampleA));
+        assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExampleB));
+
+        verify(logMock).debug("Schedulable {} encountered error #{}: {}", schedulableExampleA.id(), 1, expectedErrorMsg);
+        verify(logMock).debug("Schedulable {} encountered error #{}: {}", schedulableExampleB.id(), 1, expectedErrorMsg);
+    }
+
+    @Test
+    void when_error_is_not_from_a_schedulable_then_log_error_immediately() {
+        var expectedErrorMsg = "expectedErrorMsg";
+        var unexpectedErrorExample = new IOException(expectedErrorMsg);
+
+        underTest.onFailure(unexpectedErrorExample);
+
+        verify(logMock).error("Encountered unexpected error", unexpectedErrorExample);
+    }
+
+    private static @NonNull JcSchedulable simulateSchedulable() {
+        var schedulableExample = mock(JcSchedulable.class);
+        var schedulableIdExample = "schedulableIdExample";
+        when(schedulableExample.id()).thenReturn(schedulableIdExample);
+        return schedulableExample;
     }
 
     private void simulateSuccessfulExecutorTermination() throws InterruptedException {
