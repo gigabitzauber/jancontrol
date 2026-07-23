@@ -1,0 +1,14 @@
+[Unit]
+Description=Jancontrol Fan Control
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/jancontrol
+ExecStart=/usr/bin/java -jar /opt/jancontrol/jancontrol.jar /etc/jancontrol.yaml
+Restart=on-failure
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
