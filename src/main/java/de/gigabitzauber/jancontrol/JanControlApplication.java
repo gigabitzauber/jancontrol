@@ -2,7 +2,10 @@ package de.gigabitzauber.jancontrol;
 
 import de.gigabitzauber.jancontrol.cruise.CruiseCommand;
 import de.gigabitzauber.jancontrol.cruise.CruiseConfigReader;
+import de.gigabitzauber.jancontrol.domain.CruiseConfig;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,6 +15,7 @@ import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.core.io.FileSystemResource;
 
 import java.util.Arrays;
+import java.util.Set;
 
 @SpringBootApplication
 public class JanControlApplication implements CommandLineRunner {
@@ -37,7 +41,7 @@ public class JanControlApplication implements CommandLineRunner {
             System.exit(0);
         }
 
-        if (args.length == 0 || flagActive(args, "-h") || flagActive(args, "--help") || noConfigFileSpecified(args)) {
+        if (args.length == 0 || flagActive(args, "-h") || flagActive(args, "--help")) {
             printVersion();
             System.err.println();
             System.err.println("Usage: java -jar jancontrol.jar [options] <config-file>");
@@ -59,8 +63,8 @@ public class JanControlApplication implements CommandLineRunner {
         System.err.println("jancontrol v" + MY_VER);
     }
 
-    private static boolean noConfigFileSpecified(String[] args) {
-        return args.length == 0 || args[args.length - 1].startsWith("-");
+    private static boolean configFileSpecified(String[] args) {
+        return !(args.length == 0 || args[args.length - 1].startsWith("-"));
     }
 
     private static boolean flagActive(String[] args, String flag) {
@@ -73,9 +77,16 @@ public class JanControlApplication implements CommandLineRunner {
             loggingSystem.setLogLevel(MY_PACKAGE, LogLevel.DEBUG);
         }
 
-        var rawConfigFilePath = args[args.length - 1];
-        var configResource = new FileSystemResource(rawConfigFilePath);
-        var config = configReader.readConfig(configResource);
+        Logger logger = LoggerFactory.getLogger(JanControlApplication.class);
+        CruiseConfig config = new CruiseConfig(Set.of());
+        if (configFileSpecified(args)) {
+            var rawConfigFilePath = args[args.length - 1];
+            logger.info("Loading config from {}", rawConfigFilePath);
+            var configResource = new FileSystemResource(rawConfigFilePath);
+            config = configReader.readConfig(configResource);
+        } else {
+            logger.warn("No config file specified. Running in NOP mode.");
+        }
         cruiseCommand.execute(config);
     }
 }

@@ -65,6 +65,16 @@ See [Lombok Issues](https://github.com/projectlombok/lombok/issues/3852#issuecom
 java -jar jancontrol-0.4.0-SNAPSHOT.jar [options] <config-file>
 ```
 
+## Install
+
+```bash
+# -f.. Fails silently (no output) on server errors (HTTP 4xx or 5xx) instead of outputting the error page.
+# -s.. Silent mode. Prevents curl from showing a progress meter or error messages.
+# -S.. --show-error	When used with -s, this forces curl to output an error message if it fails.
+# -L.. --location Tells curl to follow redirects if the server reports that the requested page has moved to a different location.
+curl -fsSL https://raw.githubusercontent.com/gigabitzauber/jancontrol/refs/heads/main/scripts/install.sh | sudo bash
+```
+
 ### Debug mode / Verbose output
 
 The command line switch `-v` activates verbose output.

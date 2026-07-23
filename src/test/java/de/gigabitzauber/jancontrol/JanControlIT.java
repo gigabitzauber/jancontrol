@@ -106,6 +106,12 @@ class JanControlIT {
     }
 
     @Test
+    void when_no_config_file_specified_then_startup_but_do_nothing(CapturedOutput output) {
+        startApp();
+        assertOutput(output, "No config file specified. Running in NOP mode.");
+    }
+
+    @Test
     void test_happy_path(CapturedOutput output) throws Exception {
         var configFilePath = createConfig();
         startApp(configFilePath);
@@ -225,10 +231,16 @@ class JanControlIT {
             .untilAsserted(() -> assertThat(output.getAll()).doesNotContain(expectedOutput));
     }
 
-    private void startApp(Path configFilePath) {
+    private void startApp(Path... configFilePaths) {
+        var args = new String[configFilePaths.length + 1];
+        args[0] = "-v";
+        if (configFilePaths.length > 0) {
+            args[1] = configFilePaths[0].toString();
+        }
+
         testExecutor.submit(() -> ctx.set(new SpringApplicationBuilder(JanControlApplication.class)
             .web(WebApplicationType.NONE)
-            .run("-v", configFilePath.toString())));
+            .run(args)));
     }
 
     private Path createConfig() throws Exception {

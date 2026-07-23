@@ -40,12 +40,25 @@ jobs:
         run: |
           HASH_FILE_NAME="jancontrol-hashes.sha256"
           echo "hash_file_name=$HASH_FILE_NAME" >> $GITHUB_OUTPUT
+          cp scripts/jancontrol.service target/
           cd target
-          sha256sum *.jar *.asc > "${HASH_FILE_NAME}"
+          sha256sum *.jar *.asc *.service > "${HASH_FILE_NAME}"
           gpg --batch --detach-sign --armor \
               --local-user "${SIGN_KEY_ID}" \
               --passphrase-fd 0 \
               "${HASH_FILE_NAME}" <<< "${SIGN_KEY_PASS}"
+        env:
+          SIGN_KEY_ID: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_ID }}
+          SIGN_KEY_PASS: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_PASSPHRASE }}
+
+      - name: Create systemd unit file signature
+        id: create_systemd_file
+        run: |
+          cd target
+          gpg --batch --detach-sign --armor \
+              --local-user "${SIGN_KEY_ID}" \
+              --passphrase-fd 0 \
+              "jancontrol.service" <<< "${SIGN_KEY_PASS}"
         env:
           SIGN_KEY_ID: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_ID }}
           SIGN_KEY_PASS: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_PASSPHRASE }}
@@ -74,6 +87,8 @@ jobs:
           echo "- \`${JC_NAME}-${JC_VERSION}.jar.asc\` - Executable JAR's GPG signature" >> "${RELEASE_NOTES_FILE}"
           echo "- \`${JC_NAME}-${JC_VERSION}-sources.jar\` - Source code" >> "${RELEASE_NOTES_FILE}"
           echo "- \`${JC_NAME}-${JC_VERSION}-sources.jar.asc\` - Source code's GPG signature" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_NAME}.service\` - systemd unit file" >> "${RELEASE_NOTES_FILE}"
+          echo "- \`${JC_NAME}.service.asc\` - systemd unit file's GPG signature" >> "${RELEASE_NOTES_FILE}"
           echo "- \`${JC_HASH_FILE_NAME}\` - SHA 256 hashes for all artifacts" >> "${RELEASE_NOTES_FILE}"
           echo "- \`${JC_HASH_FILE_NAME}.asc\` - Hash file's GPG signature" >> "${RELEASE_NOTES_FILE}"
           echo "" >> "${RELEASE_NOTES_FILE}"
@@ -94,6 +109,8 @@ jobs:
         with:
           token: ${{ secrets.JANCONTROL_RELEASE_TOKEN }}
           files: |
+            target/${{ steps.release_notes.outputs.jc_name }}.service
+            target/${{ steps.release_notes.outputs.jc_name }}.service.asc
             target/${{ steps.release_notes.outputs.jc_name }}-*.jar
             target/${{ steps.release_notes.outputs.jc_name }}-*.jar.asc
             target/${{ steps.release_notes.outputs.jc_name }}-*.sha256
