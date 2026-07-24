@@ -108,7 +108,15 @@ class JanControlIT {
     @Test
     void when_no_config_file_specified_then_startup_but_do_nothing(CapturedOutput output) {
         startApp();
-        assertOutput(output, "No config file specified. Running in NOP mode.");
+        assertOutput(output, "No config file specified.");
+        assertOutput(output, "No fans specified. Running in NOP mode.");
+    }
+
+    @Test
+    void when_empty_config_file_specified_then_startup_but_do_nothing(CapturedOutput output) throws Exception {
+        var configFilePath = writeToConfigFile("fans:\n");
+        startApp(configFilePath);
+        assertOutput(output, "No fans specified. Running in NOP mode.");
     }
 
     @Test
@@ -313,8 +321,12 @@ class JanControlIT {
 
         var yamlMapper = new JcJacksonConfig().yamlMapper();
         var configData = yamlMapper.writeValueAsString(config);
+        return writeToConfigFile(configData);
+    }
+
+    private Path writeToConfigFile(String content) throws Exception {
         var configFilePath = tempDir.resolve("config_file.yaml");
-        Files.writeString(configFilePath, configData);
+        Files.writeString(configFilePath, content);
         return configFilePath;
     }
 

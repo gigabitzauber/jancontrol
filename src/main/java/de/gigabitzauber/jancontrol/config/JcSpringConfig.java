@@ -38,8 +38,8 @@ public class JcSpringConfig {
     }
 
     @Bean
-    public CruiseCommand cruiseCommand(JcLifecycle lifecycle) {
-        return new CruiseCommand(lifecycle);
+    public CruiseCommand cruiseCommand(JcLifecycle lifecycle, Logger log) {
+        return new CruiseCommand(lifecycle, log);
     }
 
     @Bean

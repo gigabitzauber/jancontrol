@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
 import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
+import de.gigabitzauber.jancontrol.cruise.NopCruise;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
@@ -223,6 +224,16 @@ class JcLifecycleTest {
         underTest.onFailure(unexpectedErrorExample);
 
         verify(logMock).error("Encountered unexpected error", unexpectedErrorExample);
+    }
+
+    @Test
+    void nop_schedules_nop() {
+        try (var staticNopMock = mockStatic(NopCruise.class)) {
+            var nopMock = mock(NopCruise.class);
+            staticNopMock.when(NopCruise::create).thenReturn(nopMock);
+            underTest.nop();
+            verify(nopMock).schedule(executorMock, underTest);
+        }
     }
 
     private static @NonNull JcSchedulable simulateSchedulable() {

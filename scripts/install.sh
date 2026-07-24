@@ -57,8 +57,11 @@ cp "${APP_NAME}.service" "/etc/systemd/system/"
 
 if [ ! -f "${CONFIG_FILE_PATH}" ]; then
   touch "${CONFIG_FILE_PATH}"
+  # Individual echos provide better readability.
+  # shellcheck disable=SC2129
   echo "# Default ${APP_NAME} config file" >> "${CONFIG_FILE_PATH}"
   echo "# See https://github.com/gigabitzauber/jancontrol/tree/main/docs/examples for config file examples." >> "${CONFIG_FILE_PATH}"
+  echo "fans:" >> "${CONFIG_FILE_PATH}"
 fi
 
 read -p "Installation finished. Do you want to enable and start the service now? (y/n) " -r </dev/tty

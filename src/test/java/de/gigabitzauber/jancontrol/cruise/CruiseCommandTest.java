@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.Set;
@@ -25,14 +26,24 @@ class CruiseCommandTest {
     @Mock
     private JcLifecycle lifecycleMock;
 
+    @Mock
+    private Logger logMock;
+
     @InjectMocks
     private CruiseCommand underTest;
 
     @Test
     void test_does_not_support_null_lifecycle() {
-        assertThatThrownBy(() -> new CruiseCommand(null))
+        assertThatThrownBy(() -> new CruiseCommand(null, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("lifecycle must not be null");
+    }
+
+    @Test
+    void test_does_not_support_null_log() {
+        assertThatThrownBy(() -> new CruiseCommand(lifecycleMock, null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("log must not be null");
     }
 
     @Test
@@ -49,5 +60,14 @@ class CruiseCommandTest {
         verify(lifecycleMock).register(FAN_EXAMPLE_A);
         verify(lifecycleMock).register(FAN_EXAMPLE_B);
         verifyNoMoreInteractions(lifecycleMock);
+    }
+
+    @Test
+    void when_no_fans_then_run_nop_mode() {
+        underTest.execute(new CruiseConfig(Set.of()));
+
+        verify(lifecycleMock).nop();
+        verifyNoMoreInteractions(lifecycleMock);
+        verify(logMock).warn("No fans specified. Running in NOP mode.");
     }
 }

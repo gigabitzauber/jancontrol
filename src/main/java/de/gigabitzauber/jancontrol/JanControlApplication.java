@@ -85,7 +85,7 @@ public class JanControlApplication implements CommandLineRunner {
             var configResource = new FileSystemResource(rawConfigFilePath);
             config = configReader.readConfig(configResource);
         } else {
-            logger.warn("No config file specified. Running in NOP mode.");
+            logger.warn("No config file specified.");
         }
         cruiseCommand.execute(config);
     }

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
 import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
+import de.gigabitzauber.jancontrol.cruise.NopCruise;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.FanModes;
 import de.gigabitzauber.jancontrol.domain.RegisteredFan;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     static final int ERROR_THRESHOLD = 3;
     static final int ERROR_COOL_OFF_MILLIS = 10000;
-    
+
     private final ListeningScheduledExecutorService fanCruiseExecutor;
     private final JcTime time;
     private final Logger log;
@@ -79,6 +80,10 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     @Override
     public boolean isRunning() {
         return true;
+    }
+
+    public void nop() {
+        NopCruise.create().schedule(fanCruiseExecutor, this);
     }
 
     public void register(Fan fan) {
