@@ -18,7 +18,12 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-read -p "Do you want to start the installation of $APP_NAME? (y/n) " -n 1 -r
+if [ ! -t 0 ]; then
+  echo "This script is supposed to run in an interactive shell."
+  exit 1
+fi
+
+read -p "Do you want to start the installation of $APP_NAME? (y/n) " -r </dev/tty
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Installation aborted."
@@ -61,7 +66,7 @@ if [ ! -f "${CONFIG_FILE_PATH}" ]; then
   echo "# See https://github.com/gigabitzauber/jancontrol/tree/main/docs/examples for config file examples." >> "${CONFIG_FILE_PATH}"
 fi
 
-read -p "Installation finished. Do you want to enable and start the service now? (y/n) " -n 1 -r
+read -p "Installation finished. Do you want to enable and start the service now? (y/n) " -r </dev/tty
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Service not started. You can start it manually later with: systemctl enable --now $APP_NAME"
