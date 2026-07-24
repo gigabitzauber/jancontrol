@@ -16,6 +16,7 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
 * [Build](#build)
 * [Run](#run)
     * [Debug mode / Verbose output](#debug-mode--verbose-output)
+* [Install](#install)
 * [Configure](#configure)
 * [Examples](#examples)
 * [Does it survive Suspend and Hibernation?](#does-it-survive-suspend-and-hibernation)
@@ -67,11 +68,13 @@ java -jar jancontrol-0.4.1-SNAPSHOT.jar [options] <config-file>
 
 ## Install
 
+* -f.. Fails silently (no output) on server errors (HTTP 4xx or 5xx) instead of outputting the error page.
+* -s.. Silent mode. Prevents curl from showing a progress meter or error messages.
+* -S.. --show-error When used with -s, this forces curl to output an error message if it fails.
+* -L.. --location Tells curl to follow redirects if the server reports that the requested page has moved to a different
+  location.
+
 ```bash
-# -f.. Fails silently (no output) on server errors (HTTP 4xx or 5xx) instead of outputting the error page.
-# -s.. Silent mode. Prevents curl from showing a progress meter or error messages.
-# -S.. --show-error	When used with -s, this forces curl to output an error message if it fails.
-# -L.. --location Tells curl to follow redirects if the server reports that the requested page has moved to a different location.
 curl -fsSL https://raw.githubusercontent.com/gigabitzauber/jancontrol/refs/heads/main/scripts/install.sh | sudo bash
 ```
 
