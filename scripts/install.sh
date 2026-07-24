@@ -18,11 +18,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-if [ ! -t 0 ]; then
-  echo "This script is supposed to run in an interactive shell."
-  exit 1
-fi
-
 read -p "Do you want to start the installation of $APP_NAME? (y/n) " -r </dev/tty
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -40,9 +35,9 @@ LATEST_RELEASE=$(curl -s https://api.github.com/repos/$REPO/releases/latest)
 # -m1.. print first match only
 # \K.. reset match point start
 JAR_URL=$(echo "${LATEST_RELEASE}" | grep -oP -m1 '.*"browser_download_url": "\K.*[0-9]+\.jar')
-#SERVICE_FILE_URL=$(echo "${LATEST_RELEASE}" | grep -oP -m1 '"browser_download_url": "\Kjancontrol.service')
-HASH_FILE_URL=$(echo "${LATEST_RELEASE}" | grep -oP -m1 '"browser_download_url": "\K.*jancontrol-hashes.sha256')
-HASH_FILE_ASC_URL=$(echo "${LATEST_RELEASE}" | grep -oP -m1 '"browser_download_url": "\K.*jancontrol-hashes.sha256.asc')
+SERVICE_FILE_URL=$(echo "${LATEST_RELEASE}" | grep -oP -m1 '.*"browser_download_url": "\K.*jancontrol.service')
+HASH_FILE_URL=$(echo "${LATEST_RELEASE}" | grep -oP -m1 '.*"browser_download_url": "\K.*jancontrol-hashes.sha256')
+HASH_FILE_ASC_URL=$(echo "${LATEST_RELEASE}" | grep -oP -m1 '.*"browser_download_url": "\K.*jancontrol-hashes.sha256.asc')
 RAW_VERSION=$(echo "${LATEST_RELEASE}" | grep -oP '"tag_name": "\K[^"]*')
 VERSION=${RAW_VERSION#v}
 CONFIG_FILE_PATH="/etc/${APP_NAME}.yaml"
