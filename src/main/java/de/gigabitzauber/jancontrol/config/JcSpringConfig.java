@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import de.gigabitzauber.jancontrol.JcLifecycle;
 import de.gigabitzauber.jancontrol.cruise.CruiseCommand;
+import de.gigabitzauber.jancontrol.util.JcSystemTime;
+import de.gigabitzauber.jancontrol.util.JcTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InjectionPoint;
@@ -24,8 +26,8 @@ public class JcSpringConfig {
     }
 
     @Bean
-    public JcLifecycle lifecycle(ListeningScheduledExecutorService fanCruiseExecutor, Logger log) {
-        return new JcLifecycle(fanCruiseExecutor, log);
+    public JcLifecycle lifecycle(ListeningScheduledExecutorService fanCruiseExecutor, JcTime time, Logger log) {
+        return new JcLifecycle(fanCruiseExecutor, time, log);
     }
 
     @Bean
@@ -38,5 +40,10 @@ public class JcSpringConfig {
     @Bean
     public CruiseCommand cruiseCommand(JcLifecycle lifecycle) {
         return new CruiseCommand(lifecycle);
+    }
+
+    @Bean
+    public JcTime time() {
+        return new JcSystemTime();
     }
 }

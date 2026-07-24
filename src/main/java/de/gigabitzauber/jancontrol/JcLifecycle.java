@@ -10,6 +10,7 @@ import de.gigabitzauber.jancontrol.domain.FanModes;
 import de.gigabitzauber.jancontrol.domain.RegisteredFan;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
+import de.gigabitzauber.jancontrol.util.JcTime;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.springframework.context.Lifecycle;
@@ -22,17 +23,19 @@ import java.util.concurrent.TimeUnit;
 
 public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     static final int ERROR_THRESHOLD = 3;
-
+    static final int ERROR_COOL_OFF_MILLIS = 10000;
+    
     private final ListeningScheduledExecutorService fanCruiseExecutor;
+    private final JcTime time;
     private final Logger log;
 
     private final Collection<RegisteredFan> registeredFans = new HashSet<>();
     private final Map<String, Integer> measurementRecord = new HashMap<>();
+    private final Map<String, JcErrorRecord> schedulableErrorRecord = new HashMap<>();
 
-    private final Map<String, Integer> schedulableErrorRecord = new HashMap<>();
-
-    public JcLifecycle(ListeningScheduledExecutorService fanCruiseExecutor, Logger log) {
+    public JcLifecycle(ListeningScheduledExecutorService fanCruiseExecutor, JcTime time, Logger log) {
         this.fanCruiseExecutor = fanCruiseExecutor;
+        this.time = time;
         this.log = log;
     }
 
@@ -105,6 +108,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
             var failedSchedulable = e.getParent();
             var newErrorCount = -1;
             synchronized (schedulableErrorRecord) {
+                cleanupOldErrors();
                 newErrorCount = computeNewSchedulableErrorCount(failedSchedulable, e);
             }
             if (newErrorCount > ERROR_THRESHOLD) {
@@ -120,6 +124,44 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
 
     private int computeNewSchedulableErrorCount(JcSchedulable failedSchedulable, JcSchedulableException error) {
         var errorHash = error.getMessage().hashCode();
-        return schedulableErrorRecord.compute(failedSchedulable.id() + ":" + errorHash, (_, oldErrorCount) -> oldErrorCount == null ? 1 : (oldErrorCount + 1));
+        var key = failedSchedulable.id() + ":" + errorHash;
+
+        if (schedulableErrorRecord.containsKey(key)) {
+            var errorRecord = schedulableErrorRecord.get(key);
+            errorRecord.increaseCount();
+        } else {
+            schedulableErrorRecord.put(key, new JcErrorRecord(time.currentTimestampMillis()));
+        }
+
+        return schedulableErrorRecord.get(key).getCount();
+    }
+
+    private void cleanupOldErrors() {
+        var oldErrors = schedulableErrorRecord.entrySet().stream()
+            .filter(entry -> entry.getValue().isOutdated(time.currentTimestampMillis()))
+            .map(Map.Entry::getKey)
+            .toList();
+        oldErrors.forEach(schedulableErrorRecord::remove);
+    }
+
+    private static final class JcErrorRecord {
+        private int count = 1;
+        private final long recordMillis;
+
+        JcErrorRecord(long recordTime) {
+            this.recordMillis = recordTime;
+        }
+
+        boolean isOutdated(long currentTimeMillis) {
+            return currentTimeMillis - recordMillis > ERROR_COOL_OFF_MILLIS;
+        }
+
+        void increaseCount() {
+            count++;
+        }
+
+        int getCount() {
+            return count;
+        }
     }
 }

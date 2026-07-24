@@ -8,6 +8,7 @@ import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
+import de.gigabitzauber.jancontrol.util.JcTime;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -45,6 +47,9 @@ class JcLifecycleTest {
 
     @Mock
     private ListeningScheduledExecutorService executorMock;
+
+    @Mock
+    private JcTime timeMock;
 
     @Mock
     private Logger logMock;
@@ -67,6 +72,7 @@ class JcLifecycleTest {
         underTest.start();
 
         verifyNoInteractions(executorMock);
+        verifyNoInteractions(timeMock);
         verifyNoInteractions(logMock);
     }
 
@@ -128,6 +134,7 @@ class JcLifecycleTest {
 
     @Test
     void when_error_count_of_schedulable_is_below_threshold_then_do_not_throw_but_log_debug_only() {
+        simulateTime(0);
         var schedulableExample = simulateSchedulable();
         var expectedErrorMsg = "expectedErrorMsg";
         var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
@@ -141,6 +148,7 @@ class JcLifecycleTest {
 
     @Test
     void when_error_count_of_schedulable_is_above_threshold_then_log_error() {
+        simulateTime(0);
         var schedulableExample = simulateSchedulable();
         var expectedErrorMsg = "expectedErrorMsg";
         var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
@@ -157,7 +165,25 @@ class JcLifecycleTest {
     }
 
     @Test
+    void when_last_error_of_same_kind_is_outdated_then_reset_error_count() {
+        simulateTime(0);
+        var schedulableExample = simulateSchedulable();
+        var expectedErrorMsg = "expectedErrorMsg";
+        var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
+
+        assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
+        simulateTime(JcLifecycle.ERROR_COOL_OFF_MILLIS + 100);
+        assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
+
+        // False positive. This is actually a Mockito verification, not a log statement.
+        //noinspection LoggingSimilarMessage
+        verify(logMock, times(2))
+            .debug("Schedulable {} encountered error #{}: {}", schedulableExample.id(), 1, expectedErrorMsg);
+    }
+
+    @Test
     void different_kinds_of_schedulable_errors_have_their_own_error_counter() {
+        simulateTime(0);
         var schedulableExample = simulateSchedulable();
         var expectedErrorMsgA = "expectedErrorMsgA";
         var expectedErrorMsgB = "expectedErrorMsgB";
@@ -175,6 +201,7 @@ class JcLifecycleTest {
 
     @Test
     void different_kinds_of_schedulables_have_their_own_error_counter() {
+        simulateTime(0);
         var schedulableExampleA = simulateSchedulable();
         var schedulableExampleB = simulateSchedulable();
         var expectedErrorMsg = "expectedErrorMsg";
@@ -216,5 +243,9 @@ class JcLifecycleTest {
         } else {
             whenTerminate.thenReturn(false);
         }
+    }
+
+    private void simulateTime(long millis) {
+        when(timeMock.currentTimestampMillis()).thenReturn(millis);
     }
 }
