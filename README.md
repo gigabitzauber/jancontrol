@@ -19,6 +19,7 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
 * [Install](#install)
 * [Configure](#configure)
 * [Examples](#examples)
+* [Supported Hardware](#supported-hardware)
 * [Does it survive Suspend and Hibernation?](#does-it-survive-suspend-and-hibernation)
 * [Note on chosen technology](#note-on-chosen-technology)
 
@@ -93,6 +94,30 @@ See [docs/how_to_use.md](docs/how_to_use.md) for details on how configuration wo
 ## Examples
 
 See folder [docs/examples](docs/examples) for example configuration files.
+
+## Supported Hardware
+
+Basically all temperature sensors / RPM-controllable devices are supported as long as there is a
+[HWMON driver](https://docs.kernel.org/hwmon/hwmon-kernel-api.html) available.
+
+However, the devil is in the details. Long story short: Below you find hardware configurations that are supposed to
+work.
+
+If nothing else is specified, the nct6775-driver will be used by default. To specify a driver, just write its name into
+the config file:
+
+```yaml
+fans:
+  - interval: "3s"
+    hwmonDriver: thinkpad_acpi
+    device:
+      ...
+```
+
+| Hardware | Config-File-Key         | Driver                                                                          | Comment                                              |
+|----------|-------------------------|---------------------------------------------------------------------------------|------------------------------------------------------|
+| NCT6775  | nct6775 (default value) | [nct6775](https://docs.kernel.org/hwmon/nct6775.html)                           | Should also work for NCT6775F, NCT6776F & W83627EHF. |
+| Thinkpad | thinkpad_acpi           | [thinkpad_acpi](https://docs.kernel.org/admin-guide/laptops/thinkpad-acpi.html) | May work on all models that support this driver (?)  |
 
 ## Does it survive Suspend and Hibernation?
 
