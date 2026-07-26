@@ -4,4 +4,5 @@ public interface FanMode {
     String name();
 
     String rawValue();
+
 }

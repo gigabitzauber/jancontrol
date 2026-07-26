@@ -7,8 +7,8 @@ import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.cruise.NopCruise;
 import de.gigabitzauber.jancontrol.domain.Fan;
-import de.gigabitzauber.jancontrol.domain.FanModes;
 import de.gigabitzauber.jancontrol.domain.RegisteredFan;
+import de.gigabitzauber.jancontrol.drivers.hwmon.Nct6775FanModes;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
 import de.gigabitzauber.jancontrol.util.JcTime;
@@ -89,10 +89,10 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     public void register(Fan fan) {
         registeredFans.add(new RegisteredFan(fan));
 
-        fan.setMode(FanModes.MANUAL);
+        fan.setMode(Nct6775FanModes.MANUAL);
 
         CruiseInstance.create(fan, this, log).schedule(fanCruiseExecutor, this);
-        ModeEnforcer.create(fan, FanModes.MANUAL, log).schedule(fanCruiseExecutor, this);
+        ModeEnforcer.create(fan, Nct6775FanModes.MANUAL, log).schedule(fanCruiseExecutor, this);
     }
 
     public synchronized void record(String dependencyName, int measurement) {

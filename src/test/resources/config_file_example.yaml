@@ -1,8 +1,9 @@
 fans:
   - interval: "3s"
+    hwmonDriver: thinkpad_acpi
     device:
       name: "CPU Fan"
-      sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
+      sysPath: "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2"
     dependsOn:
       - name: "CPU Temp"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"

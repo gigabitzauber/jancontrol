@@ -7,9 +7,9 @@ import de.gigabitzauber.jancontrol.domain.Curve;
 import de.gigabitzauber.jancontrol.domain.CurvePoint;
 import de.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.gigabitzauber.jancontrol.domain.Fan;
-import de.gigabitzauber.jancontrol.domain.FanModes;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
+import de.gigabitzauber.jancontrol.drivers.hwmon.Nct6775FanModes;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -187,9 +187,9 @@ class JanControlIT {
         var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
-        write(rpmDeviceModeFilePathA, FanModes.SMART_FAN_IV.rawValue());
-        assertOutput(output, "Encountered external change of fan mode for " + RPM_DEVICE_NAME_A + ". Enforcing mode " + FanModes.MANUAL);
-        assertFileContent(rpmDeviceModeFilePathA, FanModes.MANUAL.rawValue());
+        write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
+        assertOutput(output, "Encountered external change of fan mode for " + RPM_DEVICE_NAME_A + ". Enforcing mode " + Nct6775FanModes.MANUAL);
+        assertFileContent(rpmDeviceModeFilePathA, Nct6775FanModes.MANUAL.rawValue());
 
         write(tempDeviceFilePathA, "50000");
         expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);
@@ -254,13 +254,13 @@ class JanControlIT {
     private Path createConfig() throws Exception {
         var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString());
         write(rpmDeviceFilePathA, "100");
-        write(rpmDeviceModeFilePathA, FanModes.SMART_FAN_IV.rawValue());
+        write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
         write(tempDeviceFilePathA, "30000");
 
         var rpmDeviceB = new RpmDevice(RPM_DEVICE_NAME_B, rpmDeviceFilePathB.toString());
         write(rpmDeviceFilePathB, "100");
-        write(rpmDeviceModeFilePathB, FanModes.SMART_FAN_IV.rawValue());
+        write(rpmDeviceModeFilePathB, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceB = new TemperatureDevice(TEMP_DEVICE_NAME_B, tempDeviceFilePathB.toString());
         write(tempDeviceFilePathB, "10000");
 

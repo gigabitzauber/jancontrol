@@ -11,6 +11,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.gigabitzauber.jancontrol.cruise.CruiseConfigReader;
 import de.gigabitzauber.jancontrol.domain.CurveType;
 import de.gigabitzauber.jancontrol.domain.CurveTypes;
+import de.gigabitzauber.jancontrol.domain.JcHwmonDriver;
+import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.error.JcException;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +56,18 @@ public class JcJacksonConfig {
                     throw new JcException("Unknown curve type: " + rawText, e);
                 }
             }
+        }
+    }
+
+    public static final class JcHwmonDriverDeserializer extends StdDeserializer<JcHwmonDriver> {
+
+        JcHwmonDriverDeserializer() {
+            super(JcHwmonDriver.class);
+        }
+
+        @Override
+        public JcHwmonDriver deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            return JcHwmonDrivers.fromCfgName(p.getText());
         }
     }
 

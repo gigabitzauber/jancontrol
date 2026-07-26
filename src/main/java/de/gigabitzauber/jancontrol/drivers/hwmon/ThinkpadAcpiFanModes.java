@@ -1,21 +1,21 @@
-package de.gigabitzauber.jancontrol.domain;
+package de.gigabitzauber.jancontrol.drivers.hwmon;
+
+import de.gigabitzauber.jancontrol.domain.FanMode;
 
 import java.util.Arrays;
 
 /*
- * Currently known modes are taken from https://www.kernel.org/doc/Documentation/hwmon/nct6775
+ * See https://docs.kernel.org/admin-guide/laptops/thinkpad-acpi.html
  */
-public enum FanModes implements FanMode {
+public enum ThinkpadAcpiFanModes implements FanMode {
     DISABLED("0"),
     MANUAL("1"),
-    THERMAL_CRUISE("2"),
-    FAN_SPEED_CRUISE("3"),
-    SMART_FAN_III("4"),
-    SMART_FAN_IV("5");
+    AUTO("2"),
+    RESERVED("3");
 
     private final String rawValue;
 
-    FanModes(String rawValue) {
+    ThinkpadAcpiFanModes(String rawValue) {
         this.rawValue = rawValue;
     }
 
@@ -24,7 +24,7 @@ public enum FanModes implements FanMode {
         return this.rawValue;
     }
 
-    public static FanModes fromRawValue(String rawValue) {
+    public static ThinkpadAcpiFanModes fromRawValue(String rawValue) {
         return Arrays.stream(values())
             .filter(curMode -> curMode.rawValue.equals(rawValue))
             .findFirst()

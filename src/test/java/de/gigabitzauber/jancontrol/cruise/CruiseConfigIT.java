@@ -8,6 +8,7 @@ import de.gigabitzauber.jancontrol.domain.CurveTypes;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
+import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,8 +28,9 @@ class CruiseConfigIT {
     private static final CruiseConfig EXPECTED_CONFIG = new CruiseConfig(Set.of(
         Fan.builder()
             .interval(Duration.ofSeconds(3))
+            .hwmonDriver(JcHwmonDrivers.THINKPAD_ACPI)
             .device(
-                new RpmDevice("CPU Fan", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"))
+                new RpmDevice("CPU Fan", "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2"))
             .dependsOn(List.of(
                 new TemperatureDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
             .curves(Set.of(Curve.builder()

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
+import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import lombok.Builder;
 import org.jspecify.annotations.NonNull;
 
@@ -18,6 +19,8 @@ public record Fan(
     @JsonDeserialize(using = JcJacksonConfig.DurationDeserializer.class)
     @JsonSerialize(using = JcJacksonConfig.DurationSerializer.class)
     Duration interval,
+    @JsonDeserialize(using = JcJacksonConfig.JcHwmonDriverDeserializer.class)
+    JcHwmonDriver hwmonDriver,
     RpmDevice device,
     Collection<Curve> curves,
     List<TemperatureDevice> dependsOn) {
@@ -27,6 +30,10 @@ public record Fan(
     public Fan {
         if (interval == null) {
             interval = DEFAULT_INTERVAL;
+        }
+
+        if (hwmonDriver == null) {
+            hwmonDriver = JcHwmonDrivers.NCT6775;
         }
 
         if (curves == null) {
@@ -44,9 +51,11 @@ public record Fan(
     public FanMode getCurrentMode() {
         var modeFileHandle = constructModeFileHandle();
         var rawModeValue = modeFileHandle.readRaw().strip();
-        return Optional.ofNullable(FanModes.fromRawValue(rawModeValue))
+
+        return Optional.ofNullable(hwmonDriver.toFanMode(rawModeValue))
             .orElseThrow(() ->
-                new IllegalArgumentException(modeFileHandle.getSysPath() + " contains unknown fan mode: " + rawModeValue));
+                new IllegalArgumentException("%s contains fan mode unknown to configured driver '%s': %s"
+                    .formatted(modeFileHandle.getSysPath(), hwmonDriver.name(), rawModeValue)));
     }
 
     @JsonIgnore
