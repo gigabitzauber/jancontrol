@@ -63,6 +63,11 @@ public record Fan(
         constructModeFileHandle().writeRaw(newMode.rawValue());
     }
 
+    @JsonIgnore
+    public void activateManualMode() {
+        setMode(hwmonDriver().manualMode());
+    }
+
     private @NonNull RwSysFile constructModeFileHandle() {
         return new RwSysFile(device().getSysPath() + "_enable");
     }

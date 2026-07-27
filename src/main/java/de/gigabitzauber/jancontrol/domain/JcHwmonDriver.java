@@ -1,7 +1,9 @@
 package de.gigabitzauber.jancontrol.domain;
 
 public interface JcHwmonDriver {
-    public String name();
+    String name();
 
-    public FanMode toFanMode(String rawValue);
+    FanMode toFanMode(String rawValue);
+
+    FanMode manualMode();
 }

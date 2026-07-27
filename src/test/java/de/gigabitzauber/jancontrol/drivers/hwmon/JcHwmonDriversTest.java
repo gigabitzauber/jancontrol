@@ -78,4 +78,10 @@ class JcHwmonDriversTest {
     void fromCfgName_should_always_use_lowerCase(JcHwmonDrivers localUnderTest) {
         assertThat(JcHwmonDrivers.fromCfgName(localUnderTest.name().toLowerCase())).isSameAs(localUnderTest);
     }
+
+    @ParameterizedTest
+    @EnumSource(JcHwmonDrivers.class)
+    void should_return_a_manualMode(JcHwmonDrivers localUnderTest) {
+        assertThat(localUnderTest.manualMode()).isNotNull();
+    }
 }

@@ -15,6 +15,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class FanTest {
@@ -97,6 +99,23 @@ class FanTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("contains fan mode unknown to configured driver '%s': %s"
                 .formatted(driverMock.name(), unknownMode.rawValue()));
+    }
+
+    @Test
+    void activateManualMode_should_use_configured_driver() throws Exception {
+        var configuredFanMode = mock(FanMode.class);
+        var driverMock = mock(JcHwmonDriver.class);
+        var manualModeMock = mock(FanMode.class);
+        when(manualModeMock.rawValue()).thenReturn("manualModeMockRawValue");
+        when(driverMock.manualMode()).thenReturn(manualModeMock);
+        var rpmDevice = simulateRpmDevice(driverMock, configuredFanMode);
+        var localUnderTest = spy(Fan.builder()
+            .device(rpmDevice)
+            .hwmonDriver(driverMock).build());
+
+        localUnderTest.activateManualMode();
+
+        verify(localUnderTest).setMode(manualModeMock);
     }
 
     private RpmDevice simulateRpmDevice(JcHwmonDriver driverMock, FanMode expectedFanMode) throws Exception {

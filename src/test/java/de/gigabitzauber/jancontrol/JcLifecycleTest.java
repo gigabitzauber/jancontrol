@@ -6,6 +6,7 @@ import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.cruise.NopCruise;
 import de.gigabitzauber.jancontrol.domain.Fan;
+import de.gigabitzauber.jancontrol.domain.FanMode;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
@@ -39,6 +41,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -119,18 +122,22 @@ class JcLifecycleTest {
         Files.writeString(targetDeviceModeFile, oldMode, CREATE_NEW, WRITE);
         var fanExample = Fan.builder().device(targetDevice).build();
 
-        try (var staticCruiseMock = mockStatic(CruiseInstance.class); var staticEnforcerMock = mockStatic(ModeEnforcer.class)) {
-            var cruiseMock = mock(CruiseInstance.class);
-            staticCruiseMock.when(() -> CruiseInstance.create(any(), any(), any())).thenReturn(cruiseMock);
-            var enforcerMock = mock(ModeEnforcer.class);
-            staticEnforcerMock.when(() -> ModeEnforcer.create(any(), any(), any())).thenReturn(enforcerMock);
-            underTest.register(fanExample);
-        }
+        callRegister(fanExample);
 
         simulateSuccessfulExecutorTermination();
         underTest.stop();
         assertThat(Files.readString(targetDeviceModeFile)).isEqualTo(oldMode);
         assertThat(Files.readString(targetDeviceRpmFile)).isEqualTo(oldRpm);
+    }
+
+    @Test
+    void register_activates_manual_fan_mode() {
+        var fanMock = mockFan();
+
+        callRegister(fanMock);
+
+        verify(fanMock).activateManualMode();
+        verifyNoMoreInteractions(fanMock);
     }
 
     @Test
@@ -236,7 +243,26 @@ class JcLifecycleTest {
         }
     }
 
-    private static @NonNull JcSchedulable simulateSchedulable() {
+    private static Fan mockFan() {
+        var deviceMock = mock(RpmDevice.class);
+        var fanModeMock = Mockito.mock(FanMode.class);
+        var fanMock = Mockito.mock(Fan.class);
+        when(fanMock.device()).thenReturn(deviceMock);
+        when(fanMock.getCurrentMode()).thenReturn(fanModeMock);
+        return fanMock;
+    }
+
+    private void callRegister(Fan fanExample) {
+        try (var staticCruiseMock = mockStatic(CruiseInstance.class); var staticEnforcerMock = mockStatic(ModeEnforcer.class)) {
+            var cruiseMock = mock(CruiseInstance.class);
+            staticCruiseMock.when(() -> CruiseInstance.create(any(), any(), any())).thenReturn(cruiseMock);
+            var enforcerMock = mock(ModeEnforcer.class);
+            staticEnforcerMock.when(() -> ModeEnforcer.create(any(), any(), any())).thenReturn(enforcerMock);
+            underTest.register(fanExample);
+        }
+    }
+
+    private @NonNull JcSchedulable simulateSchedulable() {
         var schedulableExample = mock(JcSchedulable.class);
         var schedulableIdExample = "schedulableIdExample";
         when(schedulableExample.id()).thenReturn(schedulableIdExample);

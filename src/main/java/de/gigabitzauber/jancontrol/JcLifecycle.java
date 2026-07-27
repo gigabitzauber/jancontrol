@@ -89,7 +89,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     public void register(Fan fan) {
         registeredFans.add(new RegisteredFan(fan));
 
-        fan.setMode(Nct6775FanModes.MANUAL);
+        fan.activateManualMode();
 
         CruiseInstance.create(fan, this, log).schedule(fanCruiseExecutor, this);
         ModeEnforcer.create(fan, Nct6775FanModes.MANUAL, log).schedule(fanCruiseExecutor, this);
