@@ -128,20 +128,6 @@ class FanTest {
         assertThat(activatedMode).isEqualTo(manualModeMock);
     }
 
-    @Test
-    void when_allowIdle_is_true_then_use_min_safety_margin() {
-        var localUnderTest = Fan.builder().allowIdle(true).build();
-
-        assertThat(localUnderTest.rpmSafetyMargin()).isEqualTo(Fan.MIN_SAFETY_MARGIN);
-    }
-
-    @Test
-    void when_allowIdle_is_false_then_use_default_safety_margin() {
-        var localUnderTest = Fan.builder().allowIdle(false).build();
-
-        assertThat(localUnderTest.rpmSafetyMargin()).isEqualTo(Fan.DEFAULT_SAFETY_MARGIN);
-    }
-
     private RpmDevice simulateRpmDevice(JcHwmonDriver driverMock, FanMode expectedFanMode) throws Exception {
         var rawFanModeExample = "1";
         when(driverMock.toFanMode(rawFanModeExample)).thenReturn(expectedFanMode);

@@ -3,7 +3,6 @@ package de.gigabitzauber.jancontrol.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.Range;
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import lombok.Builder;
@@ -28,8 +27,6 @@ public record Fan(
     List<TemperatureDevice> dependsOn) {
 
     public static final Duration DEFAULT_INTERVAL = Duration.ofSeconds(5);
-    public static final Range<Integer> DEFAULT_SAFETY_MARGIN = Range.closed(20, 100);
-    public static final Range<Integer> MIN_SAFETY_MARGIN = Range.closed(0, 100);
 
     public Fan {
         if (interval == null) {
@@ -73,15 +70,6 @@ public record Fan(
         setMode(manualMode);
 
         return manualMode;
-    }
-
-    @JsonIgnore
-    public Range<Integer> rpmSafetyMargin() {
-        if (allowIdle) {
-            return MIN_SAFETY_MARGIN;
-        } else {
-            return DEFAULT_SAFETY_MARGIN;
-        }
     }
 
     private @NonNull RwSysFile constructModeFileHandle() {

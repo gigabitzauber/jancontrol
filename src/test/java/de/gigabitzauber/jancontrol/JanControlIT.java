@@ -126,6 +126,9 @@ class JanControlIT {
         var configFilePath = createConfig();
         startApp(configFilePath);
 
+        assertInFullOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_A));
+        assertInFullOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_B));
+
         write(tempDeviceFilePathA, "30000");
         write(tempDeviceFilePathB, "30000");
         write(tempDeviceFilePathC, "30000");
@@ -218,14 +221,24 @@ class JanControlIT {
 
     @Test
     void test_override_safety_margins(CapturedOutput output) throws Exception {
-        var configFilePath = createConfigWithActiveIdleFlag();
+        var expectedActivationThresholdPercent = 13;
+        var configFilePath = createConfigWithActiveIdleFlag(expectedActivationThresholdPercent);
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "30000");
         var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 0, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+
+        write(tempDeviceFilePathA, "40000");
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 0, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+
+        write(tempDeviceFilePathA, "50000");
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, expectedActivationThresholdPercent, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+
         assertNotInFullOutput(output, "Calculated RPM value for " + RPM_DEVICE_NAME_A + " exceeds safe limits.");
         assertNotInFullOutput(output, "Setting RPM value for " + RPM_DEVICE_NAME_B + " to lowest allowed value: 20");
-        assertAction(output, expectedActionOnA);
     }
 
     private void assertFileContent(Path filePath, String expectedContent) {
@@ -251,6 +264,11 @@ class JanControlIT {
     private void assertNotInFullOutput(CapturedOutput output, String expectedOutput) {
         await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
             .untilAsserted(() -> assertThat(output.getAll()).doesNotContain(expectedOutput));
+    }
+
+    private void assertInFullOutput(CapturedOutput output, String expectedOutput) {
+        await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
+            .untilAsserted(() -> assertThat(output.getAll()).contains(expectedOutput));
     }
 
     private void startApp(Path... configFilePaths) {
@@ -334,8 +352,8 @@ class JanControlIT {
         return writeToConfigFile(fanOne, fanTwo);
     }
 
-    private Path createConfigWithActiveIdleFlag() throws Exception {
-        var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString());
+    private Path createConfigWithActiveIdleFlag(int activationRpmPercent) throws Exception {
+        var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString(), activationRpmPercent);
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
@@ -346,8 +364,8 @@ class JanControlIT {
             .type(CurveTypes.LINEAR)
             .points(Set.of(
                 new CurvePoint(30, 0),
-                new CurvePoint(40, 0),
-                new CurvePoint(50, 50),
+                new CurvePoint(40, activationRpmPercent - 1),
+                new CurvePoint(50, activationRpmPercent),
                 new CurvePoint(60, 75),
                 new CurvePoint(70, 110)
             ))

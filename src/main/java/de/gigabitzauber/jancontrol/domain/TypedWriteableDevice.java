@@ -5,5 +5,5 @@ package de.gigabitzauber.jancontrol.domain;
  */
 @FunctionalInterface
 public interface TypedWriteableDevice<T> {
-    void write(T value);
+    T write(T value);
 }

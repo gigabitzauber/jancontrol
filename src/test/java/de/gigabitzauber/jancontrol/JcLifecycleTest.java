@@ -42,7 +42,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -138,7 +137,6 @@ class JcLifecycleTest {
         callRegister(fanMock);
 
         verify(fanMock).activateManualMode();
-        verifyNoMoreInteractions(fanMock);
     }
 
     @Test
@@ -150,6 +148,23 @@ class JcLifecycleTest {
         var enforcedMode = callRegister(fanMock);
 
         assertThat(enforcedMode).isEqualTo(expectedManualMode);
+    }
+
+    @Test
+    void register_logs_registration() {
+        var fanMock = mockFan();
+        var deviceMock = fanMock.device();
+        var expectedActivationThreshold = 22;
+        when(deviceMock.getActivationThreshold()).thenReturn(22);
+        var expectedDeviceName = "expectedDeviceName";
+        when(deviceMock.getName()).thenReturn(expectedDeviceName);
+        var expectedAllowIdle = true;
+        when(fanMock.allowIdle()).thenReturn(expectedAllowIdle);
+
+        callRegister(fanMock);
+
+        verify(logMock).info("Registering fan '{}' with allowIdle: {} and activation threshold: {}%",
+            expectedDeviceName, expectedAllowIdle, expectedActivationThreshold);
     }
 
     @Test

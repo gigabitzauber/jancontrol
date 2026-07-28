@@ -1,5 +1,6 @@
 package de.gigabitzauber.jancontrol.cruise;
 
+import com.google.common.collect.Range;
 import de.gigabitzauber.jancontrol.JcLifecycle;
 import de.gigabitzauber.jancontrol.domain.Curve;
 import de.gigabitzauber.jancontrol.domain.CurvePoint;
@@ -21,6 +22,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -158,7 +160,7 @@ class SimpleCruiseAlgorithmTest {
     private RpmDevice simulateRpmDevice(String name) {
         var result = mock(RpmDevice.class);
         when(result.getName()).thenReturn(name);
-
+        lenient().when(result.safetyMargin()).thenReturn(Range.closed(20, 100));
         return result;
     }
 }

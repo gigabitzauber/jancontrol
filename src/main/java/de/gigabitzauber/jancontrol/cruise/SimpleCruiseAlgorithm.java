@@ -45,27 +45,27 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         } else if (!rpmCandidates.isEmpty()) {
             var newRpm = Collections.max(rpmCandidates);
             var safeNewRpm = safeGetTargetRpm(fan, newRpm);
-            log.debug(safeNewRpm.toString());
-            fan.device().write(safeNewRpm.targetRpm);
+            var actuallyWrittenValue = fan.device().write(safeNewRpm.targetRpm);
+            log.debug(new RpmCandidate(safeNewRpm, actuallyWrittenValue).toString());
         }
     }
 
     private RpmCandidate safeGetTargetRpm(Fan targetFan, RpmCandidate newRpm) {
         var targetRpmValue = newRpm.targetRpm;
-        var rpmSafetyMargin = targetFan.rpmSafetyMargin();
-        if (!rpmSafetyMargin.contains(targetRpmValue)) {
-            log.warn("Calculated RPM value for {} exceeds safe limits.", newRpm.targetDeviceName);
-            var lowestSafeRpmValue = rpmSafetyMargin.lowerEndpoint();
-            if (targetRpmValue < lowestSafeRpmValue) {
-                targetRpmValue = lowestSafeRpmValue;
-                log.warn("Setting RPM value for {} to lowest allowed value: {}", newRpm.targetDeviceName, lowestSafeRpmValue);
-            } else {
-                var highestSafeRpmValue = rpmSafetyMargin.upperEndpoint();
-                if (targetRpmValue > highestSafeRpmValue) {
-                    targetRpmValue = highestSafeRpmValue;
-                    log.warn("Setting RPM value for {} to highest allowed value: {}", newRpm.targetDeviceName, highestSafeRpmValue);
-                }
-            }
+        var rpmSafetyMargin = targetFan.device().safetyMargin();
+        var lowestSafeRpmValue = rpmSafetyMargin.lowerEndpoint();
+        var highestSafeRpmValue = rpmSafetyMargin.upperEndpoint();
+
+        if (!targetFan.allowIdle() && targetRpmValue < lowestSafeRpmValue) {
+            logRpmLimitSafetyWarning(newRpm.targetDeviceName);
+            targetRpmValue = lowestSafeRpmValue;
+            log.warn("Setting RPM value for {} to lowest allowed value: {}", newRpm.targetDeviceName, lowestSafeRpmValue);
+        }
+
+        if (targetRpmValue > highestSafeRpmValue) {
+            logRpmLimitSafetyWarning(newRpm.targetDeviceName);
+            targetRpmValue = highestSafeRpmValue;
+            log.warn("Setting RPM value for {} to highest allowed value: {}", newRpm.targetDeviceName, highestSafeRpmValue);
         }
 
         return new RpmCandidate(newRpm, targetRpmValue);
@@ -88,5 +88,9 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         public String toString() {
             return "Setting %s = %d%% | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, dependencyName, measurement);
         }
+    }
+
+    private void logRpmLimitSafetyWarning(String targetDeviceName) {
+        log.warn("Calculated RPM value for {} exceeds safe limits.", targetDeviceName);
     }
 }
