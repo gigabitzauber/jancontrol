@@ -68,8 +68,11 @@ public record Fan(
     }
 
     @JsonIgnore
-    public void activateManualMode() {
-        setMode(hwmonDriver().manualMode());
+    public FanMode activateManualMode() {
+        var manualMode = hwmonDriver().manualMode();
+        setMode(manualMode);
+
+        return manualMode;
     }
 
     @JsonIgnore

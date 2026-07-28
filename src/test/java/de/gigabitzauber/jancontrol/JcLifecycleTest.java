@@ -15,6 +15,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -141,6 +142,17 @@ class JcLifecycleTest {
     }
 
     @Test
+    void register_schedules_enforcer_with_correct_mode() {
+        var expectedManualMode = mock(FanMode.class);
+        var fanMock = mockFan();
+        when(fanMock.activateManualMode()).thenReturn(expectedManualMode);
+
+        var enforcedMode = callRegister(fanMock);
+
+        assertThat(enforcedMode).isEqualTo(expectedManualMode);
+    }
+
+    @Test
     void when_error_count_of_schedulable_is_below_threshold_then_do_not_throw_but_log_debug_only() {
         simulateTime(0);
         var schedulableExample = simulateSchedulable();
@@ -252,14 +264,18 @@ class JcLifecycleTest {
         return fanMock;
     }
 
-    private void callRegister(Fan fanExample) {
+    private FanMode callRegister(Fan fanExample) {
+        var modeCaptor = ArgumentCaptor.forClass(FanMode.class);
         try (var staticCruiseMock = mockStatic(CruiseInstance.class); var staticEnforcerMock = mockStatic(ModeEnforcer.class)) {
             var cruiseMock = mock(CruiseInstance.class);
             staticCruiseMock.when(() -> CruiseInstance.create(any(), any(), any())).thenReturn(cruiseMock);
             var enforcerMock = mock(ModeEnforcer.class);
-            staticEnforcerMock.when(() -> ModeEnforcer.create(any(), any(), any())).thenReturn(enforcerMock);
+            staticEnforcerMock.when(() -> ModeEnforcer.create(any(), modeCaptor.capture(), any())).thenReturn(enforcerMock);
+
             underTest.register(fanExample);
         }
+
+        return modeCaptor.getValue();
     }
 
     private @NonNull JcSchedulable simulateSchedulable() {

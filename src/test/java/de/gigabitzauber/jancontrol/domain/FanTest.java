@@ -122,9 +122,10 @@ class FanTest {
             .device(rpmDevice)
             .hwmonDriver(driverMock).build());
 
-        localUnderTest.activateManualMode();
+        var activatedMode = localUnderTest.activateManualMode();
 
         verify(localUnderTest).setMode(manualModeMock);
+        assertThat(activatedMode).isEqualTo(manualModeMock);
     }
 
     @Test
