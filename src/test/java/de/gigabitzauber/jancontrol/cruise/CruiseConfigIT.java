@@ -29,6 +29,7 @@ class CruiseConfigIT {
         Fan.builder()
             .interval(Duration.ofSeconds(3))
             .hwmonDriver(JcHwmonDrivers.THINKPAD_ACPI)
+            .allowIdle(true)
             .device(
                 new RpmDevice("CPU Fan", "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2"))
             .dependsOn(List.of(

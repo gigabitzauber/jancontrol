@@ -1,6 +1,5 @@
 package de.gigabitzauber.jancontrol.cruise;
 
-import com.google.common.collect.Range;
 import de.gigabitzauber.jancontrol.JcLifecycle;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import org.slf4j.Logger;
@@ -12,8 +11,6 @@ import java.util.Collections;
 import static java.util.Objects.requireNonNull;
 
 public final class SimpleCruiseAlgorithm implements Runnable {
-
-    private static final Range<Integer> VALID_WRITE_RANGE = Range.closed(20, 100);
 
     private final Fan fan;
     private final JcLifecycle lifecycle;
@@ -47,22 +44,23 @@ public final class SimpleCruiseAlgorithm implements Runnable {
             log.info("Cruise command got interrupted. Shutting down..");
         } else if (!rpmCandidates.isEmpty()) {
             var newRpm = Collections.max(rpmCandidates);
-            var safeNewRpm = safeGetTargetRpm(newRpm);
+            var safeNewRpm = safeGetTargetRpm(fan, newRpm);
             log.debug(safeNewRpm.toString());
             fan.device().write(safeNewRpm.targetRpm);
         }
     }
 
-    private RpmCandidate safeGetTargetRpm(RpmCandidate newRpm) {
+    private RpmCandidate safeGetTargetRpm(Fan targetFan, RpmCandidate newRpm) {
         var targetRpmValue = newRpm.targetRpm;
-        if (!VALID_WRITE_RANGE.contains(targetRpmValue)) {
+        var rpmSafetyMargin = targetFan.rpmSafetyMargin();
+        if (!rpmSafetyMargin.contains(targetRpmValue)) {
             log.warn("Calculated RPM value for {} exceeds safe limits.", newRpm.targetDeviceName);
-            var lowestSafeRpmValue = VALID_WRITE_RANGE.lowerEndpoint();
+            var lowestSafeRpmValue = rpmSafetyMargin.lowerEndpoint();
             if (targetRpmValue < lowestSafeRpmValue) {
                 targetRpmValue = lowestSafeRpmValue;
                 log.warn("Setting RPM value for {} to lowest allowed value: {}", newRpm.targetDeviceName, lowestSafeRpmValue);
             } else {
-                var highestSafeRpmValue = VALID_WRITE_RANGE.upperEndpoint();
+                var highestSafeRpmValue = rpmSafetyMargin.upperEndpoint();
                 if (targetRpmValue > highestSafeRpmValue) {
                     targetRpmValue = highestSafeRpmValue;
                     log.warn("Setting RPM value for {} to highest allowed value: {}", newRpm.targetDeviceName, highestSafeRpmValue);

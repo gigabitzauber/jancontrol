@@ -21,7 +21,7 @@
         <Class name="de.gigabitzauber.jancontrol.domain.Fan"/>
         <!-- This is a constructor match -->
         <Method name="&lt;init&gt;"
-                params="java.time.Duration, de.gigabitzauber.jancontrol.domain.JcHwmonDriver, de.gigabitzauber.jancontrol.domain.RpmDevice, java.util.Collection, java.util.List"/>
+                params="java.time.Duration, de.gigabitzauber.jancontrol.domain.JcHwmonDriver, boolean, de.gigabitzauber.jancontrol.domain.RpmDevice, java.util.Collection, java.util.List"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
 </FindBugsFilter>

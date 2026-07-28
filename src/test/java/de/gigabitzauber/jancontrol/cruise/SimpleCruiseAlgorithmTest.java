@@ -8,6 +8,8 @@ import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
@@ -55,15 +57,15 @@ class SimpleCruiseAlgorithmTest {
             .hasMessage("log must not be null");
     }
 
-    @Test
-    void test_with_one_dependency_and_low_mid_and_high_values() {
+    @ParameterizedTest
+    @CsvSource({"false, 20", "true, 0"})
+    void test_with_one_dependency_and_low_mid_and_high_values(boolean idleFlag, int expectedLowerRpmThreshold) {
         var lowTempExample = 30;
         var midTempExample = 40;
         var highTempExample = 50;
         var temperatureDevice = simulateTemperatureDevice("dependencyA", lowTempExample, midTempExample, highTempExample);
-        String rpmDeviceName = "rpmDeviceMockA";
+        var rpmDeviceName = "rpmDeviceMockA";
         var rpmDevice = simulateRpmDevice(rpmDeviceName);
-        var expectedLowerRpmThreshold = 20;
         var expectedMidRpm = 50;
         var expectedHighRpmThreshold = 100;
         var curve = Curve.builder()
@@ -75,6 +77,7 @@ class SimpleCruiseAlgorithmTest {
             )).build();
         var fan = Fan.builder()
             .device(rpmDevice)
+            .allowIdle(idleFlag)
             .dependsOn(List.of(temperatureDevice))
             .curves(List.of(curve))
             .build();
@@ -82,7 +85,9 @@ class SimpleCruiseAlgorithmTest {
 
         localUnderTest.run();
         verify(rpmDevice).write(expectedLowerRpmThreshold);
-        verify(logMock).warn("Setting RPM value for {} to lowest allowed value: {}", rpmDeviceName, expectedLowerRpmThreshold);
+        if (!idleFlag) {
+            verify(logMock).warn("Setting RPM value for {} to lowest allowed value: {}", rpmDeviceName, expectedLowerRpmThreshold);
+        }
 
         localUnderTest.run();
         verify(rpmDevice).write(expectedMidRpm);
@@ -90,7 +95,7 @@ class SimpleCruiseAlgorithmTest {
         localUnderTest.run();
         verify(rpmDevice).write(expectedHighRpmThreshold);
         verify(logMock).warn("Setting RPM value for {} to highest allowed value: {}", rpmDeviceName, expectedHighRpmThreshold);
-        verify(logMock, times(2)).warn("Calculated RPM value for {} exceeds safe limits.", rpmDeviceName);
+        verify(logMock, times(idleFlag ? 1 : 2)).warn("Calculated RPM value for {} exceeds safe limits.", rpmDeviceName);
     }
 
     @Test

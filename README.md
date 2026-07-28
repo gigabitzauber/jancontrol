@@ -21,6 +21,7 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
 * [Examples](#examples)
 * [Supported Hardware](#supported-hardware)
 * [Does it survive Suspend and Hibernation?](#does-it-survive-suspend-and-hibernation)
+* [My fans won't stop even though I configured rpm: 0](#my-fans-wont-stop-even-though-i-configured-rpm-0)
 * [Note on chosen technology](#note-on-chosen-technology)
 
 <!--te-->
@@ -123,6 +124,20 @@ fans:
 
 Yes, since v0.3.0. Suspend / Hibernate usually puts fans back into full auto mode and the tool will recognize this and
 enforce its config.
+
+## My fans won't stop even though I configured rpm: 0
+
+By default, the tool will not allow fans to spin at less than 20% to make sure hardware is not overheating. However,
+there are cases where this is still desirable, e.g. on laptops to make them as quiet as possible. Thus, this safety
+mechanism can be overridden like this:
+
+```yaml
+fans:
+  - interval: "3s"
+    allowIdle: true
+    device:
+      ...
+```
 
 ## Note on chosen technology
 

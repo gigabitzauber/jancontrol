@@ -3,6 +3,7 @@ package de.gigabitzauber.jancontrol.config;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -29,6 +30,7 @@ public class JcJacksonConfig {
     public YAMLMapper yamlMapper() {
         var result = new YAMLMapper();
         result.registerModule(new JavaTimeModule());
+        result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return result;
     }
 

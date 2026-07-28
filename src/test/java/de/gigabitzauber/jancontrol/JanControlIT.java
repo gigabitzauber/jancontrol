@@ -11,6 +11,7 @@ import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.Nct6775FanModes;
 import org.assertj.core.api.Assertions;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -214,6 +216,18 @@ class JanControlIT {
         assertAction(output, expectedActionOnA);
     }
 
+    @Test
+    void test_override_safety_margins(CapturedOutput output) throws Exception {
+        var configFilePath = createConfigWithActiveIdleFlag();
+        startApp(configFilePath);
+
+        write(tempDeviceFilePathA, "30000");
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 0, RPM_DEVICE_NAME_A);
+        assertNotInFullOutput(output, "Calculated RPM value for " + RPM_DEVICE_NAME_A + " exceeds safe limits.");
+        assertNotInFullOutput(output, "Setting RPM value for " + RPM_DEVICE_NAME_B + " to lowest allowed value: 20");
+        assertAction(output, expectedActionOnA);
+    }
+
     private void assertFileContent(Path filePath, String expectedContent) {
         await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
             .untilAsserted(() -> assertThat(filePath).content().isEqualTo(expectedContent));
@@ -317,7 +331,42 @@ class JanControlIT {
             .curves(Set.of(curveB, curveC))
             .build();
 
-        var config = new CruiseConfig(Set.of(fanOne, fanTwo));
+        return writeToConfigFile(fanOne, fanTwo);
+    }
+
+    private Path createConfigWithActiveIdleFlag() throws Exception {
+        var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString());
+        write(rpmDeviceFilePathA, "100");
+        write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
+        var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
+        write(tempDeviceFilePathA, "30000");
+
+        var curveA = Curve.builder()
+            .ref(TEMP_DEVICE_NAME_A)
+            .type(CurveTypes.LINEAR)
+            .points(Set.of(
+                new CurvePoint(30, 0),
+                new CurvePoint(40, 0),
+                new CurvePoint(50, 50),
+                new CurvePoint(60, 75),
+                new CurvePoint(70, 110)
+            ))
+            .build();
+
+        var fanOne = Fan.builder()
+            .interval(INTERVAL_EXAMPLE)
+            .allowIdle(true)
+            .device(rpmDeviceA)
+            .dependsOn(List.of(tempDeviceA))
+            .curves(Set.of(curveA))
+            .build();
+
+        return writeToConfigFile(fanOne);
+    }
+
+    private @NonNull Path writeToConfigFile(Fan... fans) throws Exception {
+        var fanList = Arrays.asList(fans);
+        var config = new CruiseConfig(fanList);
 
         var yamlMapper = new JcJacksonConfig().yamlMapper();
         var configData = yamlMapper.writeValueAsString(config);
