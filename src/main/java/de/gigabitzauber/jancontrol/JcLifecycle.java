@@ -123,7 +123,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
             } else {
                 log.debug("Schedulable {} encountered error #{}: {}", failedSchedulable.id(), newErrorCount, t.getMessage());
             }
-            e.getParent().schedule(fanCruiseExecutor, this);
+            failedSchedulable.reSchedule(fanCruiseExecutor, this);
         } else {
             log.error("Encountered unexpected error", t);
         }

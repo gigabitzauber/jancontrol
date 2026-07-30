@@ -51,6 +51,7 @@ class JanControlIT {
     private static final String TEMP_DEVICE_NAME_C = "tempDeviceC";
 
     private static final Duration INTERVAL_EXAMPLE = Duration.ofSeconds(2);
+    public static final Duration LOG_MESSAGE_ASSERTION_TIMEOUT = INTERVAL_EXAMPLE.multipliedBy(5);
     private static final Duration EXECUTOR_SHUTDOWN_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration SPRING_SHUTDOWN_TIMEOUT = Duration.ofSeconds(40);
 
@@ -242,7 +243,7 @@ class JanControlIT {
     }
 
     private void assertFileContent(Path filePath, String expectedContent) {
-        await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
+        await().atMost(LOG_MESSAGE_ASSERTION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
             .untilAsserted(() -> assertThat(filePath).content().isEqualTo(expectedContent));
     }
 
@@ -251,7 +252,7 @@ class JanControlIT {
     }
 
     private void assertOutput(CapturedOutput output, String expectedOutput) {
-        await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
+        await().atMost(LOG_MESSAGE_ASSERTION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
             .untilAsserted(() -> {
                 int foundOutputIndex = output.getAll().indexOf(expectedOutput, lastFoundOutputIndex);
                 assertThat(foundOutputIndex)
@@ -262,12 +263,12 @@ class JanControlIT {
     }
 
     private void assertNotInFullOutput(CapturedOutput output, String expectedOutput) {
-        await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
+        await().atMost(LOG_MESSAGE_ASSERTION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
             .untilAsserted(() -> assertThat(output.getAll()).doesNotContain(expectedOutput));
     }
 
     private void assertInFullOutput(CapturedOutput output, String expectedOutput) {
-        await().atMost(INTERVAL_EXAMPLE.multipliedBy(2).toMillis(), TimeUnit.MILLISECONDS)
+        await().atMost(LOG_MESSAGE_ASSERTION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
             .untilAsserted(() -> assertThat(output.getAll()).contains(expectedOutput));
     }
 

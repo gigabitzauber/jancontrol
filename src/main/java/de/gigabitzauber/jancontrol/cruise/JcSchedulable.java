@@ -18,14 +18,14 @@ public abstract class JcSchedulable {
 
     private final Runnable op;
     private final String opName;
-    private final Duration initialDelay;
+    private final Duration initialMaxDelay;
     private final Duration interval;
     private final String id;
 
     protected JcSchedulable(Runnable op, String opName, Duration initialMaxDelay, Duration interval) {
         this.op = op;
         this.opName = opName;
-        this.initialDelay = initialMaxDelay;
+        this.initialMaxDelay = initialMaxDelay;
         this.interval = interval;
 
         this.id = "%s@%s".formatted(this.opName, UUID.randomUUID().toString());
@@ -36,10 +36,19 @@ public abstract class JcSchedulable {
     }
 
     public final void schedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback) {
+        var initialDelayMillis = randomizeInitialDelay();
+        internalSchedule(executor, callback, initialDelayMillis);
+    }
+
+    public final void reSchedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback) {
+        var initialDelayMillis = randomizeInitialDelay();
+        internalSchedule(executor, callback, this.initialMaxDelay.toMillis() + initialDelayMillis);
+    }
+
+    private void internalSchedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback, long initialDelay) {
         requireNonNull(executor, "executor must not be null");
         requireNonNull(callback, "callback must not be null");
 
-        var initialDelayMillis = rnd.nextLong(initialDelay.toMillis());
         var future = executor.scheduleAtFixedRate(
             () -> {
                 try {
@@ -48,10 +57,14 @@ public abstract class JcSchedulable {
                     throw new JcSchedulableException(this.opName + " ran into error", this, e);
                 }
             },
-            initialDelayMillis,
+            initialDelay,
             interval.toMillis(),
             TimeUnit.MILLISECONDS);
 
         Futures.addCallback(future, callback, executor);
+    }
+
+    private long randomizeInitialDelay() {
+        return rnd.nextLong(initialMaxDelay.toMillis());
     }
 }

@@ -140,7 +140,7 @@ class JcLifecycleTest {
     }
 
     @Test
-    void register_schedules_enforcer_with_correct_mode() {
+    void register_schedules_enforcer_with_manual_mode() {
         var expectedManualMode = mock(FanMode.class);
         var fanMock = mockFan();
         when(fanMock.activateManualMode()).thenReturn(expectedManualMode);
@@ -197,6 +197,8 @@ class JcLifecycleTest {
             JcLifecycle.ERROR_THRESHOLD,
             schedulableErrorExample.getMessage(),
             schedulableErrorExample);
+        verify(schedulableExample, times(JcLifecycle.ERROR_THRESHOLD + 1))
+            .reSchedule(executorMock, underTest);
     }
 
     @Test
