@@ -212,8 +212,9 @@ class JanControlIT {
         assertAction(output, expectedActionOnA);
 
         Files.delete(rpmDeviceFilePathA);
-        assertOutput(output, "Path does not exist: " + rpmDeviceFilePathA);
-
+        assertOutput(output,
+            "exhausted error threshold of 3 for error: fan cruise (" + RPM_DEVICE_NAME_A + ") "
+                + "ran into error: Path does not exist: " + rpmDeviceFilePathA);
         write(rpmDeviceFilePathA, "61");
         write(tempDeviceFilePathA, "50000");
         expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);

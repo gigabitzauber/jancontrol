@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGenerator;
 
+import static de.gigabitzauber.jancontrol.cruise.JcErrorUtil.safeGetMessage;
 import static java.util.Objects.requireNonNull;
 
 public abstract class JcSchedulable {
@@ -42,7 +43,7 @@ public abstract class JcSchedulable {
 
     public final void reSchedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback) {
         var initialDelayMillis = randomizeInitialDelay();
-        internalSchedule(executor, callback, this.initialMaxDelay.toMillis() + initialDelayMillis);
+        internalSchedule(executor, callback, this.interval.toMillis() + initialDelayMillis);
     }
 
     private void internalSchedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback, long initialDelay) {
@@ -54,7 +55,8 @@ public abstract class JcSchedulable {
                 try {
                     op.run();
                 } catch (Exception e) {
-                    throw new JcSchedulableException(this.opName + " ran into error", this, e);
+                    var errMsg = this.opName + " ran into error: " + safeGetMessage(e);
+                    throw new JcSchedulableException(errMsg, this, e);
                 }
             },
             initialDelay,
