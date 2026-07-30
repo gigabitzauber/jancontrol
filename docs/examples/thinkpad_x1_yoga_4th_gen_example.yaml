@@ -1,0 +1,41 @@
+# Real life scenario for a Thinkpad X1 Yoga 4th gen
+fans:
+  # On Thinkpads, there is a watchdog that overrides manual mode if no change has been made during its watch interval.
+  # Also: Thinkpads usually take there time to step up or down the fan. It may take several seconds to react to changes
+  # and may take up to 2min to reach full speed starting from 0
+  # Conclusion: Choose the interval long enough to account for ramp up/down, but not too long to trigger the "idle" watchdog.
+  - interval: "30s"
+    hwmonDriver: "thinkpad_acpi"
+    allowIdle: true
+    device:
+      name: "CPU Fan"
+      sysPath: "/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon8/pwm1"
+      activationThreshold: 15
+    dependsOn:
+      - name: "CPU Temp"
+        sysPath: "/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon8/temp1_input"
+    curves:
+      - ref: "CPU Temp"
+        # The Thinkpad fan works in discrete "levels", so it is not useful to fine tune percentages.
+        # On my ThinkPad X1 Yoga 4th there are 5 levels: 0, 14-28, 43-56, 57-71, >=85 percent (full speed) respectively.
+        points:
+          - temp: 30
+            rpm: 0
+          - temp: 35
+            rpm: 0
+          - temp: 40
+            rpm: 0
+          - temp: 45
+            rpm: 0
+          - temp: 50
+            rpm: 0
+          - temp: 55
+            rpm: 15
+          - temp: 60
+            rpm: 45
+          - temp: 64
+            rpm: 45
+          - temp: 67
+            rpm: 58
+          - temp: 70
+            rpm: 86
