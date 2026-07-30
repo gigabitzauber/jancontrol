@@ -42,11 +42,10 @@ class FanTest {
         var curves = Set.of(Curve.builder().build());
         var dependsOn = List.of(mock(TemperatureDevice.class));
 
-        var localUnderTest = new Fan(interval, driver, true, device, curves, dependsOn);
+        var localUnderTest = new Fan(interval, driver, device, curves, dependsOn);
 
         assertThat(localUnderTest.interval()).isEqualTo(interval);
         assertThat(localUnderTest.hwmonDriver()).isEqualTo(driver);
-        assertThat(localUnderTest.allowIdle()).isTrue();
         assertThat(localUnderTest.device()).isEqualTo(device);
         assertThat(localUnderTest.curves()).isEqualTo(curves);
         assertThat(localUnderTest.dependsOn()).isEqualTo(dependsOn);
@@ -69,13 +68,6 @@ class FanTest {
         var localUnderTest = Fan.builder().build();
 
         assertThat(localUnderTest.hwmonDriver()).isEqualTo(JcHwmonDrivers.NCT6775);
-    }
-
-    @Test
-    void should_use_default_allowIdle_if_none_specified() {
-        var localUnderTest = Fan.builder().build();
-
-        assertThat(localUnderTest.allowIdle()).isFalse();
     }
 
     @Test

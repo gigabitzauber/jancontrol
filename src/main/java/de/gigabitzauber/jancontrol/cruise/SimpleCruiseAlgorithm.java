@@ -56,7 +56,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         var lowestSafeRpmValue = rpmSafetyMargin.lowerEndpoint();
         var highestSafeRpmValue = rpmSafetyMargin.upperEndpoint();
 
-        if (!targetFan.allowIdle() && targetRpmValue < lowestSafeRpmValue) {
+        if (!targetFan.device().isAllowIdle() && targetRpmValue < lowestSafeRpmValue) {
             logRpmLimitSafetyWarning(newRpm.targetDeviceName);
             targetRpmValue = lowestSafeRpmValue;
             log.warn("Setting RPM value for {} to lowest allowed value: {}", newRpm.targetDeviceName, lowestSafeRpmValue);

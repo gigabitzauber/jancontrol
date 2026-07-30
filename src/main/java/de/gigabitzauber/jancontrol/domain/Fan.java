@@ -21,7 +21,6 @@ public record Fan(
     Duration interval,
     @JsonDeserialize(using = JcJacksonConfig.JcHwmonDriverDeserializer.class)
     JcHwmonDriver hwmonDriver,
-    boolean allowIdle,
     RpmDevice device,
     Collection<Curve> curves,
     List<TemperatureDevice> dependsOn) {

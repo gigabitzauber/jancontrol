@@ -353,7 +353,7 @@ class JanControlIT {
     }
 
     private Path createConfigWithActiveIdleFlag(int activationRpmPercent) throws Exception {
-        var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString(), activationRpmPercent);
+        var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString(), true, activationRpmPercent);
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
@@ -373,7 +373,6 @@ class JanControlIT {
 
         var fanOne = Fan.builder()
             .interval(INTERVAL_EXAMPLE)
-            .allowIdle(true)
             .device(rpmDeviceA)
             .dependsOn(List.of(tempDeviceA))
             .curves(Set.of(curveA))

@@ -88,7 +88,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     public void register(Fan fan) {
         var fanDevice = fan.device();
         log.info("Registering fan '{}' with allowIdle: {} and activation threshold: {}%",
-            fanDevice.getName(), fan.allowIdle(), fanDevice.getActivationThreshold());
+            fanDevice.getName(), fanDevice.isAllowIdle(), fanDevice.getActivationThreshold());
         registeredFans.add(new RegisteredFan(fan));
 
         var manualMode = fan.activateManualMode();

@@ -68,6 +68,7 @@ class SimpleCruiseAlgorithmTest {
         var temperatureDevice = simulateTemperatureDevice("dependencyA", lowTempExample, midTempExample, highTempExample);
         var rpmDeviceName = "rpmDeviceMockA";
         var rpmDevice = simulateRpmDevice(rpmDeviceName);
+        when(rpmDevice.isAllowIdle()).thenReturn(idleFlag);
         var expectedMidRpm = 50;
         var expectedHighRpmThreshold = 100;
         var curve = Curve.builder()
@@ -79,7 +80,6 @@ class SimpleCruiseAlgorithmTest {
             )).build();
         var fan = Fan.builder()
             .device(rpmDevice)
-            .allowIdle(idleFlag)
             .dependsOn(List.of(temperatureDevice))
             .curves(List.of(curve))
             .build();

@@ -1,10 +1,11 @@
 fans:
   - interval: "3s"
     hwmonDriver: "thinkpad_acpi"
-    allowIdle: true
     thisKeyIsUnknown: "and should not cause a read exception"
     device:
       name: "CPU Fan"
+      allowIdle: true
+      activationThreshold: 15
       sysPath: "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2"
     dependsOn:
       - name: "CPU Temp"

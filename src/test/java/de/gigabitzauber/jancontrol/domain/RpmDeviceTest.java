@@ -24,15 +24,17 @@ class RpmDeviceTest {
     private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
     private static final String SYS_FILE_EXAMPLE = "sysFileExample";
     private static final Path SYS_FILE_PATH_EXAMPLE = Paths.get(SYS_FILE_EXAMPLE);
+    private static final boolean ALLOW_IDLE_EXAMPLE = true;
     private static final int ACTIVATION_THRESHOLD_EXAMPLE = 11;
 
-    private final RpmDevice underTest = new RpmDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE, ACTIVATION_THRESHOLD_EXAMPLE);
+    private final RpmDevice underTest = new RpmDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE, ALLOW_IDLE_EXAMPLE, ACTIVATION_THRESHOLD_EXAMPLE);
 
     @Test
     void test_no_args_constructor() {
         var localUnderTest = new RpmDevice();
         assertThat(localUnderTest.getName()).isNull();
         assertThat(localUnderTest.getSysPath()).isNull();
+        assertThat(localUnderTest.isAllowIdle()).isFalse();
         assertThat(localUnderTest.getActivationThreshold()).isEqualTo(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT);
         assertThat(localUnderTest.safetyMargin()).isEqualTo(Range.closed(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT, 100));
     }
@@ -49,14 +51,16 @@ class RpmDeviceTest {
         var localUnderTest = new RpmDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE);
         assertThat(localUnderTest.getName()).isEqualTo(NAME_EXAMPLE);
         assertThat(localUnderTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
+        assertThat(localUnderTest.isAllowIdle()).isFalse();
         assertThat(localUnderTest.getActivationThreshold()).isEqualTo(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT);
         assertThat(localUnderTest.safetyMargin()).isEqualTo(Range.closed(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT, 100));
     }
 
     @Test
-    void when_constructed_with_name_and_sys_path_and_activation_threshold_then_properties_are_set() {
+    void when_constructed_with_name_and_sys_path_and_allowIdle_and_activation_threshold_then_properties_are_set() {
         assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
         assertThat(underTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
+        assertThat(underTest.isAllowIdle()).isEqualTo(ALLOW_IDLE_EXAMPLE);
         assertThat(underTest.getActivationThreshold()).isEqualTo(ACTIVATION_THRESHOLD_EXAMPLE);
         assertThat(underTest.safetyMargin()).isEqualTo(Range.closed(ACTIVATION_THRESHOLD_EXAMPLE, 100));
     }

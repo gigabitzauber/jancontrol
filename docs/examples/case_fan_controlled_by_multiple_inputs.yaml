@@ -8,7 +8,7 @@ fans:
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
     dependsOn:
       - name: "CPU Temp"
-        sysPath: "/sys/devices/platform/asus-ec-sensors/hwmon/hwmon7/temp2_input"
+        sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
     curves:
       - ref: "CPU Temp"
         points:
@@ -30,7 +30,7 @@ fans:
       - name: "GPU Temp"
         sysPath: "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon/hwmon3/temp1_input"
       - name: "CPU Temp"
-        sysPath: "/sys/devices/platform/asus-ec-sensors/hwmon/hwmon7/temp2_input"
+        sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
     curves:
       - ref: "Case Temp"
         points:

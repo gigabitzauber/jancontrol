@@ -24,23 +24,27 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
     private static final Range<Integer> VALID_WRITE_RANGE = Range.closed(0, 100);
     private static final Range<Integer> VALID_READ_RANGE = Range.closed(0, 255);
 
+    private final boolean allowIdle;
     private final int activationThreshold;
 
     public RpmDevice() {
         super();
+        this.allowIdle = false;
         this.activationThreshold = DEFAULT_ACTIVATION_THRESHOLD_PERCENT;
     }
 
     public RpmDevice(String name, String sysPath) {
         super(name, sysPath);
+        this.allowIdle = false;
         this.activationThreshold = DEFAULT_ACTIVATION_THRESHOLD_PERCENT;
     }
 
-    public RpmDevice(String name, String sysPath, int activationThreshold) {
+    public RpmDevice(String name, String sysPath, boolean allowIdle, int activationThreshold) {
         super(name, sysPath);
         checkArgument(VALID_WRITE_RANGE.contains(activationThreshold),
             "activationThreshold must be in interval [%d, %d]"
                 .formatted(VALID_WRITE_RANGE.lowerEndpoint(), VALID_WRITE_RANGE.upperEndpoint()));
+        this.allowIdle = allowIdle;
         this.activationThreshold = activationThreshold;
     }
 

@@ -20,8 +20,10 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
 * [Configure](#configure)
 * [Examples](#examples)
 * [Supported Hardware](#supported-hardware)
-* [Does it survive Suspend and Hibernation?](#does-it-survive-suspend-and-hibernation)
-* [My fans won't stop even though I configured rpm: 0](#my-fans-wont-stop-even-though-i-configured-rpm-0)
+* [FAQ](#faq)
+    * [Does it survive Suspend and Hibernation?](#does-it-survive-suspend-and-hibernation)
+    * [My fans won't stop even though I configured rpm: 0](#my-fans-wont-stop-even-though-i-configured-rpm-0)
+    * [Fan activation threshold](#fan-activation-threshold)
 * [Note on chosen technology](#note-on-chosen-technology)
 
 <!--te-->
@@ -120,12 +122,14 @@ fans:
 | NCT6775  | nct6775 (default value) | [nct6775](https://docs.kernel.org/hwmon/nct6775.html)                           | Should also work for NCT6775F, NCT6776F & W83627EHF. |
 | Thinkpad | thinkpad_acpi           | [thinkpad_acpi](https://docs.kernel.org/admin-guide/laptops/thinkpad-acpi.html) | May work on all models that support this driver (?)  |
 
-## Does it survive Suspend and Hibernation?
+## FAQ
+
+### Does it survive Suspend and Hibernation?
 
 Yes, since v0.3.0. Suspend / Hibernate usually puts fans back into full auto mode and the tool will recognize this and
 enforce its config.
 
-## My fans won't stop even though I configured rpm: 0
+### My fans won't stop even though I configured rpm: 0
 
 By default, the tool will not allow fans to spin at less than 20% to make sure hardware is not overheating. However,
 there are cases where this is still desirable, e.g. on laptops to make them as quiet as possible. Thus, this safety
@@ -134,9 +138,27 @@ mechanism can be overridden like this:
 ```yaml
 fans:
   - interval: "3s"
-    allowIdle: true
     device:
-      ...
+      allowIdle: true
+...
+```
+
+### Fan activation threshold
+
+Most fans do not activate when configured to spin at e.g. 1% rpm. They have an individual threshold at which they
+activate. This is called the activation threshold. To not bother the hardware with values below this threshold, the tool
+will set rpm to 0% for all configured curve values below this threshold.
+
+The default threshold is 20%.
+
+However, you may override this threshold like this:
+
+```yaml
+fans:
+  - interval: "3s"
+    device:
+      activationThreshold: 15
+...
 ```
 
 ## Note on chosen technology

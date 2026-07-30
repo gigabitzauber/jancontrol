@@ -29,9 +29,8 @@ class CruiseConfigIT {
         Fan.builder()
             .interval(Duration.ofSeconds(3))
             .hwmonDriver(JcHwmonDrivers.THINKPAD_ACPI)
-            .allowIdle(true)
             .device(
-                new RpmDevice("CPU Fan", "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2"))
+                new RpmDevice("CPU Fan", "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2", true, 15))
             .dependsOn(List.of(
                 new TemperatureDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
             .curves(Set.of(Curve.builder()

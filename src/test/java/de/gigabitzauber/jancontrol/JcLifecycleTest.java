@@ -154,12 +154,12 @@ class JcLifecycleTest {
     void register_logs_registration() {
         var fanMock = mockFan();
         var deviceMock = fanMock.device();
+        var expectedAllowIdle = true;
+        when(deviceMock.isAllowIdle()).thenReturn(expectedAllowIdle);
         var expectedActivationThreshold = 22;
         when(deviceMock.getActivationThreshold()).thenReturn(22);
         var expectedDeviceName = "expectedDeviceName";
         when(deviceMock.getName()).thenReturn(expectedDeviceName);
-        var expectedAllowIdle = true;
-        when(fanMock.allowIdle()).thenReturn(expectedAllowIdle);
 
         callRegister(fanMock);
 
