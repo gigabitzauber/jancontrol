@@ -1,5 +1,8 @@
 package de.gigabitzauber.jancontrol.domain;
 
+import de.gigabitzauber.jancontrol.domain.api.Device;
+import de.gigabitzauber.jancontrol.domain.api.RawReadableDevice;
+import de.gigabitzauber.jancontrol.domain.api.RawWriteableDevice;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
 
 import static java.util.Objects.requireNonNull;

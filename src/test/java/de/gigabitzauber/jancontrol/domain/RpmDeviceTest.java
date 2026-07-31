@@ -1,6 +1,11 @@
 package de.gigabitzauber.jancontrol.domain;
 
 import com.google.common.collect.Range;
+import de.gigabitzauber.jancontrol.domain.api.FanMode;
+import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
+import de.gigabitzauber.jancontrol.domain.api.NamedDevice;
+import de.gigabitzauber.jancontrol.domain.api.TypedReadableDevice;
+import de.gigabitzauber.jancontrol.domain.api.TypedWriteableDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;

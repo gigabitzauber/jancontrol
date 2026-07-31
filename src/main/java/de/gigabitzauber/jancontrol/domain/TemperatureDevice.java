@@ -1,6 +1,8 @@
 package de.gigabitzauber.jancontrol.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.gigabitzauber.jancontrol.domain.api.NamedDevice;
+import de.gigabitzauber.jancontrol.domain.api.TypedReadableDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
 import lombok.Data;

@@ -1,5 +1,6 @@
-package de.gigabitzauber.jancontrol.domain;
+package de.gigabitzauber.jancontrol.domain.api;
 
+import de.gigabitzauber.jancontrol.domain.Curve;
 import de.gigabitzauber.jancontrol.interpolation.JcInterpolator;
 
 @FunctionalInterface

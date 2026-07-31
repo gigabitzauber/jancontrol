@@ -1,5 +1,6 @@
 package de.gigabitzauber.jancontrol.domain;
 
+import de.gigabitzauber.jancontrol.domain.api.CurveType;
 import de.gigabitzauber.jancontrol.interpolation.JcInterpolator;
 import de.gigabitzauber.jancontrol.interpolation.PieceWiseInterpolator;
 

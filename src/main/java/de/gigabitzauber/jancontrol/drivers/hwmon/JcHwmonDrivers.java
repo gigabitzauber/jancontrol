@@ -1,7 +1,7 @@
 package de.gigabitzauber.jancontrol.drivers.hwmon;
 
-import de.gigabitzauber.jancontrol.domain.FanMode;
-import de.gigabitzauber.jancontrol.domain.JcHwmonDriver;
+import de.gigabitzauber.jancontrol.domain.api.FanMode;
+import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
 
 import java.util.Arrays;
 

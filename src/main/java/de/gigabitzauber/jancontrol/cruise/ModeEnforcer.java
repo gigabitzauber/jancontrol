@@ -1,7 +1,7 @@
 package de.gigabitzauber.jancontrol.cruise;
 
 import de.gigabitzauber.jancontrol.domain.Fan;
-import de.gigabitzauber.jancontrol.domain.FanMode;
+import de.gigabitzauber.jancontrol.domain.api.FanMode;
 import org.slf4j.Logger;
 
 import java.time.Duration;

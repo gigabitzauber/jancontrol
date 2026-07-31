@@ -1,4 +1,4 @@
-package de.gigabitzauber.jancontrol.domain;
+package de.gigabitzauber.jancontrol.domain.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.gigabitzauber.jancontrol.error.JcException;

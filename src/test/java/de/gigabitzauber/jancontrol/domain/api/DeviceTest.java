@@ -1,4 +1,4 @@
-package de.gigabitzauber.jancontrol.domain;
+package de.gigabitzauber.jancontrol.domain.api;
 
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
 import org.junit.jupiter.api.BeforeEach;

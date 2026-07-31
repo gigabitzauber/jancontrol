@@ -1,6 +1,6 @@
 package de.gigabitzauber.jancontrol.drivers.hwmon;
 
-import de.gigabitzauber.jancontrol.domain.FanMode;
+import de.gigabitzauber.jancontrol.domain.api.FanMode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;

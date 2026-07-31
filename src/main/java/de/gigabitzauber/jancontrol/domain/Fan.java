@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import lombok.Builder;
+import lombok.extern.jackson.Jacksonized;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 @Builder
+@Jacksonized
 public record Fan(
     @JsonDeserialize(using = JcJacksonConfig.DurationDeserializer.class)
     @JsonSerialize(using = JcJacksonConfig.DurationSerializer.class)

@@ -2,7 +2,7 @@ package de.gigabitzauber.jancontrol.config;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import de.gigabitzauber.jancontrol.domain.JcHwmonDriver;
+import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

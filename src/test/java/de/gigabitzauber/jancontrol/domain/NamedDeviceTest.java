@@ -1,5 +1,7 @@
 package de.gigabitzauber.jancontrol.domain;
 
+import de.gigabitzauber.jancontrol.domain.api.Device;
+import de.gigabitzauber.jancontrol.domain.api.NamedDevice;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

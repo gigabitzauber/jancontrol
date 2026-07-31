@@ -1,4 +1,4 @@
-package de.gigabitzauber.jancontrol.domain;
+package de.gigabitzauber.jancontrol.domain.api;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

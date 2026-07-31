@@ -1,5 +1,6 @@
 package de.gigabitzauber.jancontrol.domain;
 
+import de.gigabitzauber.jancontrol.domain.api.FanMode;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 

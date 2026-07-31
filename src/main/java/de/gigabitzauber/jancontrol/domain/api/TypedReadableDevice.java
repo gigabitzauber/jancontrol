@@ -1,4 +1,4 @@
-package de.gigabitzauber.jancontrol.domain;
+package de.gigabitzauber.jancontrol.domain.api;
 
 /**
  * @param <T> - Type of read value
