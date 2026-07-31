@@ -1,10 +1,13 @@
 package de.gigabitzauber.jancontrol.domain;
 
 import com.google.common.collect.Range;
+import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EmptySource;
@@ -12,6 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
@@ -19,21 +23,35 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class RpmDeviceTest {
     private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
     private static final String SYS_FILE_EXAMPLE = "sysFileExample";
     private static final Path SYS_FILE_PATH_EXAMPLE = Paths.get(SYS_FILE_EXAMPLE);
+    private static final JcHwmonDriver DRIVER_EXAMPLE = JcHwmonDrivers.NCT6775;
     private static final boolean ALLOW_IDLE_EXAMPLE = true;
     private static final int ACTIVATION_THRESHOLD_EXAMPLE = 11;
 
-    private final RpmDevice underTest = new RpmDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE, ALLOW_IDLE_EXAMPLE, ACTIVATION_THRESHOLD_EXAMPLE);
+    @TempDir
+    private Path tempDir;
+
+    private RpmDevice underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = createUnderTest(DRIVER_EXAMPLE, SYS_FILE_PATH_EXAMPLE);
+    }
 
     @Test
-    void test_no_args_constructor() {
-        var localUnderTest = new RpmDevice();
+    void test_no_args_builder() {
+        var localUnderTest = RpmDevice.builder().build();
         assertThat(localUnderTest.getName()).isNull();
         assertThat(localUnderTest.getSysPath()).isNull();
+        assertThat(localUnderTest.getDriver()).isEqualTo(JcHwmonDrivers.NCT6775);
         assertThat(localUnderTest.isAllowIdle()).isFalse();
         assertThat(localUnderTest.getActivationThreshold()).isEqualTo(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT);
         assertThat(localUnderTest.safetyMargin()).isEqualTo(Range.closed(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT, 100));
@@ -44,25 +62,6 @@ class RpmDeviceTest {
         assertThat(this.underTest).isInstanceOf(NamedDevice.class);
         assertThat(this.underTest).isInstanceOf(TypedReadableDevice.class);
         assertThat(this.underTest).isInstanceOf(TypedWriteableDevice.class);
-    }
-
-    @Test
-    void when_constructed_with_name_and_sys_path_then_properties_are_set() {
-        var localUnderTest = new RpmDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE);
-        assertThat(localUnderTest.getName()).isEqualTo(NAME_EXAMPLE);
-        assertThat(localUnderTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
-        assertThat(localUnderTest.isAllowIdle()).isFalse();
-        assertThat(localUnderTest.getActivationThreshold()).isEqualTo(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT);
-        assertThat(localUnderTest.safetyMargin()).isEqualTo(Range.closed(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT, 100));
-    }
-
-    @Test
-    void when_constructed_with_name_and_sys_path_and_allowIdle_and_activation_threshold_then_properties_are_set() {
-        assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
-        assertThat(underTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
-        assertThat(underTest.isAllowIdle()).isEqualTo(ALLOW_IDLE_EXAMPLE);
-        assertThat(underTest.getActivationThreshold()).isEqualTo(ACTIVATION_THRESHOLD_EXAMPLE);
-        assertThat(underTest.safetyMargin()).isEqualTo(Range.closed(ACTIVATION_THRESHOLD_EXAMPLE, 100));
     }
 
     @ParameterizedTest
@@ -195,6 +194,56 @@ class RpmDeviceTest {
         EqualsVerifier.forClass(RpmDevice.class).withRedefinedSuperclass().verify();
     }
 
+    @Test
+    void getMode_should_use_configured_driver() throws Exception {
+        String serializedFanMode = "serializedFanMode";
+        var expectedFanMode = mock(FanMode.class);
+        var driverMock = mock(JcHwmonDriver.class);
+        when(driverMock.toFanMode(serializedFanMode)).thenReturn(expectedFanMode);
+        var sysFilePath = tempDir.resolve(SYS_FILE_EXAMPLE);
+        var sysModeFilePath = tempDir.resolve(SYS_FILE_EXAMPLE + "_enable");
+        Files.writeString(sysModeFilePath, serializedFanMode);
+
+        var localUnderTest = createUnderTest(driverMock, sysFilePath);
+
+        assertThat(localUnderTest.getMode()).isEqualTo(expectedFanMode);
+    }
+
+    @Test
+    void getMode_should_throw_if_mode_is_unknown() throws Exception {
+        String serializedFanMode = "serializedFanMode";
+        var driverMock = mock(JcHwmonDriver.class);
+        when(driverMock.toFanMode(serializedFanMode)).thenReturn(null);
+        var sysFilePath = tempDir.resolve(SYS_FILE_EXAMPLE);
+        var sysModeFilePath = tempDir.resolve(SYS_FILE_EXAMPLE + "_enable");
+        Files.writeString(sysModeFilePath, serializedFanMode);
+
+        var localUnderTest = createUnderTest(driverMock, sysFilePath);
+
+        assertThatThrownBy(localUnderTest::getMode)
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("contains fan mode unknown to configured driver '%s': %s"
+                .formatted(driverMock.name(), serializedFanMode));
+    }
+
+    @Test
+    void activateManualMode_should_use_configured_driver() throws Exception {
+        var driverMock = mock(JcHwmonDriver.class);
+        var manualModeMock = mock(FanMode.class);
+        when(manualModeMock.rawValue()).thenReturn("manualModeMockRawValue");
+        when(driverMock.manualMode()).thenReturn(manualModeMock);
+        var sysFilePath = tempDir.resolve(SYS_FILE_EXAMPLE);
+        var sysModeFilePath = tempDir.resolve(SYS_FILE_EXAMPLE + "_enable");
+        Files.writeString(sysModeFilePath, "otherMode");
+
+        var localUnderTest = spy(createUnderTest(driverMock, sysFilePath));
+
+        var activatedMode = localUnderTest.activateManualMode();
+
+        verify(localUnderTest).setMode(manualModeMock);
+        assertThat(activatedMode).isEqualTo(manualModeMock);
+    }
+
     // percentage, raw value
     private static Stream<Arguments> writeSuccessCombinations() {
         return Stream.of(
@@ -215,5 +264,15 @@ class RpmDeviceTest {
             arguments("131", 51),
             arguments("255", 100)
         );
+    }
+
+    private RpmDevice createUnderTest(JcHwmonDriver driver, Path sysFilePath) {
+        return RpmDevice.builder()
+            .name(NAME_EXAMPLE)
+            .sysPath(sysFilePath.toString())
+            .activationThreshold(ACTIVATION_THRESHOLD_EXAMPLE)
+            .allowIdle(ALLOW_IDLE_EXAMPLE)
+            .driver(driver)
+            .build();
     }
 }

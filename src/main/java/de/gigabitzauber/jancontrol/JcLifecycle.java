@@ -91,7 +91,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
             fanDevice.getName(), fanDevice.isAllowIdle(), fanDevice.getActivationThreshold());
         registeredFans.add(new RegisteredFan(fan));
 
-        var manualMode = fan.activateManualMode();
+        var manualMode = fanDevice.activateManualMode();
 
         CruiseInstance.create(fan, this, log).schedule(fanCruiseExecutor, this);
         ModeEnforcer.create(fan, manualMode, log).schedule(fanCruiseExecutor, this);

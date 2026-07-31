@@ -21,11 +21,11 @@ public final class RegisteredFan {
         this.fan = fan;
         this.name = fan.device().getName();
         this.origRpmPercentage = fan.device().read();
-        this.origFanMode = fan.getCurrentMode();
+        this.origFanMode = fan.device().getMode();
     }
 
     public void restoreOrigSettings() {
         this.fan.device().write(origRpmPercentage);
-        this.fan.setMode(origFanMode);
+        this.fan.device().setMode(origFanMode);
     }
 }

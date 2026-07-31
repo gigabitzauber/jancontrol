@@ -33,7 +33,10 @@ class CruiseInstanceTest {
     private static final Duration DURATION_EXAMPLE = Duration.ofSeconds(6);
     private static final Fan FAN_EXAMPLE = Fan.builder()
         .interval(DURATION_EXAMPLE)
-        .device(new RpmDevice("rpmDeviceExample", "unused"))
+        .device(RpmDevice.builder()
+            .name("rpmDeviceExample")
+            .sysPath("unused")
+            .build())
         .build();
 
     @Mock

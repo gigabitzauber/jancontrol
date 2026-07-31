@@ -116,7 +116,10 @@ class JcLifecycleTest {
         var targetDeviceRpmFile = tempDir.resolve("target_test_device_rpm_file");
         var oldRpm = "100";
         Files.writeString(targetDeviceRpmFile, oldRpm, CREATE_NEW, WRITE);
-        var targetDevice = new RpmDevice("rpmTestDevice", targetDeviceRpmFile.toString());
+        var targetDevice = RpmDevice.builder()
+            .name("rpmTestDevice")
+            .sysPath(targetDeviceRpmFile.toString())
+            .build();
         var oldMode = "5";
         var targetDeviceModeFile = Paths.get(targetDeviceRpmFile + "_enable");
         Files.writeString(targetDeviceModeFile, oldMode, CREATE_NEW, WRITE);
@@ -136,14 +139,14 @@ class JcLifecycleTest {
 
         callRegister(fanMock);
 
-        verify(fanMock).activateManualMode();
+        verify(fanMock.device()).activateManualMode();
     }
 
     @Test
     void register_schedules_enforcer_with_manual_mode() {
         var expectedManualMode = mock(FanMode.class);
         var fanMock = mockFan();
-        when(fanMock.activateManualMode()).thenReturn(expectedManualMode);
+        when(fanMock.device().activateManualMode()).thenReturn(expectedManualMode);
 
         var enforcedMode = callRegister(fanMock);
 
@@ -277,7 +280,7 @@ class JcLifecycleTest {
         var fanModeMock = Mockito.mock(FanMode.class);
         var fanMock = Mockito.mock(Fan.class);
         when(fanMock.device()).thenReturn(deviceMock);
-        when(fanMock.getCurrentMode()).thenReturn(fanModeMock);
+        when(deviceMock.getMode()).thenReturn(fanModeMock);
         return fanMock;
     }
 

@@ -286,13 +286,19 @@ class JanControlIT {
     }
 
     private Path createConfig() throws Exception {
-        var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString());
+        var rpmDeviceA = RpmDevice.builder()
+            .name(RPM_DEVICE_NAME_A)
+            .sysPath(rpmDeviceFilePathA.toString())
+            .build();
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
         write(tempDeviceFilePathA, "30000");
 
-        var rpmDeviceB = new RpmDevice(RPM_DEVICE_NAME_B, rpmDeviceFilePathB.toString());
+        var rpmDeviceB = RpmDevice.builder()
+            .name(RPM_DEVICE_NAME_B)
+            .sysPath(rpmDeviceFilePathB.toString())
+            .build();
         write(rpmDeviceFilePathB, "100");
         write(rpmDeviceModeFilePathB, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceB = new TemperatureDevice(TEMP_DEVICE_NAME_B, tempDeviceFilePathB.toString());
@@ -355,7 +361,12 @@ class JanControlIT {
     }
 
     private Path createConfigWithActiveIdleFlag(int activationRpmPercent) throws Exception {
-        var rpmDeviceA = new RpmDevice(RPM_DEVICE_NAME_A, rpmDeviceFilePathA.toString(), true, activationRpmPercent);
+        var rpmDeviceA = RpmDevice.builder()
+            .name(RPM_DEVICE_NAME_A)
+            .sysPath(rpmDeviceFilePathA.toString())
+            .allowIdle(true)
+            .activationThreshold(activationRpmPercent)
+            .build();
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());

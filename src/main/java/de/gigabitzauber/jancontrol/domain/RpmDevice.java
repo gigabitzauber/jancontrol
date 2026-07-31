@@ -1,17 +1,28 @@
 package de.gigabitzauber.jancontrol.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Range;
+import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
+import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
+import org.jspecify.annotations.NonNull;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import java.util.Optional;
+
 import static java.util.Objects.requireNonNull;
 
 @Data
+@Jacksonized
+@SuperBuilder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public final class RpmDevice extends NamedDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
@@ -21,32 +32,22 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
      */
     private static final int HIGHEST_POSSIBLE_RAW_RPM_VALUE = 255;
 
-    private static final Range<Integer> VALID_WRITE_RANGE = Range.closed(0, 100);
+    private static final int WRITE_LOWER_BOUND = 0;
+    private static final int WRITE_UPPER_BOUND = 100;
+
+    private static final Range<Integer> VALID_WRITE_RANGE = Range.closed(WRITE_LOWER_BOUND, WRITE_UPPER_BOUND);
     private static final Range<Integer> VALID_READ_RANGE = Range.closed(0, 255);
 
-    private final boolean allowIdle;
-    private final int activationThreshold;
-
-    public RpmDevice() {
-        super();
-        this.allowIdle = false;
-        this.activationThreshold = DEFAULT_ACTIVATION_THRESHOLD_PERCENT;
-    }
-
-    public RpmDevice(String name, String sysPath) {
-        super(name, sysPath);
-        this.allowIdle = false;
-        this.activationThreshold = DEFAULT_ACTIVATION_THRESHOLD_PERCENT;
-    }
-
-    public RpmDevice(String name, String sysPath, boolean allowIdle, int activationThreshold) {
-        super(name, sysPath);
-        checkArgument(VALID_WRITE_RANGE.contains(activationThreshold),
-            "activationThreshold must be in interval [%d, %d]"
-                .formatted(VALID_WRITE_RANGE.lowerEndpoint(), VALID_WRITE_RANGE.upperEndpoint()));
-        this.allowIdle = allowIdle;
-        this.activationThreshold = activationThreshold;
-    }
+    @Builder.Default
+    @JsonDeserialize(using = JcJacksonConfig.JcHwmonDriverDeserializer.class)
+    private final JcHwmonDriver driver = JcHwmonDrivers.NCT6775;
+    @Builder.Default
+    private final boolean allowIdle = false;
+    @Builder.Default
+    // We want to explicitly write define min to not cause any confusion whether it is 0.
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Size(min = WRITE_LOWER_BOUND, max = WRITE_UPPER_BOUND)
+    private final int activationThreshold = DEFAULT_ACTIVATION_THRESHOLD_PERCENT;
 
     @Override
     @JsonIgnore
@@ -88,5 +89,34 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
     @JsonIgnore
     public Range<Integer> safetyMargin() {
         return Range.closed(this.activationThreshold, 100);
+    }
+
+    @JsonIgnore
+    public FanMode getMode() {
+        var modeFileHandle = constructModeFileHandle();
+        var rawModeValue = modeFileHandle.readRaw().strip();
+
+        var driver = getDriver();
+        return Optional.ofNullable(driver.toFanMode(rawModeValue))
+            .orElseThrow(() ->
+                new IllegalArgumentException("%s contains fan mode unknown to configured driver '%s': %s"
+                    .formatted(modeFileHandle.getSysPath(), driver.name(), rawModeValue)));
+    }
+
+    @JsonIgnore
+    public void setMode(FanMode newMode) {
+        constructModeFileHandle().writeRaw(newMode.rawValue());
+    }
+
+    @JsonIgnore
+    public FanMode activateManualMode() {
+        var manualMode = getDriver().manualMode();
+        setMode(manualMode);
+
+        return manualMode;
+    }
+
+    private @NonNull RwSysFile constructModeFileHandle() {
+        return new RwSysFile(getSysPath() + "_enable");
     }
 }

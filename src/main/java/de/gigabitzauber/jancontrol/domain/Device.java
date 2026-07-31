@@ -3,6 +3,7 @@ package de.gigabitzauber.jancontrol.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.gigabitzauber.jancontrol.error.JcException;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ import static de.gigabitzauber.jancontrol.util.JcIoUtil.assertReadable;
 import static de.gigabitzauber.jancontrol.util.JcIoUtil.assertWritable;
 
 @Data
+@SuperBuilder
 public abstract class Device {
     private final String sysPath;
 
