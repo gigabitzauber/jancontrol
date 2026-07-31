@@ -5,11 +5,11 @@ fans:
   # and may take up to 2min to reach full speed starting from 0
   # Conclusion: Choose the interval long enough to account for ramp up/down, but not too long to trigger the "idle" watchdog.
   - interval: "30s"
-    hwmonDriver: "thinkpad_acpi"
     allowIdle: true
     device:
       name: "CPU Fan"
       sysPath: "/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon8/pwm1"
+      driver: "thinkpad_acpi"
       activationThreshold: 15
     dependsOn:
       - name: "CPU Temp"

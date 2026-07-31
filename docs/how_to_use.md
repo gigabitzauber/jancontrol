@@ -13,20 +13,23 @@ Basically it works like this:
 
 Each fan entry defines the following things:
 
-| Key                  | Meaning                                                                                                                            |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `interval`           | The update interval of this fan. Time units such as `500ms` or `3s` must be used. This is optional and defaults to `5s`.           |
-| `device`             | The target device to control.                                                                                                      |
-| `device.name`        | A human-readable name for the fan. It may contain spaces and is used as a reference for the curves defined for this fan.           |
-| `device.sysPath`     | The path to the kernel device file that controls the fan speed, for example `/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2`. |
-| `dependsOn`          | A list of temperature sensors that this fan should depend on.                                                                      |
-| `dependsOn.name`     | The name of a dependency sensor. This is the label used by the configuration.                                                      |
-| `dependsOn.sysPath`  | The sysfs path of the dependency sensor.                                                                                           |
-| `curves`             | A list of temperature-to-RPM mappings used to interpolate the desired fan speed. Only linear interpolation is currently supported. |
-| `curves.ref`         | The name of the dependency sensor that this curve references. It must match one of the names defined in `dependsOn`.               |
-| `curves.points`      | A list of points that define the mapping between temperature and fan speed.                                                        |
-| `curves.points.temp` | The temperature value. The unit can be °C or °F, as long as it is used consistently.                                               |
-| `curves.points.rpm`  | The desired fan speed value. This is expressed as a percentage from `0` to `100` and is translated to absolute RPMs at runtime.    |
+| Key                          | Meaning                                                                                                                                                               |
+|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `interval`                   | Optional value. The update interval of this fan. Time units such as `500ms` or `3s` must be used. Default value: `5s`.                                                |
+| `device`                     | The target device to control.                                                                                                                                         |
+| `device.name`                | A human-readable name for the fan. It may contain spaces and is used as a reference for the curves defined for this fan.                                              |
+| `device.sysPath`             | The path to the kernel device file that controls the fan speed, for example `/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2`.                                    |
+| `device.allowIdle`           | Optional value. Disable safety RPM margins, i.e. fans may be set to off (0% RPM). Default value: false                                                                |
+| `device.activationThreshold` | Optional value. All configured values below this threshold will be interpreted as 0% RPM. Default value: 20                                                           |
+| `device.driver`              | Optional value. Specifies the name of the driver to use for low level fan I/O. See [Supported Hardware](#supported-hardware) for viable names. Default value: nct6775 |
+| `dependsOn`                  | A list of temperature sensors that this fan should depend on.                                                                                                         |
+| `dependsOn.name`             | The name of a dependency sensor. This is the label used by the configuration.                                                                                         |
+| `dependsOn.sysPath`          | The sysfs path of the dependency sensor.                                                                                                                              |
+| `curves`                     | A list of temperature-to-RPM mappings used to interpolate the desired fan speed. Only linear interpolation is currently supported.                                    |
+| `curves.ref`                 | The name of the dependency sensor that this curve references. It must match one of the names defined in `dependsOn`.                                                  |
+| `curves.points`              | A list of points that define the mapping between temperature and fan speed.                                                                                           |
+| `curves.points.temp`         | The temperature value. The unit can be °C or °F, as long as it is used consistently.                                                                                  |
+| `curves.points.rpm`          | The desired fan speed value. This is expressed as a percentage from `0` to `100` and is translated to absolute RPMs at runtime.                                       |
 
 For example, the following snippet defines a fan that is controlled from a CPU temperature sensor using a simple linear
 curve:
@@ -52,6 +55,25 @@ fans:
           - temp: 95
             rpm: 95
 ```
+
+### Supported Hardware
+
+Below you find hardware configurations that are supposed to work.
+
+If nothing else is specified, the nct6775-driver will be used by default. To specify a driver, just write its name into
+the config file:
+
+```yaml
+fans:
+  - interval: "3s"
+    device:
+      driver: "thinkpad_acpi"
+```
+
+| Hardware | Config-File-Key         | Driver                                                                          | Comment                                                   |
+|----------|-------------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------|
+| NCT6775  | nct6775 (default value) | [nct6775](https://docs.kernel.org/hwmon/nct6775.html)                           | Should also work for NCT6775F, NCT6776F & W83627EHF.      |
+| Thinkpad | thinkpad_acpi           | [thinkpad_acpi](https://docs.kernel.org/admin-guide/laptops/thinkpad-acpi.html) | May work on all models that support this kernel module(?) |
 
 ### How do multiple temperature sensors for one fan work?
 
