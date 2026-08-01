@@ -17,6 +17,7 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
 * [Run](#run)
     * [Debug mode / Verbose output](#debug-mode--verbose-output)
 * [Install](#install)
+* [Running as Service (systemd)](#running-as-service-systemd)
 * [Configure](#configure)
 * [Examples](#examples)
 * [Supported Hardware](#supported-hardware)
@@ -70,6 +71,14 @@ See [Lombok Issues](https://github.com/projectlombok/lombok/issues/3852#issuecom
 java -jar jancontrol-0.5.0-SNAPSHOT.jar [options] <config-file>
 ```
 
+### Debug mode / Verbose output
+
+The command line switch `-v` activates verbose output.
+
+```bash
+java -jar jancontrol-0.5.0-SNAPSHOT.jar -v <config-file>
+```
+
 ## Install
 
 * -f.. Fails silently (no output) on server errors (HTTP 4xx or 5xx) instead of outputting the error page.
@@ -82,13 +91,10 @@ java -jar jancontrol-0.5.0-SNAPSHOT.jar [options] <config-file>
 curl -fsSL https://raw.githubusercontent.com/gigabitzauber/jancontrol/refs/heads/main/scripts/install.sh | sudo bash
 ```
 
-### Debug mode / Verbose output
+## Running as Service (systemd)
 
-The command line switch `-v` activates verbose output.
-
-```bash
-java -jar jancontrol-0.5.0-SNAPSHOT.jar -v <config-file>
-```
+Either use the install-script or see [scripts/jancontrol.service](scripts/jancontrol.service) for a working systemd unit
+file.
 
 ## Configure
 
