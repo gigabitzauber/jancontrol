@@ -56,9 +56,9 @@ class RpmDeviceTest {
         var localUnderTest = RpmDevice.builder().build();
         assertThat(localUnderTest.getName()).isNull();
         assertThat(localUnderTest.getSysPath()).isNull();
-        assertThat(localUnderTest.getDriver()).isEqualTo(JcHwmonDrivers.NCT6775);
-        assertThat(localUnderTest.isAllowIdle()).isFalse();
-        assertThat(localUnderTest.getActivationThreshold()).isEqualTo(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT);
+        assertThat(localUnderTest.driver()).isEqualTo(JcHwmonDrivers.NCT6775);
+        assertThat(localUnderTest.allowIdle()).isFalse();
+        assertThat(localUnderTest.activationThreshold()).isEqualTo(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT);
         assertThat(localUnderTest.safetyMargin()).isEqualTo(Range.closed(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT, 100));
     }
 

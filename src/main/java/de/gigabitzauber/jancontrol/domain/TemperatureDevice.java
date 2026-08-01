@@ -8,9 +8,11 @@ import de.gigabitzauber.jancontrol.util.JcIoUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 
 @Data
 @ToString(callSuper = true)
+@Accessors(fluent = true)
 @EqualsAndHashCode(callSuper = true)
 public final class TemperatureDevice extends NamedDevice implements TypedReadableDevice<Integer> {
     private static final int TEMP_CONVERSION_FACTOR = 1000;

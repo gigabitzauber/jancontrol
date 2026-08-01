@@ -3,10 +3,12 @@ package de.gigabitzauber.jancontrol.domain;
 import de.gigabitzauber.jancontrol.domain.api.FanMode;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 
 import java.util.Objects;
 
 @EqualsAndHashCode
+@Accessors(fluent = true)
 @ToString(onlyExplicitlyIncluded = true)
 public final class RegisteredFan {
 

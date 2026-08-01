@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import org.jspecify.annotations.NonNull;
@@ -29,6 +30,7 @@ import static java.util.Objects.requireNonNull;
 @Jacksonized
 @SuperBuilder
 @ToString(callSuper = true)
+@Accessors(fluent = true)
 @EqualsAndHashCode(callSuper = true)
 public final class RpmDevice extends NamedDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
     static final int DEFAULT_ACTIVATION_THRESHOLD_PERCENT = 20;
@@ -101,7 +103,7 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
         var modeFileHandle = constructModeFileHandle();
         var rawModeValue = modeFileHandle.readRaw().strip();
 
-        var driver = getDriver();
+        var driver = driver();
         return Optional.ofNullable(driver.toFanMode(rawModeValue))
             .orElseThrow(() ->
                 new IllegalArgumentException("%s contains fan mode unknown to configured driver '%s': %s"
@@ -115,7 +117,7 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
 
     @JsonIgnore
     public FanMode activateManualMode() {
-        var manualMode = getDriver().manualMode();
+        var manualMode = driver().manualMode();
         setMode(manualMode);
 
         return manualMode;
