@@ -133,8 +133,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "30000");
         write(tempDeviceFilePathB, "30000");
         write(tempDeviceFilePathC, "30000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 20, RPM_DEVICE_NAME_A);
-        var expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 30, 33, RPM_DEVICE_NAME_B);
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 20, RPM_DEVICE_NAME_A);
+        var expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 30, 33, 33, RPM_DEVICE_NAME_B);
         assertOutput(output, "Calculated RPM value for rpmDeviceA exceeds safe limits.");
         assertOutput(output, "Setting RPM value for rpmDeviceA to lowest allowed value: 20");
         assertAction(output, expectedActionOnA);
@@ -143,32 +143,32 @@ class JanControlIT {
         write(tempDeviceFilePathA, "40000");
         write(tempDeviceFilePathB, "40000");
         write(tempDeviceFilePathC, "40000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 25, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 40, 45, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 20, 25, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 40, 33, 45, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
         write(tempDeviceFilePathA, "50000");
         write(tempDeviceFilePathB, "50000");
         write(tempDeviceFilePathC, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 50, 55, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 50, 45, 55, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
         write(tempDeviceFilePathA, "60000");
         write(tempDeviceFilePathB, "60000");
         write(tempDeviceFilePathC, "60000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 60, 75, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 60, 70, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 60, 50, 75, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 60, 55, 70, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
         write(tempDeviceFilePathA, "70000");
         write(tempDeviceFilePathB, "71000");
         write(tempDeviceFilePathC, "72000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 70, 100, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 71, 77, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 70, 75, 100, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 71, 70, 77, RPM_DEVICE_NAME_B);
         assertOutput(output, "Calculated RPM value for rpmDeviceA exceeds safe limits.");
         assertOutput(output, "Setting RPM value for rpmDeviceA to highest allowed value: 100");
         assertAction(output, expectedActionOnA);
@@ -190,7 +190,7 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 25, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
@@ -198,7 +198,7 @@ class JanControlIT {
         assertFileContent(rpmDeviceModeFilePathA, Nct6775FanModes.MANUAL.rawValue());
 
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
     }
 
@@ -208,7 +208,7 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 25, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         Files.delete(rpmDeviceFilePathA);
@@ -217,7 +217,7 @@ class JanControlIT {
                 + "ran into error: Path does not exist: " + rpmDeviceFilePathA);
         write(rpmDeviceFilePathA, "61");
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 50, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 23, 50, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
     }
 
@@ -228,15 +228,15 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "30000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 0, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 0, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         write(tempDeviceFilePathA, "40000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 0, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 0, 0, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, expectedActivationThresholdPercent, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 0, expectedActivationThresholdPercent, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         assertNotInFullOutput(output, "Calculated RPM value for " + RPM_DEVICE_NAME_A + " exceeds safe limits.");

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
@@ -148,6 +149,39 @@ class SimpleCruiseAlgorithmTest {
         verify(rpmDevice, never()).write(anyInt());
     }
 
+    @Test
+    void when_going_downwards_then_respect_downSkip() {
+        var dependencyA = simulateTemperatureDevice("dependencyA", 50, 40, 30, 20);
+        var rpmDevice = simulateRpmDevice("rpmDeviceMockA", 20, 50);
+        var curveA = Curve.builder()
+            .ref(dependencyA.getName())
+            .points(Set.of(
+                new CurvePoint(20, 20),
+                new CurvePoint(30, 30),
+                new CurvePoint(40, 40),
+                new CurvePoint(50, 50)))
+            .build();
+        var downSkipExample = 3;
+        var fan = Fan.builder()
+            .downSkip(downSkipExample)
+            .device(rpmDevice)
+            .dependsOn(List.of(dependencyA))
+            .curves(List.of(curveA))
+            .build();
+        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
+
+        // Set RPM from 10 to 40
+        localUnderTest.run();
+
+        for (int i = 0; i <= downSkipExample; i++) {
+            localUnderTest.run();
+        }
+
+        var inOrder = Mockito.inOrder(rpmDevice);
+        inOrder.verify(rpmDevice).write(50);
+        inOrder.verify(rpmDevice).write(20);
+    }
+
     private TemperatureDevice simulateTemperatureDevice(String name, Integer... measurements) {
         var result = mock(TemperatureDevice.class);
         when(result.getName()).thenReturn(name);
@@ -157,10 +191,16 @@ class SimpleCruiseAlgorithmTest {
         return result;
     }
 
-    private RpmDevice simulateRpmDevice(String name) {
+    private RpmDevice simulateRpmDevice(String name, Integer... measurements) {
         var result = mock(RpmDevice.class);
         when(result.getName()).thenReturn(name);
         lenient().when(result.safetyMargin()).thenReturn(Range.closed(20, 100));
+
+        if (measurements.length > 1) {
+            var otherMeasurements = Arrays.copyOfRange(measurements, 1, measurements.length);
+            lenient().when(result.read()).thenReturn(measurements[0], otherMeasurements);
+        }
+
         return result;
     }
 }

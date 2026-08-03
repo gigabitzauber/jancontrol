@@ -15,6 +15,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
     private final Fan fan;
     private final JcLifecycle lifecycle;
     private final Logger log;
+    private int downStepCount = 0;
 
     public SimpleCruiseAlgorithm(Fan fan, JcLifecycle lifecycle, Logger log) {
         this.fan = requireNonNull(fan, "fan must not be null");
@@ -28,6 +29,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         var dependencies = fan.dependsOn();
         var curves = fan.curves();
         var targetDeviceName = fan.device().getName();
+        var currentRpm = fan.device().read();
         for (var i = 0; i < dependencies.size() || Thread.currentThread().isInterrupted(); i++) {
             var dependency = dependencies.get(i);
             curves.stream().filter(curve -> curve.ref().equals(dependency.getName()))
@@ -36,17 +38,26 @@ public final class SimpleCruiseAlgorithm implements Runnable {
                     int measurement = dependency.read();
                     lifecycle.record(dependency.getName(), measurement);
                     var targetRpm = curve.getY(measurement);
-                    rpmCandidates.add(new RpmCandidate(dependency.getName(), measurement, targetRpm, targetDeviceName));
+                    rpmCandidates.add(new RpmCandidate(dependency.getName(), measurement, currentRpm, targetRpm, targetDeviceName));
                 });
         }
 
         if (Thread.currentThread().isInterrupted()) {
             log.info("Cruise command got interrupted. Shutting down..");
         } else if (!rpmCandidates.isEmpty()) {
-            var newRpm = Collections.max(rpmCandidates);
-            var safeNewRpm = safeGetTargetRpm(fan, newRpm);
-            var actuallyWrittenValue = fan.device().write(safeNewRpm.targetRpm);
-            log.debug(new RpmCandidate(safeNewRpm, actuallyWrittenValue).toString());
+            var rawNewRpm = Collections.max(rpmCandidates);
+            var safeNewRpm = safeGetTargetRpm(fan, rawNewRpm);
+            var rpmPercentageToSet = safeNewRpm.targetRpm;
+            var downSkip = fan.downSkip();
+            if (rpmPercentageToSet >= currentRpm || downStepCount == downSkip) {
+                downStepCount = 0;
+                var actuallyWrittenValue = fan.device().write(rpmPercentageToSet);
+                log.debug(new RpmCandidate(safeNewRpm, actuallyWrittenValue).toString());
+            } else {
+                log.debug("Skipped, because downSkip: {} vs. downStepCount: {} - {}", downSkip, downStepCount, safeNewRpm);
+                downStepCount++;
+                fan.device().write(currentRpm);
+            }
         }
     }
 
@@ -72,10 +83,10 @@ public final class SimpleCruiseAlgorithm implements Runnable {
     }
 
     public static record RpmCandidate(
-        String dependencyName, int measurement, int targetRpm, String targetDeviceName) implements Comparable<RpmCandidate> {
+        String dependencyName, int measurement, int currentRpm, int targetRpm, String targetDeviceName) implements Comparable<RpmCandidate> {
 
         public RpmCandidate(RpmCandidate other, int targetRpmOverride) {
-            this(other.dependencyName, other.measurement, targetRpmOverride, other.targetDeviceName);
+            this(other.dependencyName, other.measurement, other.currentRpm, targetRpmOverride, other.targetDeviceName);
         }
 
         @Override
@@ -86,7 +97,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         @Override
         @Nonnull
         public String toString() {
-            return "Setting %s = %d%% | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, dependencyName, measurement);
+            return "Setting %s = %d%% (was: %d%%) | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, currentRpm, dependencyName, measurement);
         }
     }
 

@@ -28,6 +28,7 @@ class CruiseConfigIT {
     private static final CruiseConfig EXPECTED_CONFIG = new CruiseConfig(Set.of(
         Fan.builder()
             .interval(Duration.ofSeconds(3))
+            .downSkip(5)
             .device(RpmDevice.builder()
                 .name("CPU Fan")
                 .sysPath("/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2")
