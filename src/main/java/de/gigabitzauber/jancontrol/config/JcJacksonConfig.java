@@ -51,7 +51,9 @@ public class JcJacksonConfig {
             if (Strings.isBlank(rawText)) {
                 throw new JcException("Curve type must not be blank");
             } else {
-                var fixedText = rawText.toUpperCase();
+                var fixedText = rawText
+                    .toUpperCase()
+                    .replace("-", "_");
                 try {
                     return CurveTypes.valueOf(fixedText);
                 } catch (IllegalArgumentException e) {

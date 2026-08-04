@@ -5,7 +5,7 @@ import de.gigabitzauber.jancontrol.domain.CurvePoint;
 
 import java.util.Objects;
 
-public final class PieceWiseInterpolator implements JcInterpolator {
+public class PieceWiseInterpolator implements JcInterpolator {
     private final int[] piecesX;
     private final int[] piecesY;
 

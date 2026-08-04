@@ -31,12 +31,22 @@ class CurveTypeDeserializerTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"linear", "LINEAR", "Linear", "LiNeAr"})
-    void test_deserialize_happy_path(String input) throws Exception {
+    void test_deserialize_linear_happy_path(String input) throws Exception {
         when(jsonParserMock.getText()).thenReturn(input);
 
         var result = underTest.deserialize(jsonParserMock, deserializationContextMock);
 
         assertThat(result).isEqualTo(CurveTypes.LINEAR);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"n-linear", "N-LINEAR", "n-Linear", "n-LiNeAr"})
+    void test_deserialize_n_linear_happy_path(String input) throws Exception {
+        when(jsonParserMock.getText()).thenReturn(input);
+
+        var result = underTest.deserialize(jsonParserMock, deserializationContextMock);
+
+        assertThat(result).isEqualTo(CurveTypes.N_LINEAR);
     }
 
     @ParameterizedTest

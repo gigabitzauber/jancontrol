@@ -24,4 +24,13 @@
                 params="java.time.Duration, java.lang.Integer, de.gigabitzauber.jancontrol.domain.RpmDevice, java.util.Collection, java.util.List"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+
+    <!-- Finalizer attack is very unlikely here -->
+    <Match>
+        <Class name="de.gigabitzauber.jancontrol.interpolation.PieceWiseInterpolator"/>
+        <!-- This is a constructor match -->
+        <Method name="&lt;init&gt;"
+                params="de.gigabitzauber.jancontrol.domain.Curve"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
 </FindBugsFilter>
