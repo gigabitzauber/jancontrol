@@ -1,8 +1,9 @@
 package de.gigabitzauber.jancontrol;
 
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import de.gigabitzauber.jancontrol.cruise.CruiseCommand;
-import de.gigabitzauber.jancontrol.cruise.CruiseConfigReader;
 import de.gigabitzauber.jancontrol.domain.CruiseConfig;
+import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +25,13 @@ public class JanControlApplication implements CommandLineRunner {
     private static final String MY_PACKAGE = "de.gigabitzauber.jancontrol";
     private static final String VERBOSE_FLAG = "-v";
 
-    private final CruiseConfigReader configReader;
+    private final YAMLMapper mapper;
     private final CruiseCommand cruiseCommand;
     private final LoggingSystem loggingSystem;
 
     @Autowired
-    public JanControlApplication(CruiseConfigReader configReader, CruiseCommand cruiseCommand, LoggingSystem loggingSystem) {
-        this.configReader = configReader;
+    public JanControlApplication(YAMLMapper mapper, CruiseCommand cruiseCommand, LoggingSystem loggingSystem) {
+        this.mapper = mapper;
         this.cruiseCommand = cruiseCommand;
         this.loggingSystem = loggingSystem;
     }
@@ -78,12 +79,12 @@ public class JanControlApplication implements CommandLineRunner {
         }
 
         Logger logger = LoggerFactory.getLogger(JanControlApplication.class);
-        CruiseConfig config = new CruiseConfig(Set.of());
+        CruiseConfigRoot config = new CruiseConfigRoot(Set.of());
         if (configFileSpecified(args)) {
             var rawConfigFilePath = args[args.length - 1];
             logger.info("Loading config from {}", rawConfigFilePath);
             var configResource = new FileSystemResource(rawConfigFilePath);
-            config = configReader.readConfig(configResource);
+            config = new CruiseConfig(configResource, mapper).read();
         } else {
             logger.warn("No config file specified.");
         }

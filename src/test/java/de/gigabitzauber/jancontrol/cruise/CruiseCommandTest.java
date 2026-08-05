@@ -1,7 +1,7 @@
 package de.gigabitzauber.jancontrol.cruise;
 
 import de.gigabitzauber.jancontrol.JcLifecycle;
-import de.gigabitzauber.jancontrol.domain.CruiseConfig;
+import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 class CruiseCommandTest {
     private static final Fan FAN_EXAMPLE_A = Fan.builder().interval(Duration.ofSeconds(10)).build();
     private static final Fan FAN_EXAMPLE_B = Fan.builder().interval(Duration.ofSeconds(5)).build();
-    private static final CruiseConfig CONFIG_EXAMPLE = new CruiseConfig(Set.of(FAN_EXAMPLE_A, FAN_EXAMPLE_B));
+    private static final CruiseConfigRoot CONFIG_EXAMPLE = new CruiseConfigRoot(Set.of(FAN_EXAMPLE_A, FAN_EXAMPLE_B));
 
     @Mock
     private JcLifecycle lifecycleMock;
@@ -64,7 +64,7 @@ class CruiseCommandTest {
 
     @Test
     void when_no_fans_then_run_nop_mode() {
-        underTest.execute(new CruiseConfig(Set.of()));
+        underTest.execute(new CruiseConfigRoot(Set.of()));
 
         verify(lifecycleMock).nop();
         verifyNoMoreInteractions(lifecycleMock);

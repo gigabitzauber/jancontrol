@@ -7,9 +7,9 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CruiseConfigTest {
+class CruiseConfigRootTest {
 
-    private final CruiseConfig underTest = new CruiseConfig(Set.of());
+    private final CruiseConfigRoot underTest = new CruiseConfigRoot(Set.of());
 
     @Test
     void test_noArgsConstructor() {
@@ -19,13 +19,13 @@ class CruiseConfigTest {
     @Test
     void test_allArgsConstructor() {
         var expectedFans = Set.of(Fan.builder().build());
-        var localUnderTest = new CruiseConfig(expectedFans);
+        var localUnderTest = new CruiseConfigRoot(expectedFans);
 
         assertThat(localUnderTest.fans()).isEqualTo(expectedFans);
     }
 
     @Test
     void test_equalsHashCodeContract() {
-        EqualsVerifier.forClass(CruiseConfig.class).verify();
+        EqualsVerifier.forClass(CruiseConfigRoot.class).verify();
     }
 }

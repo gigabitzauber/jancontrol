@@ -1,14 +1,51 @@
 package de.gigabitzauber.jancontrol.domain;
 
-import java.util.Collection;
-import java.util.Set;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.google.common.hash.Hashing;
+import de.gigabitzauber.jancontrol.error.JcException;
+import de.gigabitzauber.jancontrol.util.JcIoUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.Resource;
 
-public record CruiseConfig(Collection<Fan> fans) {
-    public CruiseConfig {
-        if (fans == null) {
-            fans = Set.of();
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
+
+public final class CruiseConfig {
+
+    private final Resource configResource;
+    private final YAMLMapper mapper;
+
+    private final String origHexHash;
+
+    public CruiseConfig(Resource configResource, YAMLMapper mapper) {
+        this.configResource = Objects.requireNonNull(configResource, "configResource must not be null");
+        this.mapper = Objects.requireNonNull(mapper, "mapper must not be null");
+
+        this.origHexHash = calcHash();
+    }
+
+    public CruiseConfigRoot read() {
+        var rawConfigContent = JcIoUtil.readString(configResource).strip();
+
+        CruiseConfigRoot root = new CruiseConfigRoot(List.of());
+        if (!StringUtils.isBlank(rawConfigContent)) {
+            try {
+                root = mapper.readValue(rawConfigContent, CruiseConfigRoot.class);
+            } catch (Exception e) {
+                throw new JcException("Config file contains faulty YAML", e);
+            }
         }
 
-        fans = Set.copyOf(fans);
+        return root;
+    }
+
+    public boolean hasChanged() {
+        return !origHexHash.equals(calcHash());
+    }
+
+    private String calcHash() {
+        var contents = JcIoUtil.readString(configResource);
+        return Hashing.sha256().hashString(contents, StandardCharsets.UTF_8).toString();
     }
 }

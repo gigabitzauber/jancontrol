@@ -9,11 +9,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -33,10 +37,13 @@ class JcIoUtilTest {
     @TempDir
     private Path tempDir;
     private Path fileExamplePath;
+    private Resource fileExampleResource;
 
     @BeforeEach
     void setUp() {
         fileExamplePath = tempDir.resolve(this.getClass().getSimpleName() + ".file");
+        fileExampleResource = new FileSystemResource(fileExamplePath);
+
         try {
             Files.createFile(fileExamplePath);
         } catch (IOException e) {
@@ -109,7 +116,7 @@ class JcIoUtilTest {
     }
 
     @Test
-    void test_read_happy_path() throws Exception {
+    void test_read_from_path_happy_path() throws Exception {
         Files.writeString(fileExamplePath, VALUE_EXAMPLE);
 
         var actualValue = JcIoUtil.readString(fileExamplePath);
@@ -118,17 +125,37 @@ class JcIoUtilTest {
     }
 
     @Test
-    void when_file_does_not_exist_then_read_throws_exception() {
+    void test_read_from_resource_happy_path() throws Exception {
+        Files.writeString(fileExamplePath, VALUE_EXAMPLE);
+
+        var actualValue = JcIoUtil.readString(fileExampleResource);
+
+        assertThat(actualValue).isEqualTo(VALUE_EXAMPLE);
+    }
+
+    @Test
+    void when_file_does_not_exist_then_read_from_path_throws_exception() {
         var fileDoesNotExist = Paths.get("fileDoesNotExist");
 
         assertThatThrownBy(() -> JcIoUtil.readString(fileDoesNotExist))
             .isInstanceOf(JcException.class)
             .hasMessage("Could not read value from file")
-            .hasRootCauseInstanceOf(FileSystemException.class);
+            .hasRootCauseInstanceOf(NoSuchFileException.class);
     }
 
     @Test
-    void when_file_is_a_directory_then_read_throws_exception() {
+    void when_file_does_not_exist_then_read_from_resource_throws_exception() {
+        var fileDoesNotExist = Paths.get("fileDoesNotExist");
+        var localResourceExample = new FileSystemResource(fileDoesNotExist);
+
+        assertThatThrownBy(() -> JcIoUtil.readString(localResourceExample))
+            .isInstanceOf(JcException.class)
+            .hasMessage("Could not read value from resource")
+            .hasRootCauseInstanceOf(FileNotFoundException.class);
+    }
+
+    @Test
+    void when_file_is_a_directory_then_read_from_path_throws_exception() {
         assertThatThrownBy(() -> JcIoUtil.readString(tempDir))
             .isInstanceOf(JcException.class)
             .hasMessage("Could not read value from file")
@@ -136,10 +163,26 @@ class JcIoUtilTest {
     }
 
     @Test
+    void when_file_is_a_directory_then_read_from_resource_throws_exception() {
+        var localResourceExample = new FileSystemResource(tempDir);
+        assertThatThrownBy(() -> JcIoUtil.readString(localResourceExample))
+            .isInstanceOf(JcException.class)
+            .hasMessage("Could not read value from resource")
+            .hasRootCauseInstanceOf(IOException.class);
+    }
+
+    @Test
     void when_path_is_null_then_read_throws_exception() {
-        assertThatThrownBy(() -> JcIoUtil.readString(null))
+        assertThatThrownBy(() -> JcIoUtil.readString((Path) null))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("path must not be null");
+    }
+
+    @Test
+    void when_resource_is_null_then_read_throws_exception() {
+        assertThatThrownBy(() -> JcIoUtil.readString((Resource) null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("resource must not be null");
     }
 
     @ParameterizedTest

@@ -2,7 +2,7 @@ package de.gigabitzauber.jancontrol;
 
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import de.gigabitzauber.jancontrol.cruise.SimpleCruiseAlgorithm;
-import de.gigabitzauber.jancontrol.domain.CruiseConfig;
+import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import de.gigabitzauber.jancontrol.domain.Curve;
 import de.gigabitzauber.jancontrol.domain.CurvePoint;
 import de.gigabitzauber.jancontrol.domain.CurveTypes;
@@ -396,7 +396,7 @@ class JanControlIT {
 
     private @NonNull Path writeToConfigFile(Fan... fans) throws Exception {
         var fanList = Arrays.asList(fans);
-        var config = new CruiseConfig(fanList);
+        var config = new CruiseConfigRoot(fanList);
 
         var yamlMapper = new JcJacksonConfig().yamlMapper();
         var configData = yamlMapper.writeValueAsString(config);

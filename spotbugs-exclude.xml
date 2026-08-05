@@ -33,4 +33,13 @@
                 params="de.gigabitzauber.jancontrol.domain.Curve"/>
         <Bug pattern="CT_CONSTRUCTOR_THROW"/>
     </Match>
+
+    <!-- False positive. -->
+    <Match>
+        <Class name="de.gigabitzauber.jancontrol.JanControlApplication"/>
+        <!-- This is a constructor match -->
+        <Method name="&lt;init&gt;"
+                params="com.fasterxml.jackson.dataformat.yaml.YAMLMapper, de.gigabitzauber.jancontrol.cruise.CruiseCommand, org.springframework.boot.logging.LoggingSystem"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>

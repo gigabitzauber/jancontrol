@@ -19,10 +19,12 @@ import java.util.concurrent.Executors;
 @Configuration
 public class JcSpringConfig {
 
+    private static final int FAN_CRUISE_THREADPOOL_SIZE = 10;
+
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public ListeningScheduledExecutorService fanCruiseExecutor() {
-        return MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(10));
+        return MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(FAN_CRUISE_THREADPOOL_SIZE));
     }
 
     @Bean

@@ -1,62 +1,128 @@
 package de.gigabitzauber.jancontrol.cruise;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import de.gigabitzauber.jancontrol.domain.CruiseConfig;
-import de.gigabitzauber.jancontrol.domain.Curve;
-import de.gigabitzauber.jancontrol.domain.CurvePoint;
-import de.gigabitzauber.jancontrol.domain.CurveTypes;
-import de.gigabitzauber.jancontrol.domain.Fan;
-import de.gigabitzauber.jancontrol.domain.RpmDevice;
-import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
-import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
+import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
+import de.gigabitzauber.jancontrol.error.JcException;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.InstanceOfAssertFactories.COLLECTION;
 
-@SpringBootTest(classes = JcJacksonConfig.class)
 class CruiseConfigIT {
 
-    private static final Resource CONFIG_FILE_EXAMPLE = new ClassPathResource("/config_file_example.yaml");
-    private static final CruiseConfig EXPECTED_CONFIG = new CruiseConfig(Set.of(
-        Fan.builder()
-            .interval(Duration.ofSeconds(3))
-            .downSkip(5)
-            .device(RpmDevice.builder()
-                .name("CPU Fan")
-                .sysPath("/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2")
-                .driver(JcHwmonDrivers.THINKPAD_ACPI)
-                .allowIdle(true)
-                .activationThreshold(15)
-                .build())
-            .dependsOn(List.of(
-                new TemperatureDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
-            .curves(Set.of(Curve.builder()
-                .ref("CPU Temp")
-                .type(CurveTypes.LINEAR)
-                .points(
-                    Set.of(
-                        new CurvePoint(46, 20),
-                        new CurvePoint(60, 28),
-                        new CurvePoint(82, 72),
-                        new CurvePoint(95, 95)
-                    )).build()))
-            .build()
-    ));
+    private Path configFilePath;
 
-    @Autowired
-    private CruiseConfigReader underTest;
+    private static final Resource RESOURCE_EXAMPLE = new ClassPathResource("/config_file_example.yaml");
+    private final YAMLMapper mapper = new JcJacksonConfig().yamlMapper();
+
+    private CruiseConfig underTest;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        var mapper = new JcJacksonConfig().yamlMapper();
+
+        configFilePath = Files.createTempFile(this.getClass().getSimpleName(), "yaml");
+        setConfigFileContent(RESOURCE_EXAMPLE.getContentAsString(StandardCharsets.UTF_8));
+        var tempResource = new FileSystemResource(configFilePath);
+
+        underTest = new CruiseConfig(tempResource, mapper);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        Files.deleteIfExists(configFilePath);
+    }
 
     @Test
-    void test_read_config_happy_path() {
-        var fan = underTest.readConfig(CONFIG_FILE_EXAMPLE);
-        assertThat(fan).isEqualTo(EXPECTED_CONFIG);
+    void does_not_accept_null_resource() {
+        assertThatThrownBy(() -> new CruiseConfig(null, mapper))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("configResource must not be null");
+    }
+
+    @Test
+    void does_not_accept_null_mapper() {
+        assertThatThrownBy(() -> new CruiseConfig(RESOURCE_EXAMPLE, null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("mapper must not be null");
+    }
+
+    @Test
+    void test_read_happy_path() {
+        assertThat(underTest.read()).isNotNull();
+    }
+
+    @Test
+    void test_read_failure_path() {
+        var faultyFile = new ClassPathResource("/faulty_config_file_example.yaml");
+        var localUnderTest = new CruiseConfig(faultyFile, mapper);
+
+        assertThatThrownBy(localUnderTest::read)
+            .isInstanceOf(JcException.class)
+            .hasMessage("Config file contains faulty YAML")
+            .hasRootCauseInstanceOf(InvalidFormatException.class);
+    }
+
+    @Test
+    void when_file_content_has_not_changed_then_return_false() {
+        assertThat(underTest.hasChanged()).isFalse();
+    }
+
+    @Test
+    void when_file_content_has_changed_then_return_false() {
+        setConfigFileContent("Changed Content");
+
+        assertThat(underTest.hasChanged()).isTrue();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "   "})
+    void when_config_is_blank_then_return_empty_config_root(String contentExample) {
+        setConfigFileContent(contentExample);
+
+        var result = underTest.read();
+
+        assertThat(result)
+            .extracting(CruiseConfigRoot::fans)
+            .asInstanceOf(COLLECTION)
+            .isEmpty();
+    }
+
+    @Test
+    void when_config_contains_empty_fan_collection_then_return_empty_config_root() {
+        setConfigFileContent("fans:");
+
+        var result = underTest.read();
+
+        assertThat(result)
+            .extracting(CruiseConfigRoot::fans)
+            .asInstanceOf(COLLECTION)
+            .isEmpty();
+    }
+
+    private void setConfigFileContent(String expectedContent) {
+        try {
+            Files.writeString(configFilePath, expectedContent, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            Assertions.fail("Could not write temp config file contents", e);
+        }
     }
 }

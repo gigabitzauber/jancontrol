@@ -1,7 +1,7 @@
 package de.gigabitzauber.jancontrol.cruise;
 
 import de.gigabitzauber.jancontrol.JcLifecycle;
-import de.gigabitzauber.jancontrol.domain.CruiseConfig;
+import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import org.slf4j.Logger;
 
 import static java.util.Objects.requireNonNull;
@@ -16,7 +16,7 @@ public final class CruiseCommand {
         this.log = requireNonNull(log, "log must not be null");
     }
 
-    public void execute(CruiseConfig config) {
+    public void execute(CruiseConfigRoot config) {
         requireNonNull(config, "config must not be null");
 
         if (config.fans().isEmpty()) {

@@ -1,8 +1,10 @@
 package de.gigabitzauber.jancontrol.util;
 
 import de.gigabitzauber.jancontrol.error.JcException;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -20,6 +22,15 @@ public final class JcIoUtil {
             return Files.readString(path);
         } catch (IOException e) {
             throw new JcException("Could not read value from file", e);
+        }
+    }
+
+    public static String readString(Resource resource) {
+        requireNonNull(resource, "resource must not be null");
+        try {
+            return resource.getContentAsString(StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new JcException("Could not read value from resource", e);
         }
     }
 
