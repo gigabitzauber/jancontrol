@@ -2,14 +2,12 @@ package de.gigabitzauber.jancontrol.domain;
 
 import de.gigabitzauber.jancontrol.domain.api.CurveType;
 import de.gigabitzauber.jancontrol.interpolation.JcInterpolator;
-import de.gigabitzauber.jancontrol.interpolation.NPieceWiseInterpolator;
 import de.gigabitzauber.jancontrol.interpolation.PieceWiseInterpolator;
 
 import java.util.function.Function;
 
 public enum CurveTypes implements CurveType {
-    LINEAR(PieceWiseInterpolator::new),
-    N_LINEAR(NPieceWiseInterpolator::new);
+    LINEAR(PieceWiseInterpolator::new);
 
     private final Function<Curve, JcInterpolator> interpolatorFunc;
 

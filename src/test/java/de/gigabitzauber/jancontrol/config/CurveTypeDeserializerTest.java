@@ -40,16 +40,6 @@ class CurveTypeDeserializerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"n-linear", "N-LINEAR", "n-Linear", "n-LiNeAr"})
-    void test_deserialize_n_linear_happy_path(String input) throws Exception {
-        when(jsonParserMock.getText()).thenReturn(input);
-
-        var result = underTest.deserialize(jsonParserMock, deserializationContextMock);
-
-        assertThat(result).isEqualTo(CurveTypes.N_LINEAR);
-    }
-
-    @ParameterizedTest
     @EmptySource
     @NullSource
     @ValueSource(strings = {"   "})

@@ -1,6 +1,5 @@
 package de.gigabitzauber.jancontrol.domain;
 
-import de.gigabitzauber.jancontrol.interpolation.NPieceWiseInterpolator;
 import de.gigabitzauber.jancontrol.interpolation.PieceWiseInterpolator;
 import org.junit.jupiter.api.Test;
 
@@ -17,15 +16,5 @@ class CurveTypesTest {
 
         assertThat(interpolator).isNotNull();
         assertThat(interpolator).isInstanceOf(PieceWiseInterpolator.class);
-    }
-
-    @Test
-    void n_linear_type_uses_nPieceWiseInterpolator() {
-        var curve = mock(Curve.class);
-
-        var interpolator = CurveTypes.N_LINEAR.createInterpolator(curve);
-
-        assertThat(interpolator).isNotNull();
-        assertThat(interpolator).isInstanceOf(NPieceWiseInterpolator.class);
     }
 }
