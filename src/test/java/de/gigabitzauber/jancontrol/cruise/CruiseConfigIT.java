@@ -67,7 +67,7 @@ class CruiseConfigIT {
 
     @Test
     void test_read_happy_path() {
-        assertThat(underTest.read()).isNotNull();
+        assertThat(underTest.load()).isNotNull();
     }
 
     @Test
@@ -75,7 +75,7 @@ class CruiseConfigIT {
         var faultyFile = new ClassPathResource("/faulty_config_file_example.yaml");
         var localUnderTest = new CruiseConfig(faultyFile, mapper);
 
-        assertThatThrownBy(localUnderTest::read)
+        assertThatThrownBy(localUnderTest::load)
             .isInstanceOf(JcException.class)
             .hasMessage("Config file contains faulty YAML")
             .hasRootCauseInstanceOf(InvalidFormatException.class);
@@ -98,7 +98,7 @@ class CruiseConfigIT {
     void when_config_is_blank_then_return_empty_config_root(String contentExample) {
         setConfigFileContent(contentExample);
 
-        var result = underTest.read();
+        var result = underTest.load();
 
         assertThat(result)
             .extracting(CruiseConfigRoot::fans)
@@ -110,7 +110,7 @@ class CruiseConfigIT {
     void when_config_contains_empty_fan_collection_then_return_empty_config_root() {
         setConfigFileContent("fans:");
 
-        var result = underTest.read();
+        var result = underTest.load();
 
         assertThat(result)
             .extracting(CruiseConfigRoot::fans)

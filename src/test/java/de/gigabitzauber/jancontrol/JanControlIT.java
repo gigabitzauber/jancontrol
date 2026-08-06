@@ -28,12 +28,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,7 +63,9 @@ class JanControlIT {
     @TempDir
     private Path tempDir;
 
-    private int lastFoundOutputIndex = -1;
+    private final AtomicInteger lastOutputAssertion = new AtomicInteger(0);
+    private int outputAssertionIndex = 0;
+
     private Path rpmDeviceFilePathA;
     private Path rpmDeviceModeFilePathA;
     private Path tempDeviceFilePathA;
@@ -127,18 +131,23 @@ class JanControlIT {
         var configFilePath = createConfig();
         startApp(configFilePath);
 
-        assertInFullOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_A));
-        assertInFullOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_B));
+        assertOutput(output, "No watch flag found. NOT watching config file for changes.");
+        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_A));
+        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_B));
 
-        write(tempDeviceFilePathA, "30000");
-        write(tempDeviceFilePathB, "30000");
-        write(tempDeviceFilePathC, "30000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 20, RPM_DEVICE_NAME_A);
-        var expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 30, 33, 33, RPM_DEVICE_NAME_B);
         assertOutput(output, "Calculated RPM value for rpmDeviceA exceeds safe limits.");
         assertOutput(output, "Setting RPM value for rpmDeviceA to lowest allowed value: 20");
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 20, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
+
+        discardOldOutput();
+
+        write(tempDeviceFilePathB, "30000");
+        write(tempDeviceFilePathC, "30000");
+        var expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 30, 33, 33, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnB);
+
+        discardOldOutput();
 
         write(tempDeviceFilePathA, "40000");
         write(tempDeviceFilePathB, "40000");
@@ -148,6 +157,8 @@ class JanControlIT {
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
+        discardOldOutput();
+
         write(tempDeviceFilePathA, "50000");
         write(tempDeviceFilePathB, "50000");
         write(tempDeviceFilePathC, "50000");
@@ -156,6 +167,8 @@ class JanControlIT {
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
+        discardOldOutput();
+
         write(tempDeviceFilePathA, "60000");
         write(tempDeviceFilePathB, "60000");
         write(tempDeviceFilePathC, "60000");
@@ -163,6 +176,8 @@ class JanControlIT {
         expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 60, 55, 70, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
+
+        discardOldOutput();
 
         write(tempDeviceFilePathA, "70000");
         write(tempDeviceFilePathB, "71000");
@@ -173,6 +188,8 @@ class JanControlIT {
         assertOutput(output, "Setting RPM value for rpmDeviceA to highest allowed value: 100");
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
+
+        discardOldOutput();
 
         ctx.get().close();
 
@@ -193,9 +210,13 @@ class JanControlIT {
         var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
+        discardOldOutput();
+
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         assertOutput(output, "Encountered external change of fan mode for " + RPM_DEVICE_NAME_A + ". Enforcing mode " + Nct6775FanModes.MANUAL);
         assertFileContent(rpmDeviceModeFilePathA, Nct6775FanModes.MANUAL.rawValue());
+
+        discardOldOutput();
 
         write(tempDeviceFilePathA, "50000");
         expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
@@ -211,10 +232,15 @@ class JanControlIT {
         var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
+        discardOldOutput();
+
         Files.delete(rpmDeviceFilePathA);
         assertOutput(output,
             "exhausted error threshold of 3 for error: fan cruise (" + RPM_DEVICE_NAME_A + ") "
                 + "ran into error: Path does not exist: " + rpmDeviceFilePathA);
+
+        discardOldOutput();
+
         write(rpmDeviceFilePathA, "61");
         write(tempDeviceFilePathA, "50000");
         expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 23, 50, RPM_DEVICE_NAME_A);
@@ -231,9 +257,13 @@ class JanControlIT {
         var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 0, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
+        discardOldOutput();
+
         write(tempDeviceFilePathA, "40000");
         expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 0, 0, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
+
+        discardOldOutput();
 
         write(tempDeviceFilePathA, "50000");
         expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 0, expectedActivationThresholdPercent, RPM_DEVICE_NAME_A);
@@ -241,6 +271,36 @@ class JanControlIT {
 
         assertNotInFullOutput(output, "Calculated RPM value for " + RPM_DEVICE_NAME_A + " exceeds safe limits.");
         assertNotInFullOutput(output, "Setting RPM value for " + RPM_DEVICE_NAME_B + " to lowest allowed value: 20");
+    }
+
+    @Test
+    void test_config_reload(CapturedOutput output) throws Exception {
+        var configFilePath = createConfig();
+        startApp(List.of("-v", "-w"), configFilePath);
+
+        assertOutput(output, "Registering fan '" + RPM_DEVICE_NAME_A + "' with allowIdle: false and activation threshold: 20%");
+
+        discardOldOutput();
+
+        write(tempDeviceFilePathA, "40000");
+        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+
+        discardOldOutput();
+
+        int activationThresholdExample = 15;
+        createConfigWithActiveIdleFlag(activationThresholdExample);
+        assertOutput(output, "Encountered changes in config. Reloading..");
+        assertOutput(output, "Registering fan '" + RPM_DEVICE_NAME_A + "' with allowIdle: true and activation threshold: " + activationThresholdExample + "%");
+
+        discardOldOutput();
+
+        var newTemp = 45;
+        write(tempDeviceFilePathA, newTemp * 1000 + "");
+        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, newTemp, 15, 15, RPM_DEVICE_NAME_A);
+        assertAction(output, expectedActionOnA);
+        tearDown();
+        assertOutput(output, "Highest measurement for tempDeviceA: " + newTemp);
     }
 
     private void assertFileContent(Path filePath, String expectedContent) {
@@ -252,14 +312,16 @@ class JanControlIT {
         assertOutput(output, expectedAction.toString());
     }
 
+    private void discardOldOutput() {
+        outputAssertionIndex = lastOutputAssertion.get();
+    }
+
     private void assertOutput(CapturedOutput output, String expectedOutput) {
         await().atMost(LOG_MESSAGE_ASSERTION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
             .untilAsserted(() -> {
-                int foundOutputIndex = output.getAll().indexOf(expectedOutput, lastFoundOutputIndex);
-                assertThat(foundOutputIndex)
-                    .as("Could not find expected output: " + expectedOutput)
-                    .isGreaterThan(lastFoundOutputIndex);
-                lastFoundOutputIndex = foundOutputIndex;
+                var localOutput = output.getAll().substring(outputAssertionIndex);
+                assertThat(localOutput).contains(expectedOutput);
+                lastOutputAssertion.set(localOutput.length());
             });
     }
 
@@ -268,21 +330,20 @@ class JanControlIT {
             .untilAsserted(() -> assertThat(output.getAll()).doesNotContain(expectedOutput));
     }
 
-    private void assertInFullOutput(CapturedOutput output, String expectedOutput) {
-        await().atMost(LOG_MESSAGE_ASSERTION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
-            .untilAsserted(() -> assertThat(output.getAll()).contains(expectedOutput));
+    private void startApp(Path... configFilePaths) {
+        startApp(List.of("-v"), configFilePaths);
     }
 
-    private void startApp(Path... configFilePaths) {
-        var args = new String[configFilePaths.length + 1];
-        args[0] = "-v";
+    private void startApp(List<String> flags, Path... configFilePaths) {
+        var args = new ArrayList<>(flags);
+
         if (configFilePaths.length > 0) {
-            args[1] = configFilePaths[0].toString();
+            args.add(configFilePaths[0].toString());
         }
 
         testExecutor.submit(() -> ctx.set(new SpringApplicationBuilder(JanControlApplication.class)
             .web(WebApplicationType.NONE)
-            .run(args)));
+            .run(args.toArray(new String[0]))));
     }
 
     private Path createConfig() throws Exception {

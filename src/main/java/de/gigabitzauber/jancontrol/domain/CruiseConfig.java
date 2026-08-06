@@ -10,22 +10,23 @@ import org.springframework.core.io.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class CruiseConfig {
 
     private final Resource configResource;
     private final YAMLMapper mapper;
 
-    private final String origHexHash;
+    private final AtomicReference<String> origHexHash = new AtomicReference<>();
 
     public CruiseConfig(Resource configResource, YAMLMapper mapper) {
         this.configResource = Objects.requireNonNull(configResource, "configResource must not be null");
         this.mapper = Objects.requireNonNull(mapper, "mapper must not be null");
 
-        this.origHexHash = calcHash();
+        this.origHexHash.set(calcHash());
     }
 
-    public CruiseConfigRoot read() {
+    public CruiseConfigRoot load() {
         var rawConfigContent = JcIoUtil.readString(configResource).strip();
 
         CruiseConfigRoot root = new CruiseConfigRoot(List.of());
@@ -37,11 +38,13 @@ public final class CruiseConfig {
             }
         }
 
+        this.origHexHash.set(calcHash());
+
         return root;
     }
 
     public boolean hasChanged() {
-        return !origHexHash.equals(calcHash());
+        return !origHexHash.get().equals(calcHash());
     }
 
     private String calcHash() {

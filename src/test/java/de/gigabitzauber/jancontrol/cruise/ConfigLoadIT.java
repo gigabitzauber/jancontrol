@@ -59,7 +59,7 @@ class ConfigLoadIT {
     @Test
     void test_read_config_happy_path() {
         var localUnderTest = new CruiseConfig(CONFIG_FILE_EXAMPLE, mapper);
-        var fan = localUnderTest.read();
+        var fan = localUnderTest.load();
 
         assertThat(fan).isEqualTo(EXPECTED_CONFIG);
     }

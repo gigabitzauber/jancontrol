@@ -1,10 +1,11 @@
 package de.gigabitzauber.jancontrol;
 
-import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
+import de.gigabitzauber.jancontrol.cruise.FanCruiseExecutor;
 import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.cruise.NopCruise;
+import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.api.FanMode;
@@ -20,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
 import org.springframework.context.Lifecycle;
 
@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -36,7 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -50,7 +49,7 @@ class JcLifecycleTest {
     private Path tempDir;
 
     @Mock
-    private ListeningScheduledExecutorService executorMock;
+    private FanCruiseExecutor executorMock;
 
     @Mock
     private JcTime timeMock;
@@ -81,34 +80,18 @@ class JcLifecycleTest {
     }
 
     @Test
-    void test_stop_terminates_executor() throws Exception {
-        simulateSuccessfulExecutorTermination();
-
+    void test_stop_terminates_executor() {
         underTest.stop();
 
-        verify(executorMock).shutdownNow();
-        verify(executorMock).awaitTermination(30, TimeUnit.SECONDS);
+        verify(executorMock).terminate();
     }
 
     @Test
-    void when_termination_fails_then_throw_exception() throws Exception {
-        simulateFailedExecutorTermination();
+    void when_termination_fails_let_exception_bubble_up() {
+        var expectedException = new JcException("expectedException");
+        simulateFailedExecutorTermination(expectedException);
 
-        assertThatThrownBy(() -> underTest.stop())
-            .isInstanceOf(JcException.class)
-            .hasMessage("Fan cruise executor termination timed out")
-            .hasNoCause();
-    }
-
-    @Test
-    void when_waiting_for_termination_is_interrupted_then_throw_exception() throws Exception {
-        var expectedCause = new InterruptedException("expected exception");
-        simulateFailedExecutorTermination(expectedCause);
-
-        assertThatThrownBy(() -> underTest.stop())
-            .isInstanceOf(JcException.class)
-            .hasMessage("Interrupted while waiting for fan cruise to stop")
-            .hasRootCause(expectedCause);
+        assertThatThrownBy(() -> underTest.stop()).isSameAs(expectedException);
     }
 
     @Test
@@ -127,8 +110,8 @@ class JcLifecycleTest {
 
         callRegister(fanExample);
 
-        simulateSuccessfulExecutorTermination();
         underTest.stop();
+
         assertThat(Files.readString(targetDeviceModeFile)).isEqualTo(oldMode);
         assertThat(Files.readString(targetDeviceRpmFile)).isEqualTo(oldRpm);
     }
@@ -275,6 +258,13 @@ class JcLifecycleTest {
         }
     }
 
+    @Test
+    void when_no_fans_then_run_nop_mode() {
+        underTest.jcStart(new CruiseConfigRoot(List.of()));
+
+        verify(logMock).warn("No fans specified. Running in NOP mode.");
+    }
+
     private static Fan mockFan() {
         var deviceMock = mock(RpmDevice.class);
         var fanModeMock = Mockito.mock(FanMode.class);
@@ -305,17 +295,8 @@ class JcLifecycleTest {
         return schedulableExample;
     }
 
-    private void simulateSuccessfulExecutorTermination() throws InterruptedException {
-        when(executorMock.awaitTermination(anyLong(), any(TimeUnit.class))).thenReturn(true);
-    }
-
-    private void simulateFailedExecutorTermination(Exception... exceptions) throws InterruptedException {
-        OngoingStubbing<Boolean> whenTerminate = when(executorMock.awaitTermination(anyLong(), any(TimeUnit.class)));
-        if (exceptions.length > 0) {
-            whenTerminate.thenThrow(exceptions[0]);
-        } else {
-            whenTerminate.thenReturn(false);
-        }
+    private void simulateFailedExecutorTermination(Exception exception) {
+        Mockito.doThrow(exception).when(executorMock).terminate();
     }
 
     private void simulateTime(long millis) {

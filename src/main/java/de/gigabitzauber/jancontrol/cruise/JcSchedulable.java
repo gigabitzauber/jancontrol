@@ -1,16 +1,13 @@
 package de.gigabitzauber.jancontrol.cruise;
 
 import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
 
 import java.time.Duration;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGenerator;
 
-import static de.gigabitzauber.jancontrol.cruise.JcErrorUtil.safeGetMessage;
+import static de.gigabitzauber.jancontrol.util.JcErrorUtil.safeGetMessage;
 import static java.util.Objects.requireNonNull;
 
 public abstract class JcSchedulable {
@@ -36,21 +33,21 @@ public abstract class JcSchedulable {
         return id;
     }
 
-    public final void schedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback) {
-        var initialDelayMillis = randomizeInitialDelay();
-        internalSchedule(executor, callback, initialDelayMillis);
+    public final void schedule(FanCruiseExecutor executor, FutureCallback<Object> callback) {
+        var initialDelay = Duration.ofMillis(randomizeInitialDelay());
+        internalSchedule(executor, callback, initialDelay);
     }
 
-    public final void reSchedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback) {
+    public final void reSchedule(FanCruiseExecutor executor, FutureCallback<Object> callback) {
         var initialDelayMillis = randomizeInitialDelay();
-        internalSchedule(executor, callback, this.interval.toMillis() + initialDelayMillis);
+        internalSchedule(executor, callback, this.interval.plusMillis(initialDelayMillis));
     }
 
-    private void internalSchedule(ListeningScheduledExecutorService executor, FutureCallback<Object> callback, long initialDelay) {
+    private void internalSchedule(FanCruiseExecutor executor, FutureCallback<Object> callback, Duration initialDelay) {
         requireNonNull(executor, "executor must not be null");
         requireNonNull(callback, "callback must not be null");
 
-        var future = executor.scheduleAtFixedRate(
+        executor.scheduleAtFixedRate(
             () -> {
                 try {
                     op.run();
@@ -60,10 +57,8 @@ public abstract class JcSchedulable {
                 }
             },
             initialDelay,
-            interval.toMillis(),
-            TimeUnit.MILLISECONDS);
-
-        Futures.addCallback(future, callback, executor);
+            interval,
+            callback);
     }
 
     private long randomizeInitialDelay() {

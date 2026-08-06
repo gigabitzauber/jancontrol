@@ -1,14 +1,14 @@
 package de.gigabitzauber.jancontrol;
 
 import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
+import de.gigabitzauber.jancontrol.cruise.FanCruiseExecutor;
 import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.cruise.NopCruise;
+import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RegisteredFan;
-import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
 import de.gigabitzauber.jancontrol.util.JcTime;
 import org.jspecify.annotations.NonNull;
@@ -19,13 +19,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     static final int ERROR_THRESHOLD = 3;
     static final int ERROR_COOL_OFF_MILLIS = 10000;
 
-    private final ListeningScheduledExecutorService fanCruiseExecutor;
+    private final FanCruiseExecutor executor;
     private final JcTime time;
     private final Logger log;
 
@@ -33,8 +32,8 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     private final Map<String, Integer> measurementRecord = new HashMap<>();
     private final Map<String, JcErrorRecord> schedulableErrorRecord = new HashMap<>();
 
-    public JcLifecycle(ListeningScheduledExecutorService fanCruiseExecutor, JcTime time, Logger log) {
-        this.fanCruiseExecutor = fanCruiseExecutor;
+    public JcLifecycle(FanCruiseExecutor executor, JcTime time, Logger log) {
+        this.executor = executor;
         this.time = time;
         this.log = log;
     }
@@ -44,21 +43,36 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
 
     }
 
+    public void jcStart(CruiseConfigRoot config) {
+        if (config.fans().isEmpty()) {
+            log.warn("No fans specified. Running in NOP mode.");
+            nop();
+        } else {
+            for (var fan : config.fans()) {
+                register(fan);
+            }
+        }
+    }
+
+    public synchronized void restart(CruiseConfigRoot config) {
+        log.debug("Reinitialising lifecycle.");
+        try {
+            executor.reInitialize();
+        } finally {
+            restoreOldFanConfig();
+            registeredFans.clear();
+            measurementRecord.clear();
+            schedulableErrorRecord.clear();
+        }
+
+        jcStart(config);
+    }
+
     @Override
     public void stop() {
         log.info("Caught shutdown request. Shutting down..");
-        fanCruiseExecutor.shutdownNow();
-        var terminationFailed = true;
         try {
-            try {
-                terminationFailed = !fanCruiseExecutor.awaitTermination(30, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                throw new JcException("Interrupted while waiting for fan cruise to stop", e);
-            }
-
-            if (terminationFailed) {
-                throw new JcException("Fan cruise executor termination timed out");
-            }
+            executor.terminate();
         } finally {
             restoreOldFanConfig();
             printStats();
@@ -82,7 +96,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     }
 
     public void nop() {
-        NopCruise.create().schedule(fanCruiseExecutor, this);
+        NopCruise.create().schedule(executor, this);
     }
 
     public void register(Fan fan) {
@@ -93,8 +107,8 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
 
         var manualMode = fanDevice.activateManualMode();
 
-        CruiseInstance.create(fan, this, log).schedule(fanCruiseExecutor, this);
-        ModeEnforcer.create(fan, manualMode, log).schedule(fanCruiseExecutor, this);
+        CruiseInstance.create(fan, this, log).schedule(executor, this);
+        ModeEnforcer.create(fan, manualMode, log).schedule(executor, this);
     }
 
     public synchronized void record(String dependencyName, int measurement) {
@@ -123,7 +137,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
             } else {
                 log.debug("Schedulable {} encountered error #{}: {}", failedSchedulable.id(), newErrorCount, t.getMessage());
             }
-            failedSchedulable.reSchedule(fanCruiseExecutor, this);
+            failedSchedulable.reSchedule(executor, this);
         } else {
             log.error("Encountered unexpected error", t);
         }

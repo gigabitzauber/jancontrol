@@ -1,8 +1,5 @@
 package de.gigabitzauber.jancontrol.cruise;
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableScheduledFuture;
-import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import de.gigabitzauber.jancontrol.JcLifecycle;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
@@ -16,17 +13,12 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Modifier;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CruiseInstanceTest {
@@ -42,7 +34,7 @@ class CruiseInstanceTest {
     @Mock
     private JcLifecycle lifecycleMock;
     @Mock
-    private ListeningScheduledExecutorService executorMock;
+    private FanCruiseExecutor executorMock;
     @Mock
     private Logger logMock;
 
@@ -102,36 +94,16 @@ class CruiseInstanceTest {
 
     @Test
     void test_schedule_schedules_simpleAlgo() {
-        simulateFuture();
-
         underTest.schedule(executorMock, lifecycleMock);
 
-        var initialDelayCaptor = ArgumentCaptor.forClass(long.class);
+        var initialDelayCaptor = ArgumentCaptor.forClass(Duration.class);
         verify(executorMock).scheduleAtFixedRate(
             any(Runnable.class),
             initialDelayCaptor.capture(),
-            eq(DURATION_EXAMPLE.toMillis()),
-            eq(TimeUnit.MILLISECONDS));
+            eq(DURATION_EXAMPLE),
+            eq(lifecycleMock));
 
-        assertThat(initialDelayCaptor.getValue())
+        assertThat(initialDelayCaptor.getValue().toMillis())
             .isBetween(0L, CruiseInstance.INITIAL_MAX_DELAY.toMillis());
-    }
-
-    @Test
-    void test_schedule_registers_itself_as_callback() {
-        var scheduledFuture = simulateFuture();
-
-        try (var staticFuturesMock = mockStatic(Futures.class)) {
-            underTest.schedule(executorMock, lifecycleMock);
-            staticFuturesMock.verify(() -> Futures.addCallback(scheduledFuture, lifecycleMock, executorMock));
-        }
-    }
-
-    private ListenableScheduledFuture<?> simulateFuture() {
-        ListenableScheduledFuture<?> futureMock = mock(ListenableScheduledFuture.class);
-        when(executorMock.scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
-            .thenAnswer(_ -> futureMock);
-
-        return futureMock;
     }
 }
