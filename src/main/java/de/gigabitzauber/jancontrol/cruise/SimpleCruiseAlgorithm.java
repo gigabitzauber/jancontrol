@@ -16,6 +16,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
     private final JcLifecycle lifecycle;
     private final Logger log;
     private int downStepCount = 0;
+    private boolean firstRun = true;
 
     public SimpleCruiseAlgorithm(Fan fan, JcLifecycle lifecycle, Logger log) {
         this.fan = requireNonNull(fan, "fan must not be null");
@@ -49,7 +50,8 @@ public final class SimpleCruiseAlgorithm implements Runnable {
             var safeNewRpm = safeGetTargetRpm(fan, rawNewRpm);
             var rpmPercentageToSet = safeNewRpm.targetRpm;
             var downSkip = fan.downSkip();
-            if (rpmPercentageToSet >= currentRpm || downStepCount == downSkip) {
+            if (firstRun || rpmPercentageToSet >= currentRpm || downStepCount == downSkip) {
+                firstRun = false;
                 downStepCount = 0;
                 var actuallyWrittenValue = fan.device().write(rpmPercentageToSet);
                 log.debug(new RpmCandidate(safeNewRpm, actuallyWrittenValue).toString());
