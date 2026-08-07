@@ -22,7 +22,7 @@ import java.util.Set;
 @SpringBootApplication
 public class JanControlApplication implements CommandLineRunner {
 
-    private static final String MY_VER = "0.6.2-SNAPSHOT";
+    private static final String MY_VER = "0.6.2";
     private static final String MY_PACKAGE = "de.gigabitzauber.jancontrol";
 
     private static final String VERBOSE_FLAG = "-v";

@@ -74,7 +74,7 @@ See [Lombok Issues](https://github.com/projectlombok/lombok/issues/3852#issuecom
 ## Run
 
 ```bash
-java -jar jancontrol-0.6.2-SNAPSHOT.jar [options] <config-file>
+java -jar jancontrol-0.6.2.jar [options] <config-file>
 ```
 
 ### Command Line Switches
@@ -166,7 +166,7 @@ fans:
 The command line switch `-v` activates verbose output.
 
 ```bash
-java -jar jancontrol-0.6.2-SNAPSHOT.jar -v <config-file>
+java -jar jancontrol-0.6.2.jar -v <config-file>
 ```
 
 ### Does it recognize config file changes?
@@ -175,7 +175,7 @@ Usually the tool must be restarted to recognize config file changes. However, wi
 start it in "watch mode", i.e. it will recognize config file changes and reload its configuration automatically.
 
 ```bash
-java -jar jancontrol-0.6.2-SNAPSHOT.jar -w <config-file>
+java -jar jancontrol-0.6.2.jar -w <config-file>
 ```
 
 ### Does it work on Thinkpads?
