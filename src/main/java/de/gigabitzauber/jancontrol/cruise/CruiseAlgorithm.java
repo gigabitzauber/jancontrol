@@ -2,15 +2,17 @@ package de.gigabitzauber.jancontrol.cruise;
 
 import de.gigabitzauber.jancontrol.JcLifecycle;
 import de.gigabitzauber.jancontrol.domain.Fan;
+import de.gigabitzauber.jancontrol.util.JcCruiseUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import static java.util.Objects.requireNonNull;
 
-public final class SimpleCruiseAlgorithm implements Runnable {
+public final class CruiseAlgorithm implements Runnable {
 
     private final Fan fan;
     private final JcLifecycle lifecycle;
@@ -18,7 +20,7 @@ public final class SimpleCruiseAlgorithm implements Runnable {
     private int downStepCount = 0;
     private boolean firstRun = true;
 
-    public SimpleCruiseAlgorithm(Fan fan, JcLifecycle lifecycle, Logger log) {
+    public CruiseAlgorithm(Fan fan, JcLifecycle lifecycle, Logger log) {
         this.fan = requireNonNull(fan, "fan must not be null");
         this.lifecycle = requireNonNull(lifecycle, "lifecycle must not be null");
         this.log = requireNonNull(log, "log must not be null");
@@ -26,11 +28,11 @@ public final class SimpleCruiseAlgorithm implements Runnable {
 
     @Override
     public void run() {
-        var rpmCandidates = new ArrayList<RpmCandidate>();
         var dependencies = fan.dependsOn();
         var curves = fan.curves();
         var targetDeviceName = fan.device().getName();
         var currentRpm = fan.device().read();
+        var rpmCandidates = new ArrayList<RpmCandidate>();
         for (var i = 0; i < dependencies.size() || Thread.currentThread().isInterrupted(); i++) {
             var dependency = dependencies.get(i);
             curves.stream().filter(curve -> curve.ref().equals(dependency.getName()))
@@ -44,44 +46,57 @@ public final class SimpleCruiseAlgorithm implements Runnable {
         }
 
         if (Thread.currentThread().isInterrupted()) {
-            log.info("Cruise command got interrupted. Shutting down..");
+            log.info("Cruise got interrupted. Shutting down..");
         } else if (!rpmCandidates.isEmpty()) {
-            var rawNewRpm = Collections.max(rpmCandidates);
-            var safeNewRpm = safeGetTargetRpm(fan, rawNewRpm);
-            var rpmPercentageToSet = safeNewRpm.targetRpm;
+            var rpmCand = postProcess(rpmCandidates);
+            var rpmToSet = rpmCand.targetRpm;
+
             var downSkip = fan.downSkip();
-            if (firstRun || rpmPercentageToSet >= currentRpm || downStepCount == downSkip) {
+            if (firstRun || rpmToSet >= currentRpm || downStepCount == downSkip) {
                 firstRun = false;
                 downStepCount = 0;
-                var actuallyWrittenValue = fan.device().write(rpmPercentageToSet);
-                log.debug(new RpmCandidate(safeNewRpm, actuallyWrittenValue).toString());
+                var actuallyWrittenValue = fan.device().write(rpmToSet);
+                log.debug(new RpmCandidate(rpmCand, actuallyWrittenValue).toString());
             } else {
-                log.debug("Skipped, because downSkip: {} vs. downStepCount: {} - {}", downSkip, downStepCount, safeNewRpm);
+                log.debug("Skipped, because downStepCount: {} vs. downSkip: {} - {}", downStepCount, downSkip, rpmCand);
                 downStepCount++;
                 fan.device().write(currentRpm);
             }
         }
     }
 
-    private RpmCandidate safeGetTargetRpm(Fan targetFan, RpmCandidate newRpm) {
-        var targetRpmValue = newRpm.targetRpm;
+    private RpmCandidate postProcess(Collection<RpmCandidate> rpmCandidates) {
+        var rawNewRpmCand = Collections.max(rpmCandidates);
+        var safeNewRpmCand = safeGetTargetRpmCand(fan, rawNewRpmCand);
+        return smoothRpmCand(fan, safeNewRpmCand);
+    }
+
+    private RpmCandidate smoothRpmCand(Fan fan, RpmCandidate rawRpmCand) {
+        var smoothRpmValue = JcCruiseUtil.getNearestMultiple(rawRpmCand.targetRpm, fan.n());
+
+        return new RpmCandidate(rawRpmCand, smoothRpmValue);
+    }
+
+    private RpmCandidate safeGetTargetRpmCand(Fan targetFan, RpmCandidate rawRpmCand) {
+        var targetRpmValue = rawRpmCand.targetRpm;
         var rpmSafetyMargin = targetFan.device().safetyMargin();
         var lowestSafeRpmValue = rpmSafetyMargin.lowerEndpoint();
         var highestSafeRpmValue = rpmSafetyMargin.upperEndpoint();
+        var targetDeviceName = rawRpmCand.targetDeviceName;
 
         if (!targetFan.device().allowIdle() && targetRpmValue < lowestSafeRpmValue) {
-            logRpmLimitSafetyWarning(newRpm.targetDeviceName);
+            logRpmLimitSafetyWarning(targetDeviceName);
             targetRpmValue = lowestSafeRpmValue;
-            log.warn("Setting RPM value for {} to lowest allowed value: {}", newRpm.targetDeviceName, lowestSafeRpmValue);
+            log.warn("Setting RPM value for {} to lowest allowed value: {}", targetDeviceName, lowestSafeRpmValue);
         }
 
         if (targetRpmValue > highestSafeRpmValue) {
-            logRpmLimitSafetyWarning(newRpm.targetDeviceName);
+            logRpmLimitSafetyWarning(targetDeviceName);
             targetRpmValue = highestSafeRpmValue;
-            log.warn("Setting RPM value for {} to highest allowed value: {}", newRpm.targetDeviceName, highestSafeRpmValue);
+            log.warn("Setting RPM value for {} to highest allowed value: {}", targetDeviceName, highestSafeRpmValue);
         }
 
-        return new RpmCandidate(newRpm, targetRpmValue);
+        return new RpmCandidate(rawRpmCand, targetRpmValue);
     }
 
     public static record RpmCandidate(

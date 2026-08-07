@@ -10,7 +10,9 @@ import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,8 +22,10 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -31,7 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class SimpleCruiseAlgorithmTest {
+class CruiseAlgorithmTest {
     private static final Fan FAN_EXAMPLE = Fan.builder().interval(Duration.ofSeconds(10)).build();
 
     @Mock
@@ -41,21 +45,21 @@ class SimpleCruiseAlgorithmTest {
 
     @Test
     void does_not_support_null_fan() {
-        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(null, lifecycleMock, logMock))
+        assertThatThrownBy(() -> new CruiseAlgorithm(null, lifecycleMock, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("fan must not be null");
     }
 
     @Test
     void does_not_support_null_lifecycle() {
-        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(FAN_EXAMPLE, null, logMock))
+        assertThatThrownBy(() -> new CruiseAlgorithm(FAN_EXAMPLE, null, logMock))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("lifecycle must not be null");
     }
 
     @Test
     void does_not_support_null_log() {
-        assertThatThrownBy(() -> new SimpleCruiseAlgorithm(FAN_EXAMPLE, lifecycleMock, null))
+        assertThatThrownBy(() -> new CruiseAlgorithm(FAN_EXAMPLE, lifecycleMock, null))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("log must not be null");
     }
@@ -84,7 +88,7 @@ class SimpleCruiseAlgorithmTest {
             .dependsOn(List.of(temperatureDevice))
             .curves(List.of(curve))
             .build();
-        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
+        var localUnderTest = new CruiseAlgorithm(fan, lifecycleMock, logMock);
 
         localUnderTest.run();
         verify(rpmDevice).write(expectedLowerRpmThreshold);
@@ -122,7 +126,7 @@ class SimpleCruiseAlgorithmTest {
             .dependsOn(List.of(dependencyA, dependencyB))
             .curves(List.of(curveA, curveB))
             .build();
-        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
+        var localUnderTest = new CruiseAlgorithm(fan, lifecycleMock, logMock);
 
         localUnderTest.run();
 
@@ -142,7 +146,7 @@ class SimpleCruiseAlgorithmTest {
             .dependsOn(List.of(dependency))
             .curves(List.of(curve))
             .build();
-        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
+        var localUnderTest = new CruiseAlgorithm(fan, lifecycleMock, logMock);
 
         localUnderTest.run();
 
@@ -168,7 +172,7 @@ class SimpleCruiseAlgorithmTest {
             .dependsOn(List.of(dependencyA))
             .curves(List.of(curveA))
             .build();
-        var localUnderTest = new SimpleCruiseAlgorithm(fan, lifecycleMock, logMock);
+        var localUnderTest = new CruiseAlgorithm(fan, lifecycleMock, logMock);
 
         // Set RPM from 10 to 40
         localUnderTest.run();
@@ -182,6 +186,37 @@ class SimpleCruiseAlgorithmTest {
         inOrder.verify(rpmDevice).write(20);
     }
 
+    @ParameterizedTest
+    @MethodSource("nInterpolationExamples")
+    void writes_only_multiples_of_n(Integer x, Integer expectedResult) {
+        var dependencyA = simulateTemperatureDevice("dependencyA", 40);
+        var rpmDevice = simulateRpmDevice("rpmDeviceMockA", 100);
+        var curveA = Curve.builder()
+            .ref(dependencyA.getName())
+            .points(Set.of(
+                new CurvePoint(40, x)))
+            .build();
+        var fan = Fan.builder()
+            .n(5)
+            .device(rpmDevice)
+            .dependsOn(List.of(dependencyA))
+            .curves(List.of(curveA))
+            .build();
+
+        var localUnderTest = new CruiseAlgorithm(fan, lifecycleMock, logMock);
+        localUnderTest.run();
+
+        verify(rpmDevice).write(expectedResult);
+    }
+
+    private static Stream<Arguments> nInterpolationExamples() {
+        return Stream.of(
+            arguments(42, 40),
+            arguments(43, 45),
+            arguments(55, 55)
+        );
+    }
+
     private TemperatureDevice simulateTemperatureDevice(String name, Integer... measurements) {
         var result = mock(TemperatureDevice.class);
         when(result.getName()).thenReturn(name);
@@ -191,14 +226,14 @@ class SimpleCruiseAlgorithmTest {
         return result;
     }
 
-    private RpmDevice simulateRpmDevice(String name, Integer... measurements) {
+    private RpmDevice simulateRpmDevice(String name, Integer... rpms) {
         var result = mock(RpmDevice.class);
         when(result.getName()).thenReturn(name);
         lenient().when(result.safetyMargin()).thenReturn(Range.closed(20, 100));
 
-        if (measurements.length > 1) {
-            var otherMeasurements = Arrays.copyOfRange(measurements, 1, measurements.length);
-            lenient().when(result.read()).thenReturn(measurements[0], otherMeasurements);
+        if (rpms.length > 1) {
+            var otherRpms = Arrays.copyOfRange(rpms, 1, rpms.length);
+            lenient().when(result.read()).thenReturn(rpms[0], otherRpms);
         }
 
         return result;

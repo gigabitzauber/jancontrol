@@ -18,6 +18,7 @@ class FanTest {
     void test_noArgsConstructor() {
         assertThat(underTest.interval()).isEqualTo(Fan.DEFAULT_INTERVAL);
         assertThat(underTest.downSkip()).isEqualTo(Fan.DEFAULT_DOWN_SKIP);
+        assertThat(underTest.n()).isEqualTo(Fan.DEFAULT_N);
         assertThat(underTest.device()).isNull();
         assertThat(underTest.curves()).isEmpty();
         assertThat(underTest.dependsOn()).isEmpty();
@@ -27,14 +28,16 @@ class FanTest {
     void test_allArgsConstructor() {
         var interval = Duration.ofSeconds(3);
         var downSkip = 6;
+        var n = 5;
         var device = mock(RpmDevice.class);
         var curves = Set.of(Curve.builder().build());
         var dependsOn = List.of(mock(TemperatureDevice.class));
 
-        var localUnderTest = new Fan(interval, downSkip, device, curves, dependsOn);
+        var localUnderTest = new Fan(interval, downSkip, n, device, curves, dependsOn);
 
         assertThat(localUnderTest.interval()).isEqualTo(interval);
         assertThat(localUnderTest.downSkip()).isEqualTo(downSkip);
+        assertThat(localUnderTest.n()).isEqualTo(n);
         assertThat(localUnderTest.device()).isEqualTo(device);
         assertThat(localUnderTest.curves()).isEqualTo(curves);
         assertThat(localUnderTest.dependsOn()).isEqualTo(dependsOn);

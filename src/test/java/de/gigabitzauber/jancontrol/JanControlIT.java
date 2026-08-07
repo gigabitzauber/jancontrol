@@ -1,7 +1,7 @@
 package de.gigabitzauber.jancontrol;
 
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
-import de.gigabitzauber.jancontrol.cruise.SimpleCruiseAlgorithm;
+import de.gigabitzauber.jancontrol.cruise.CruiseAlgorithm;
 import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import de.gigabitzauber.jancontrol.domain.Curve;
 import de.gigabitzauber.jancontrol.domain.CurvePoint;
@@ -137,14 +137,14 @@ class JanControlIT {
 
         assertOutput(output, "Calculated RPM value for rpmDeviceA exceeds safe limits.");
         assertOutput(output, "Setting RPM value for rpmDeviceA to lowest allowed value: 20");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 20, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 20, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         write(tempDeviceFilePathB, "30000");
         write(tempDeviceFilePathC, "30000");
-        var expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 30, 33, 33, RPM_DEVICE_NAME_B);
+        var expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 30, 33, 33, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnB);
 
         discardOldOutput();
@@ -152,8 +152,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "40000");
         write(tempDeviceFilePathB, "40000");
         write(tempDeviceFilePathC, "40000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 20, 25, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 40, 33, 45, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 20, 25, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 40, 33, 45, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
@@ -162,8 +162,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "50000");
         write(tempDeviceFilePathB, "50000");
         write(tempDeviceFilePathC, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 50, 45, 55, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 50, 45, 55, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
@@ -172,8 +172,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "60000");
         write(tempDeviceFilePathB, "60000");
         write(tempDeviceFilePathC, "60000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 60, 50, 75, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 60, 55, 70, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 60, 50, 75, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 60, 55, 70, RPM_DEVICE_NAME_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
@@ -182,8 +182,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "70000");
         write(tempDeviceFilePathB, "71000");
         write(tempDeviceFilePathC, "72000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 70, 75, 100, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 71, 70, 77, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 70, 75, 100, RPM_DEVICE_NAME_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 71, 70, 77, RPM_DEVICE_NAME_B);
         assertOutput(output, "Calculated RPM value for rpmDeviceA exceeds safe limits.");
         assertOutput(output, "Setting RPM value for rpmDeviceA to highest allowed value: 100");
         assertAction(output, expectedActionOnA);
@@ -207,7 +207,7 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
@@ -219,7 +219,7 @@ class JanControlIT {
         discardOldOutput();
 
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
     }
 
@@ -229,7 +229,7 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
@@ -243,7 +243,7 @@ class JanControlIT {
 
         write(rpmDeviceFilePathA, "61");
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 23, 50, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 23, 50, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
     }
 
@@ -254,19 +254,19 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "30000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 0, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 0, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         write(tempDeviceFilePathA, "40000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 0, 0, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 0, 0, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 0, expectedActivationThresholdPercent, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 0, expectedActivationThresholdPercent, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         assertNotInFullOutput(output, "Calculated RPM value for " + RPM_DEVICE_NAME_A + " exceeds safe limits.");
@@ -283,7 +283,7 @@ class JanControlIT {
         discardOldOutput();
 
         write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
@@ -297,7 +297,7 @@ class JanControlIT {
 
         var newTemp = 45;
         write(tempDeviceFilePathA, newTemp * 1000 + "");
-        expectedActionOnA = new SimpleCruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, newTemp, 15, 15, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, newTemp, 15, 15, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
         tearDown();
         assertOutput(output, "Highest measurement for tempDeviceA: " + newTemp);
@@ -308,7 +308,7 @@ class JanControlIT {
             .untilAsserted(() -> assertThat(filePath).content().isEqualTo(expectedContent));
     }
 
-    private void assertAction(CapturedOutput output, SimpleCruiseAlgorithm.RpmCandidate expectedAction) {
+    private void assertAction(CapturedOutput output, CruiseAlgorithm.RpmCandidate expectedAction) {
         assertOutput(output, expectedAction.toString());
     }
 

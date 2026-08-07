@@ -16,7 +16,6 @@ public record Curve(
     String ref,
     @JsonDeserialize(using = JcJacksonConfig.CurveTypeDeserializer.class)
     CurveType type,
-    Integer n,
     Collection<CurvePoint> points) {
 
     public Curve {
@@ -27,9 +26,6 @@ public record Curve(
             points = Set.of();
         }
         points = Set.copyOf(points);
-        if (n == null) {
-            n = 1;
-        }
     }
 
     @JsonIgnore

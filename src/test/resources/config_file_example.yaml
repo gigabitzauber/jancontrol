@@ -1,6 +1,7 @@
 fans:
   - interval: "3s"
     downSkip: 5
+    n: 6
     thisKeyIsUnknown: "and should not cause a read exception"
     device:
       name: "CPU Fan"

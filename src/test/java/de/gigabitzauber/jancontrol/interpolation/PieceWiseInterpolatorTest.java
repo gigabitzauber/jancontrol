@@ -4,16 +4,12 @@ import de.gigabitzauber.jancontrol.domain.Curve;
 import de.gigabitzauber.jancontrol.domain.CurvePoint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class PieceWiseInterpolatorTest {
 
@@ -168,20 +164,6 @@ class PieceWiseInterpolatorTest {
         assertThat(resultA).isEqualTo(resultB).isEqualTo(125);
     }
 
-    @ParameterizedTest
-    @MethodSource("nInterpolationExamples")
-    void interpolate_returns_only_multiples_of_n(Integer x, Integer expectedResult) {
-        var curve = simulateCurve(
-            5,
-            new CurvePoint(FIRST_X, 42),
-            new CurvePoint(MID_X, 43),
-            new CurvePoint(LAST_X, 45)
-        );
-        var underTest = createUnderTest(curve);
-
-        assertThat(underTest.interpolate(x)).isEqualTo(expectedResult);
-    }
-
     private static Curve simulateCurve() {
         return simulateCurve(
             new CurvePoint(FIRST_X, FIRST_Y),
@@ -191,25 +173,12 @@ class PieceWiseInterpolatorTest {
     }
 
     private static Curve simulateCurve(CurvePoint... points) {
-        return simulateCurve(1, points);
-    }
-
-    private static Curve simulateCurve(int n, CurvePoint... points) {
         return Curve.builder()
-            .n(n)
             .points(Set.of(points))
             .build();
     }
 
     private static PieceWiseInterpolator createUnderTest(Curve curve) {
         return new PieceWiseInterpolator(curve);
-    }
-
-    private static Stream<Arguments> nInterpolationExamples() {
-        return Stream.of(
-            arguments(FIRST_X, 40),
-            arguments(MID_X, 45),
-            arguments(LAST_X, 45)
-        );
     }
 }

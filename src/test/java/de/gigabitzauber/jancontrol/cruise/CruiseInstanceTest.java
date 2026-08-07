@@ -93,7 +93,7 @@ class CruiseInstanceTest {
     }
 
     @Test
-    void test_schedule_schedules_simpleAlgo() {
+    void test_schedule_schedules_cruiseAlgo() {
         underTest.schedule(executorMock, lifecycleMock);
 
         var initialDelayCaptor = ArgumentCaptor.forClass(Duration.class);

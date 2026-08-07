@@ -31,6 +31,7 @@ class ConfigLoadIT {
         Fan.builder()
             .interval(Duration.ofSeconds(3))
             .downSkip(5)
+            .n(6)
             .device(RpmDevice.builder()
                 .name("CPU Fan")
                 .sysPath("/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2")

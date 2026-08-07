@@ -18,12 +18,14 @@ public record Fan(
     @JsonSerialize(using = JcJacksonConfig.DurationSerializer.class)
     Duration interval,
     Integer downSkip,
+    Integer n,
     RpmDevice device,
     Collection<Curve> curves,
     List<TemperatureDevice> dependsOn) {
 
     public static final Duration DEFAULT_INTERVAL = Duration.ofSeconds(5);
     public static final int DEFAULT_DOWN_SKIP = 0;
+    public static final int DEFAULT_N = 1;
 
     public Fan {
         if (interval == null) {
@@ -32,6 +34,10 @@ public record Fan(
 
         if (downSkip == null) {
             downSkip = DEFAULT_DOWN_SKIP;
+        }
+
+        if (n == null) {
+            n = DEFAULT_N;
         }
 
         if (curves == null) {

@@ -8,23 +8,15 @@ import java.util.Objects;
 public final class PieceWiseInterpolator implements JcInterpolator {
     private final int[] piecesX;
     private final int[] piecesY;
-    private final int n;
 
     public PieceWiseInterpolator(Curve curve) {
         Objects.requireNonNull(curve, "curve must not be null");
         this.piecesX = curve.points().stream().map(CurvePoint::temp).sorted().mapToInt(Integer::intValue).toArray();
         this.piecesY = curve.points().stream().map(CurvePoint::rpm).sorted().mapToInt(Integer::intValue).toArray();
-        n = curve.n();
     }
 
     @Override
     public int interpolate(int x) {
-        var rawResult = internalInterpolate(x);
-
-        return getNearestMultiple(rawResult, n);
-    }
-
-    private int internalInterpolate(int x) {
         if (x <= piecesX[0])
             return piecesY[0];
         if (x >= piecesX[piecesX.length - 1])
@@ -38,17 +30,5 @@ public final class PieceWiseInterpolator implements JcInterpolator {
             }
         }
         return 0;
-    }
-
-    /**
-     * Nearest multiple algorithm without using round and double precision div.
-     */
-    public int getNearestMultiple(int rawCurveY, int n) {
-        int remainder = rawCurveY % n;
-        if (remainder < (n + 1) / 2) {
-            return rawCurveY - remainder;
-        } else {
-            return rawCurveY + (n - remainder);
-        }
     }
 }
