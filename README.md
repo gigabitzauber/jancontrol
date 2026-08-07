@@ -3,10 +3,13 @@
 A replacement for [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) that supports a
 convenient and more powerful config DSL.
 
-It also supports more than one input per fan.
+It also supports more than one input per fan and does also work on Thinkapds, making it a possible replacement
+for [thinkfan](https://github.com/vmatare/thinkfan).
 
 **WARNING:** Make sure, you are using proper values in the config! There are basic validations in place, but it is not
 yet foolproof. In particular curve integrity is currently not checked at all. You have been warned!
+
+[Consider supporting if you find this useful](https://ko-fi.com/gigabitzauber)
 
 ## Table of Contents
 
@@ -15,7 +18,7 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
 * [Home](#home)
 * [Build](#build)
 * [Run](#run)
-    * [Debug mode / Verbose output](#debug-mode--verbose-output)
+    * [Command Line Switches](#command-line-switches)
 * [Install](#install)
 * [Running as Service (systemd)](#running-as-service-systemd)
 * [Configure](#configure)
@@ -25,6 +28,9 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
     * [Does it survive Suspend and Hibernation?](#does-it-survive-suspend-and-hibernation)
     * [My fans won't stop even though I configured rpm: 0](#my-fans-wont-stop-even-though-i-configured-rpm-0)
     * [Fan activation threshold](#fan-activation-threshold)
+    * [Is there a debug mode / verbose output?](#is-there-a-debug-mode--verbose-output)
+    * [Does it recognize config file changes?](#does-it-recognize-config-file-changes)
+    * [Does it work on Thinkpads?](#does-it-work-on-thinkpads)
 * [Note on chosen technology](#note-on-chosen-technology)
 
 <!--te-->
@@ -71,12 +77,16 @@ See [Lombok Issues](https://github.com/projectlombok/lombok/issues/3852#issuecom
 java -jar jancontrol-0.6.0-SNAPSHOT.jar [options] <config-file>
 ```
 
-### Debug mode / Verbose output
-
-The command line switch `-v` activates verbose output.
+### Command Line Switches
 
 ```bash
-java -jar jancontrol-0.6.0-SNAPSHOT.jar -v <config-file>
+Usage: java -jar jancontrol.jar [options] <config-file>
+
+Options:
+-h | --help ... show this help
+-w ... watch config file for changes
+-v ... activate verbose mode
+--version ... show version
 ```
 
 ## Install
@@ -150,6 +160,33 @@ fans:
       activationThreshold: 15
 ...
 ```
+
+### Is there a debug mode / verbose output?
+
+The command line switch `-v` activates verbose output.
+
+```bash
+java -jar jancontrol-0.6.0-SNAPSHOT.jar -v <config-file>
+```
+
+### Does it recognize config file changes?
+
+Usually the tool must be restarted to recognize config file changes. However, with the switch `-w` it is possible to
+start it in "watch mode", i.e. it will recognize config file changes and reload its configuration automatically.
+
+```bash
+java -jar jancontrol-0.6.0-SNAPSHOT.jar -w <config-file>
+```
+
+### Does it work on Thinkpads?
+
+Yes, currently Thinkpad fan control is supported via
+the [thinkpad_acpi](https://docs.kernel.org/admin-guide/laptops/thinkpad-acpi.html) Kernel module.
+
+Please note that you may need to set `fan_control=1`as a module parameter to unlock manual fan control. However, this
+depends on your Thinkpad model.
+
+See [docs/how_to_use.md](docs/how_to_use.md) on how to configure Thinkpad support.
 
 ## Note on chosen technology
 

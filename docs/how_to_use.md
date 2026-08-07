@@ -1,9 +1,9 @@
 # How to use jancontrol
 
-The tool tries to figure out how fast a fan should spin based on one or more temperature values it reads. This is usally
-nothing more than "if temperature is X, then fan should spin Y rpms". The mapping of temperature value to fan speed is
-defined in the configuration file. This file contains a [YAML](https://en.wikipedia.org/wiki/YAML) based description of
-one or more of such fans.
+The tool tries to figure out how fast a fan should spin based on one or more temperature values it reads. This is
+usually nothing more than "if temperature is X, then fan should spin Y RPMs". The mapping of temperature value to fan
+speed is defined in the configuration file. This file contains a [YAML](https://en.wikipedia.org/wiki/YAML) based
+description of one or more of such fans.
 
 Basically it works like this:
 
@@ -13,23 +13,25 @@ Basically it works like this:
 
 Each fan entry defines the following things:
 
-| Key                          | Meaning                                                                                                                                                               |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `interval`                   | Optional value. The update interval of this fan. Time units such as `500ms` or `3s` must be used. Default value: `5s`.                                                |
-| `device`                     | The target device to control.                                                                                                                                         |
-| `device.name`                | A human-readable name for the fan. It may contain spaces and is used as a reference for the curves defined for this fan.                                              |
-| `device.sysPath`             | The path to the kernel device file that controls the fan speed, for example `/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2`.                                    |
-| `device.allowIdle`           | Optional value. Disable safety RPM margins, i.e. fans may be set to off (0% RPM). Default value: false                                                                |
-| `device.activationThreshold` | Optional value. All configured values below this threshold will be interpreted as 0% RPM. Default value: 20                                                           |
-| `device.driver`              | Optional value. Specifies the name of the driver to use for low level fan I/O. See [Supported Hardware](#supported-hardware) for viable names. Default value: nct6775 |
-| `dependsOn`                  | A list of temperature sensors that this fan should depend on.                                                                                                         |
-| `dependsOn.name`             | The name of a dependency sensor. This is the label used by the configuration.                                                                                         |
-| `dependsOn.sysPath`          | The sysfs path of the dependency sensor.                                                                                                                              |
-| `curves`                     | A list of temperature-to-RPM mappings used to interpolate the desired fan speed. Only linear interpolation is currently supported.                                    |
-| `curves.ref`                 | The name of the dependency sensor that this curve references. It must match one of the names defined in `dependsOn`.                                                  |
-| `curves.points`              | A list of points that define the mapping between temperature and fan speed.                                                                                           |
-| `curves.points.temp`         | The temperature value. The unit can be °C or °F, as long as it is used consistently.                                                                                  |
-| `curves.points.rpm`          | The desired fan speed value. This is expressed as a percentage from `0` to `100` and is translated to absolute RPMs at runtime.                                       |
+| Key                          | Meaning                                                                                                                                                   |
+|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `interval`                   | Optional. The update interval of this fan. Time units such as `500ms` or `3s` must be used. Default: `5s`.                                                |
+| `downSkip`                   | Optional. Throttle decreasing RPM by skipping downSkip iterations. Default: 0.                                                                            |
+| `device`                     | The target device to control.                                                                                                                             |
+| `device.name`                | A human-readable name for the fan. It may contain spaces and is used as a reference for the curves defined for this fan.                                  |
+| `device.sysPath`             | The path to the kernel device file that controls the fan speed, for example `/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2`.                        |
+| `device.allowIdle`           | Optional. Disable safety RPM margins, i.e. fans may be set to off (0% RPM). Default: false                                                                |
+| `device.activationThreshold` | Optional. All configured values below this threshold will be interpreted as 0% RPM. Default: 20                                                           |
+| `device.driver`              | Optional. Specifies the name of the driver to use for low level fan I/O. See [Supported Hardware](#supported-hardware) for viable names. Default: nct6775 |
+| `dependsOn`                  | A list of temperature sensors that this fan should depend on.                                                                                             |
+| `dependsOn.name`             | The name of a dependency sensor. This is the label used by the configuration.                                                                             |
+| `dependsOn.sysPath`          | The sysfs path of the dependency sensor.                                                                                                                  |
+| `curves`                     | A list of temperature-to-RPM mappings used to interpolate the desired fan speed. Only linear interpolation is currently supported.                        |
+| `curves.n`                   | Optional. Calculated RPM values of each curve will be rounded to multiples of this value. Default: 1                                                      |
+| `curves.ref`                 | The name of the dependency sensor that this curve references. It must match one of the names defined in `dependsOn`.                                      |
+| `curves.points`              | A list of points that define the mapping between temperature and fan speed.                                                                               |
+| `curves.points.temp`         | The temperature value. The unit can be °C or °F, as long as it is used consistently.                                                                      |
+| `curves.points.rpm`          | The desired fan speed value. This is expressed as a percentage from `0` to `100` and is translated to absolute RPMs at runtime.                           |
 
 For example, the following snippet defines a fan that is controlled from a CPU temperature sensor using a simple linear
 curve:
@@ -70,10 +72,10 @@ fans:
       driver: "thinkpad_acpi"
 ```
 
-| Hardware | Config-File-Key         | Driver                                                                          | Comment                                                   |
-|----------|-------------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------|
-| NCT6775  | nct6775 (default value) | [nct6775](https://docs.kernel.org/hwmon/nct6775.html)                           | Should also work for NCT6775F, NCT6776F & W83627EHF.      |
-| Thinkpad | thinkpad_acpi           | [thinkpad_acpi](https://docs.kernel.org/admin-guide/laptops/thinkpad-acpi.html) | May work on all models that support this kernel module(?) |
+| Hardware | Config-File-Key         | Driver                                                                          | Comment                                                                                                                                                                                                         |
+|----------|-------------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| NCT6775  | nct6775 (default value) | [nct6775](https://docs.kernel.org/hwmon/nct6775.html)                           | Should also work for NCT6775F, NCT6776F & W83627EHF.                                                                                                                                                            |
+| Thinkpad | thinkpad_acpi           | [thinkpad_acpi](https://docs.kernel.org/admin-guide/laptops/thinkpad-acpi.html) | May work on all models that support this kernel module(?) Please note that you may need to set `fan_control=1`as a module parameter to unlock manual fan control. However, this depends on your Thinkpad model. |
 
 ### How do multiple temperature sensors for one fan work?
 
@@ -82,9 +84,9 @@ may be referenced by at most one curve defined for it. If multiple dependencies 
 calculate the desired fan speed for each dependency and then use the **highest value as the final desired fan speed**.
 This enables scenarios where the fan speed depends on what the machine is currently doing.
 
-For example, this is a real world config file that controls the case fan of a PC based on whether the CPU is currently
-compiling (GPU / Case cold), or it currently is summer (case hot, CPU & GPU cold) or the machine is currently used for
-gaming (CPU & GPU hot, case temperature rising):
+For example, this is a real world config file that controls the case fan of a PC. It is based on whether the CPU is
+currently compiling (GPU / Case cold), or it currently is summer (case hot, CPU & GPU cold) or the machine is currently
+used for gaming (CPU & GPU hot, case temperature rising):
 
 ```yaml
 fans:
@@ -151,4 +153,77 @@ fans:
           - temp: 89
             rpm: 60
     interval: "10s"
+```
+
+### How to prevent fans from continuously spinning up and down?
+
+Depending on your system, configured curves, outside temperatures and desired "silent" RPMs, fans may have the tendency
+to "twitch", i.e. they spin up to increase cooling and immediately spin down, because the temperature of the device they
+are cooling decreased by e.g. 1°. Due to the spin down, the temperature increases again which in turn causes the fan to
+spin up and the cycle repeats itself.
+
+To prevent this, various different options are available:
+
+* You may want to improve your curve setup.
+* Try experimenting with `interval`. Longer intervals may help to "miss" short-lived changes in temperature values. But
+  will also slow down reaction to high temperature increases
+* Try using 'downSkip'. This acts like a kind of [hysteresis](https://en.wikipedia.org/wiki/Hysteresis#Control_systems),
+  i.e. fans run longer on higher RPMs before spinning down, maybe decreasing the temperature by more than 1°.
+* Try using 'n'. Spin fans up and down by multiples of n only. This makes RPMs more coarse grained which also may
+  increase cooling per time.
+
+For example this config is using these kinds of fine-tuning:
+
+```yaml
+fans:
+  - interval: "20s"
+    downSkip: 1
+    n: 3
+    device:
+      name: "CPU Fan"
+      sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
+    dependsOn:
+      - name: "CPU Temp"
+        sysPath: "/sys/class/hwmon/hwmon7/temp2_input"
+    curves:
+      - ref: "CPU Temp"
+        points:
+          - temp: 46
+            rpm: 20
+          - temp: 60
+            rpm: 33
+          - temp: 78
+            rpm: 75
+          - temp: 95
+            rpm: 95
+  - interval: "10s"
+    downSkip: 4
+    n: 5
+    device:
+      name: "Case Fan"
+      sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm1"
+    dependsOn:
+      - name: "Case Temp"
+        sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp1_input"
+      - name: "GPU Temp"
+        sysPath: "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon/hwmon3/temp1_input"
+      - name: "CPU Temp"
+        sysPath: "/sys/class/hwmon/hwmon7/temp2_input"
+    curves:
+      - ref: "Case Temp"
+        points:
+          - temp: 38
+            rpm: 25
+          - temp: 41
+            rpm: 40
+          - temp: 42
+            rpm: 40
+          - temp: 46
+            rpm: 66
+          - temp: 49
+            rpm: 75
+          - temp: 52
+            rpm: 80
+          - temp: 60
+            rpm: 95
 ```
