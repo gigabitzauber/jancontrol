@@ -47,16 +47,8 @@ by [github-markdown-toc](https://github.com/ekalinin/github-markdown-toc#install
 The sources come with [Maven Wrapper](https://maven.apache.org/tools/wrapper) attached. If you don't have Maven
 installed, you can use the wrapper to build the project.
 
-Linux/Mac:
-
 ```bash
 ./mvnw -U clean package
-```
-
-Windows:
-
-```bash
-mvnw.cmd -U clean package
 ```
 
 Please note that if you get a warning like this:
