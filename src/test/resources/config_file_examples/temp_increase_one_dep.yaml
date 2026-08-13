@@ -1,0 +1,15 @@
+fans:
+  - interval: "3s"
+    device:
+      name: "fanA"
+      sysPath: "testFanA_pwmFile"
+    dependsOn:
+      - name: "depA"
+        sysPath: "depA_tempInput"
+    curves:
+      - ref: "depA"
+        points:
+          - temp: 30
+            rpm: 25
+          - temp: 40
+            rpm: 45
