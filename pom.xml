@@ -11,8 +11,8 @@
     <version>0.6.2</version>
     <packaging>jar</packaging>
 
-    <name>Jancontrol</name>
-    <description>Java based Fancontrol replacement</description>
+    <name>jancontrol</name>
+    <description>Java based fancontrol / thinkfan alternative</description>
 
     <licenses>
         <license>
@@ -130,7 +130,8 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs</artifactId>
-            <version>4.10.3</version>
+            <version>${spotbugs.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

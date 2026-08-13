@@ -1,10 +1,10 @@
 # JanControl
 
-A replacement for [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) that supports a
+An alternative for [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) that supports a
 convenient and more powerful config DSL.
 
-It also supports more than one input per fan and does also work on Thinkapds, making it a possible replacement
-for [thinkfan](https://github.com/vmatare/thinkfan).
+It also supports more than one input per fan and does also work on Thinkapds, making it a possible alternative
+for [thinkfan](https://github.com/vmatare/thinkfan) as well.
 
 **WARNING:** Make sure, you are using proper values in the config! There are basic validations in place, but it is not
 yet foolproof. In particular curve integrity is currently not checked at all. You have been warned!
