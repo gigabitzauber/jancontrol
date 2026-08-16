@@ -9,10 +9,11 @@ public class NopCruise extends JcSchedulable {
 
     private NopCruise() {
         super(
-            () -> {
-
-            },
-            "NOP cruise",
+            new JcOp(
+                "NOP cruise",
+                () -> {
+                }
+            ),
             INITIAL_DELAY,
             POLL_INTERVAL);
     }

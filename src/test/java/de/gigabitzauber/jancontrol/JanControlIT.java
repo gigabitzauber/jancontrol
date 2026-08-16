@@ -224,7 +224,7 @@ class JanControlIT {
     }
 
     @Test
-    void when_cruise_fails_then_it_is_rescheduled(CapturedOutput output) throws Exception {
+    void when_cruise_ultimately_fails_then_it_is_not_rescheduled(CapturedOutput output) throws Exception {
         var configFilePath = createConfig();
         startApp(configFilePath);
 
@@ -234,17 +234,11 @@ class JanControlIT {
 
         discardOldOutput();
 
-        Files.delete(rpmDeviceFilePathA);
+        Files.delete(tempDeviceFilePathA);
         assertOutput(output,
             "exhausted error threshold of 3 for error: fan cruise (" + RPM_DEVICE_NAME_A + ") "
-                + "ran into error: Path does not exist: " + rpmDeviceFilePathA);
-
-        discardOldOutput();
-
-        write(rpmDeviceFilePathA, "61");
-        write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 23, 50, RPM_DEVICE_NAME_A);
-        assertAction(output, expectedActionOnA);
+                + "ran into error: Path does not exist: " + tempDeviceFilePathA);
+        assertOutput(output, "Putting " + RPM_DEVICE_NAME_A + " into emergency mode.");
     }
 
     @Test
@@ -279,13 +273,8 @@ class JanControlIT {
         startApp(List.of("-v", "-w"), configFilePath);
 
         assertOutput(output, "Registering fan '" + RPM_DEVICE_NAME_A + "' with allowIdle: false and activation threshold: 20%");
-
         discardOldOutput();
-
-        write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
-        assertAction(output, expectedActionOnA);
-
+        assertOutput(output, "Setting " + RPM_DEVICE_NAME_A);
         discardOldOutput();
 
         int activationThresholdExample = 15;
@@ -297,7 +286,7 @@ class JanControlIT {
 
         var newTemp = 45;
         write(tempDeviceFilePathA, newTemp * 1000 + "");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, newTemp, 15, 15, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, newTemp, 15, 15, RPM_DEVICE_NAME_A);
         assertAction(output, expectedActionOnA);
         tearDown();
         assertOutput(output, "Highest measurement for tempDeviceA: " + newTemp);

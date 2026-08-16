@@ -14,23 +14,25 @@ public abstract class JcSchedulable {
 
     protected final RandomGenerator rnd = RandomGenerator.getDefault();
 
-    private final Runnable op;
-    private final String opName;
+    private final JcOp op;
     private final Duration initialMaxDelay;
     private final Duration interval;
     private final String id;
 
-    protected JcSchedulable(Runnable op, String opName, Duration initialMaxDelay, Duration interval) {
+    protected JcSchedulable(JcOp op, Duration initialMaxDelay, Duration interval) {
         this.op = op;
-        this.opName = opName;
         this.initialMaxDelay = initialMaxDelay;
         this.interval = interval;
 
-        this.id = "%s@%s".formatted(this.opName, UUID.randomUUID().toString());
+        this.id = "%s@%s".formatted(this.op.name(), UUID.randomUUID().toString());
     }
 
     public final String id() {
         return id;
+    }
+
+    public final JcOp op() {
+        return this.op;
     }
 
     public final void schedule(FanCruiseExecutor executor, FutureCallback<Object> callback) {
@@ -50,9 +52,9 @@ public abstract class JcSchedulable {
         executor.scheduleAtFixedRate(
             () -> {
                 try {
-                    op.run();
+                    op.code().run();
                 } catch (Exception e) {
-                    var errMsg = this.opName + " ran into error: " + safeGetMessage(e);
+                    var errMsg = this.op.name() + " ran into error: " + safeGetMessage(e);
                     throw new JcSchedulableException(errMsg, this, e);
                 }
             },

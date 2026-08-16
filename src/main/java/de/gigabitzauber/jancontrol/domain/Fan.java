@@ -50,4 +50,8 @@ public record Fan(
         }
         dependsOn = List.copyOf(dependsOn);
     }
+
+    public void emergency() {
+        device().setEmergencyRpm();
+    }
 }

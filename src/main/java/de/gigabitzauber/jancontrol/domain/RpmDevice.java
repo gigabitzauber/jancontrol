@@ -123,6 +123,11 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
         return manualMode;
     }
 
+    @JsonIgnore
+    public void setEmergencyRpm() {
+        write(66);
+    }
+
     private @NonNull RwSysFile constructModeFileHandle() {
         return new RwSysFile(getSysPath() + "_enable");
     }

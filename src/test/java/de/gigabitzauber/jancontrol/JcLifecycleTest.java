@@ -2,6 +2,7 @@ package de.gigabitzauber.jancontrol;
 
 import de.gigabitzauber.jancontrol.cruise.CruiseInstance;
 import de.gigabitzauber.jancontrol.cruise.FanCruiseExecutor;
+import de.gigabitzauber.jancontrol.cruise.JcOp;
 import de.gigabitzauber.jancontrol.cruise.JcSchedulable;
 import de.gigabitzauber.jancontrol.cruise.ModeEnforcer;
 import de.gigabitzauber.jancontrol.cruise.NopCruise;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -36,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -168,23 +171,24 @@ class JcLifecycleTest {
     }
 
     @Test
-    void when_error_count_of_schedulable_is_above_threshold_then_log_error() {
+    void when_error_count_of_schedulable_is_above_threshold_then_log_error_and_do_not_reschedule_again() {
         simulateTime(0);
         var schedulableExample = simulateSchedulable();
         var expectedErrorMsg = "expectedErrorMsg";
         var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
+        underTest.jcStart(new CruiseConfigRoot(Set.of()));
 
         for (int i = 0; i <= JcLifecycle.ERROR_THRESHOLD; i++) {
             assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
         }
 
-        verify(logMock).error("Schedulable {} exhausted error threshold of {} for error: {}",
+        verify(logMock).error("Schedulable {} exhausted error threshold of {} for error: {}. It will not be rescheduled again.",
             schedulableExample.id(),
             JcLifecycle.ERROR_THRESHOLD,
             schedulableErrorExample.getMessage(),
             schedulableErrorExample);
-        verify(schedulableExample, times(JcLifecycle.ERROR_THRESHOLD + 1))
-            .reSchedule(executorMock, underTest);
+        verify(logMock).error("Putting {} into emergency mode.", "testRpmDevice");
+        verify(schedulableExample, times(JcLifecycle.ERROR_THRESHOLD)).reSchedule(executorMock, underTest);
     }
 
     @Test
@@ -267,10 +271,11 @@ class JcLifecycleTest {
 
     private static Fan mockFan() {
         var deviceMock = mock(RpmDevice.class);
-        var fanModeMock = Mockito.mock(FanMode.class);
-        var fanMock = Mockito.mock(Fan.class);
-        when(fanMock.device()).thenReturn(deviceMock);
-        when(deviceMock.getMode()).thenReturn(fanModeMock);
+        var fanModeMock = mock(FanMode.class);
+        var fanMock = mock(Fan.class);
+        lenient().when(fanMock.device()).thenReturn(deviceMock);
+        lenient().when(deviceMock.getName()).thenReturn("testRpmDevice");
+        lenient().when(deviceMock.getMode()).thenReturn(fanModeMock);
         return fanMock;
     }
 
@@ -292,6 +297,10 @@ class JcLifecycleTest {
         var schedulableExample = mock(JcSchedulable.class);
         var schedulableIdExample = "schedulableIdExample";
         when(schedulableExample.id()).thenReturn(schedulableIdExample);
+        var fanExample = mockFan();
+        var jcOpExample = new JcOp(fanExample, "jcOpExample", () -> {
+        });
+        lenient().when(schedulableExample.op()).thenReturn(jcOpExample);
         return schedulableExample;
     }
 

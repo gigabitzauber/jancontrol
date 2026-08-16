@@ -8,12 +8,15 @@ import java.time.Duration;
 
 public final class CruiseConfigWatchdog extends JcSchedulable {
     private CruiseConfigWatchdog(CruiseConfig config, JcLifecycle lifecycle, Logger log) {
-        super(() -> {
-            if (config.hasChanged()) {
-                log.info("Encountered changes in config. Reloading..");
-                lifecycle.restart(config.load());
+        super(new JcOp(
+            "CruiseConfigWatchdog",
+            () -> {
+                if (config.hasChanged()) {
+                    log.info("Encountered changes in config. Reloading..");
+                    lifecycle.restart(config.load());
+                }
             }
-        }, "CruiseConfigWatchdog", Duration.ofMillis(1234), Duration.ofMillis(5000));
+        ), Duration.ofMillis(1234), Duration.ofMillis(5000));
     }
 
     public static CruiseConfigWatchdog create(CruiseConfig config, JcLifecycle lifecycle, Logger log) {

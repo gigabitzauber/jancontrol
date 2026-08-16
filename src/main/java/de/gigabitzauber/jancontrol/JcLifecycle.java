@@ -55,7 +55,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     }
 
     public synchronized void restart(CruiseConfigRoot config) {
-        log.debug("Reinitialising lifecycle.");
+        log.debug("Reinitialising lifecycle..");
         try {
             executor.reInitialize();
         } finally {
@@ -133,11 +133,17 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
                 newErrorCount = computeNewSchedulableErrorCount(failedSchedulable, e);
             }
             if (newErrorCount > ERROR_THRESHOLD) {
-                log.error("Schedulable {} exhausted error threshold of {} for error: {}", failedSchedulable.id(), ERROR_THRESHOLD, e.getMessage(), e);
+                log.error("Schedulable {} exhausted error threshold of {} for error: {}. It will not be rescheduled again.", failedSchedulable.id(), ERROR_THRESHOLD, e.getMessage(), e);
+
+                var parent = failedSchedulable.op().parent();
+                if (parent instanceof Fan scheduledFan) {
+                    log.error("Putting {} into emergency mode.", scheduledFan.device().getName());
+                    scheduledFan.emergency();
+                }
             } else {
                 log.debug("Schedulable {} encountered error #{}: {}", failedSchedulable.id(), newErrorCount, t.getMessage());
+                failedSchedulable.reSchedule(executor, this);
             }
-            failedSchedulable.reSchedule(executor, this);
         } else {
             log.error("Encountered unexpected error", t);
         }
