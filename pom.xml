@@ -8,7 +8,7 @@
         <version>1.0.0</version>
     </parent>
     <artifactId>jancontrol</artifactId>
-    <version>0.6.4</version>
+    <version>0.6.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>jancontrol</name>
