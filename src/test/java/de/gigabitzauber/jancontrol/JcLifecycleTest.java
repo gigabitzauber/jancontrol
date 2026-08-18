@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
@@ -171,14 +172,14 @@ class JcLifecycleTest {
     }
 
     @Test
-    void when_error_count_of_schedulable_is_above_threshold_then_log_error_and_do_not_reschedule_again() {
+    void when_error_count_of_schedulable_is_gte_threshold_then_log_error_and_do_not_reschedule_again() {
         simulateTime(0);
         var schedulableExample = simulateSchedulable();
         var expectedErrorMsg = "expectedErrorMsg";
         var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
         underTest.jcStart(new CruiseConfigRoot(Set.of()));
 
-        for (int i = 0; i <= JcLifecycle.ERROR_THRESHOLD; i++) {
+        for (int i = 0; i < JcLifecycle.ERROR_THRESHOLD; i++) {
             assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
         }
 
@@ -188,18 +189,20 @@ class JcLifecycleTest {
             schedulableErrorExample.getMessage(),
             schedulableErrorExample);
         verify(logMock).error("Putting {} into emergency mode.", "testRpmDevice");
-        verify(schedulableExample, times(JcLifecycle.ERROR_THRESHOLD)).reSchedule(executorMock, underTest);
+        verify(schedulableExample, times(JcLifecycle.ERROR_THRESHOLD - 1)).reSchedule(executorMock, underTest);
     }
 
     @Test
     void when_last_error_of_same_kind_is_outdated_then_reset_error_count() {
         simulateTime(0);
-        var schedulableExample = simulateSchedulable();
+        int schedulableIntervalMillis = 1000;
+        var schedulableExample = simulateSchedulable(schedulableIntervalMillis);
         var expectedErrorMsg = "expectedErrorMsg";
         var schedulableErrorExample = new JcSchedulableException(expectedErrorMsg, schedulableExample);
 
         assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
-        simulateTime(JcLifecycle.ERROR_COOL_OFF_MILLIS + 100);
+        simulateTime((long) ((JcLifecycle.ERROR_THRESHOLD * schedulableIntervalMillis) +
+            (schedulableIntervalMillis * JcLifecycle.ERROR_PROCESSING_EPSILON_FACTOR)) + 1);
         assertThatNoException().isThrownBy(() -> underTest.onFailure(schedulableErrorExample));
 
         // False positive. This is actually a Mockito verification, not a log statement.
@@ -293,10 +296,13 @@ class JcLifecycleTest {
         return modeCaptor.getValue();
     }
 
-    private @NonNull JcSchedulable simulateSchedulable() {
+    private @NonNull JcSchedulable simulateSchedulable(long... intervalMillis) {
         var schedulableExample = mock(JcSchedulable.class);
         var schedulableIdExample = "schedulableIdExample";
         when(schedulableExample.id()).thenReturn(schedulableIdExample);
+        if (intervalMillis.length > 0) {
+            when(schedulableExample.getInterval()).thenReturn(Duration.ofMillis(intervalMillis[0]));
+        }
         var fanExample = mockFan();
         var jcOpExample = new JcOp(fanExample, "jcOpExample", () -> {
         });

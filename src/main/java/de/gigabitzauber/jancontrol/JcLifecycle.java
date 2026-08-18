@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     static final int ERROR_THRESHOLD = 3;
-    static final int ERROR_COOL_OFF_MILLIS = 10000;
+    static final double ERROR_PROCESSING_EPSILON_FACTOR = 0.16;
 
     private final FanCruiseExecutor executor;
     private final JcTime time;
@@ -132,7 +132,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
                 cleanupOldErrors();
                 newErrorCount = computeNewSchedulableErrorCount(failedSchedulable, e);
             }
-            if (newErrorCount > ERROR_THRESHOLD) {
+            if (newErrorCount >= ERROR_THRESHOLD) {
                 log.error("Schedulable {} exhausted error threshold of {} for error: {}. It will not be rescheduled again.", failedSchedulable.id(), ERROR_THRESHOLD, e.getMessage(), e);
 
                 var parent = failedSchedulable.op().parent();
@@ -157,7 +157,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
             var errorRecord = schedulableErrorRecord.get(key);
             errorRecord.increaseCount();
         } else {
-            schedulableErrorRecord.put(key, new JcErrorRecord(time.currentTimestampMillis()));
+            schedulableErrorRecord.put(key, new JcErrorRecord(time.currentTimestampMillis(), failedSchedulable.getInterval().toMillis()));
         }
 
         return schedulableErrorRecord.get(key).getCount();
@@ -174,13 +174,17 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     private static final class JcErrorRecord {
         private int count = 1;
         private final long recordMillis;
+        private final long schedulableIntervalMillis;
 
-        JcErrorRecord(long recordTime) {
-            this.recordMillis = recordTime;
+        JcErrorRecord(long recordMillis, long schedulableIntervalMillis) {
+            this.recordMillis = recordMillis;
+            this.schedulableIntervalMillis = schedulableIntervalMillis;
         }
 
         boolean isOutdated(long currentTimeMillis) {
-            return currentTimeMillis - recordMillis > ERROR_COOL_OFF_MILLIS;
+            return currentTimeMillis - recordMillis >
+                ((ERROR_THRESHOLD * this.schedulableIntervalMillis) +
+                    (this.schedulableIntervalMillis * ERROR_PROCESSING_EPSILON_FACTOR));
         }
 
         void increaseCount() {

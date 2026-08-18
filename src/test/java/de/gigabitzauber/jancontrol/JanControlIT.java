@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static de.gigabitzauber.jancontrol.JcLifecycle.ERROR_THRESHOLD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -236,7 +237,7 @@ class JanControlIT {
 
         Files.delete(tempDeviceFilePathA);
         assertOutput(output,
-            "exhausted error threshold of 3 for error: fan cruise (" + RPM_DEVICE_NAME_A + ") "
+            "exhausted error threshold of " + ERROR_THRESHOLD + " for error: fan cruise (" + RPM_DEVICE_NAME_A + ") "
                 + "ran into error: Path does not exist: " + tempDeviceFilePathA);
         assertOutput(output, "Putting " + RPM_DEVICE_NAME_A + " into emergency mode.");
     }

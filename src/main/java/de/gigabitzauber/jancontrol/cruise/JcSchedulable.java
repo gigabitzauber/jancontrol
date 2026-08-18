@@ -2,6 +2,7 @@ package de.gigabitzauber.jancontrol.cruise;
 
 import com.google.common.util.concurrent.FutureCallback;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
+import lombok.Getter;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -16,6 +17,7 @@ public abstract class JcSchedulable {
 
     private final JcOp op;
     private final Duration initialMaxDelay;
+    @Getter
     private final Duration interval;
     private final String id;
 
