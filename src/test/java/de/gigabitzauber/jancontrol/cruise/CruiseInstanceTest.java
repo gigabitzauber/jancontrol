@@ -26,7 +26,7 @@ class CruiseInstanceTest {
     private static final Fan FAN_EXAMPLE = Fan.builder()
         .interval(DURATION_EXAMPLE)
         .device(RpmDevice.builder()
-            .name("rpmDeviceExample")
+            .ref("rpmDeviceExample")
             .sysPath("unused")
             .build())
         .build();

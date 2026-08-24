@@ -1,6 +1,6 @@
 package de.gigabitzauber.jancontrol.domain;
 
-import de.gigabitzauber.jancontrol.domain.api.NamedDevice;
+import de.gigabitzauber.jancontrol.domain.api.ReferableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedReadableDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
@@ -18,21 +18,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TemperatureDeviceTest {
-    private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
+    private static final String REF_EXAMPLE = "tempDeviceRefExample";
     private static final String SYS_FILE_EXAMPLE = "sysFileExample";
     private static final Path SYS_FILE_PATH_EXAMPLE = Paths.get(SYS_FILE_EXAMPLE);
 
-    private final TemperatureDevice underTest = new TemperatureDevice(NAME_EXAMPLE, SYS_FILE_EXAMPLE);
+    private final TemperatureDevice underTest = new TemperatureDevice(REF_EXAMPLE, SYS_FILE_EXAMPLE);
 
     @Test
     void should_inherit_from_proper_parents() {
-        assertThat(this.underTest).isInstanceOf(NamedDevice.class);
+        assertThat(this.underTest).isInstanceOf(ReferableDevice.class);
         assertThat(this.underTest).isInstanceOf(TypedReadableDevice.class);
     }
 
     @Test
     void when_constructed_with_all_args_then_properties_are_set() {
-        assertThat(underTest.getName()).isEqualTo(NAME_EXAMPLE);
+        assertThat(underTest.getRef()).isEqualTo(REF_EXAMPLE);
         assertThat(underTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
     }
 
@@ -50,7 +50,7 @@ class TemperatureDeviceTest {
     void when_read_contents_are_not_a_number_then_throw_jc_exception(String rawValue) {
         assertThatThrownBy(() -> executeReadOpSuccess(rawValue))
             .isInstanceOf(JcException.class)
-            .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
+            .hasMessage("Value of device '" + REF_EXAMPLE + "' is not a number.");
     }
 
     @Test

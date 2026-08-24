@@ -3,7 +3,7 @@ package de.gigabitzauber.jancontrol.domain;
 import com.google.common.collect.Range;
 import de.gigabitzauber.jancontrol.domain.api.FanMode;
 import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
-import de.gigabitzauber.jancontrol.domain.api.NamedDevice;
+import de.gigabitzauber.jancontrol.domain.api.ReferableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedReadableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedWriteableDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class RpmDeviceTest {
-    private static final String NAME_EXAMPLE = "readOnlyDeviceExample";
+    private static final String REF_EXAMPLE = "rpmDeviceRefExample";
     private static final String SYS_FILE_EXAMPLE = "sysFileExample";
     private static final Path SYS_FILE_PATH_EXAMPLE = Paths.get(SYS_FILE_EXAMPLE);
     private static final JcHwmonDriver DRIVER_EXAMPLE = JcHwmonDrivers.NCT6775;
@@ -54,7 +54,7 @@ class RpmDeviceTest {
     @Test
     void test_no_args_builder() {
         var localUnderTest = RpmDevice.builder().build();
-        assertThat(localUnderTest.getName()).isNull();
+        assertThat(localUnderTest.getRef()).isNull();
         assertThat(localUnderTest.getSysPath()).isNull();
         assertThat(localUnderTest.driver()).isEqualTo(JcHwmonDrivers.NCT6775);
         assertThat(localUnderTest.allowIdle()).isFalse();
@@ -64,7 +64,7 @@ class RpmDeviceTest {
 
     @Test
     void should_inherit_from_proper_parents() {
-        assertThat(this.underTest).isInstanceOf(NamedDevice.class);
+        assertThat(this.underTest).isInstanceOf(ReferableDevice.class);
         assertThat(this.underTest).isInstanceOf(TypedReadableDevice.class);
         assertThat(this.underTest).isInstanceOf(TypedWriteableDevice.class);
     }
@@ -190,7 +190,7 @@ class RpmDeviceTest {
 
             assertThatThrownBy(underTest::read)
                 .isInstanceOf(JcException.class)
-                .hasMessage("Value of device '" + NAME_EXAMPLE + "' is not a number.");
+                .hasMessage("Value of device '" + REF_EXAMPLE + "' is not a number.");
         }
     }
 
@@ -273,7 +273,7 @@ class RpmDeviceTest {
 
     private RpmDevice createUnderTest(JcHwmonDriver driver, Path sysFilePath) {
         return RpmDevice.builder()
-            .name(NAME_EXAMPLE)
+            .ref(REF_EXAMPLE)
             .sysPath(sysFilePath.toString())
             .activationThreshold(ACTIVATION_THRESHOLD_EXAMPLE)
             .allowIdle(ALLOW_IDLE_EXAMPLE)

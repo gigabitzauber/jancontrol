@@ -16,7 +16,7 @@ public final class CruiseInstance extends JcSchedulable {
         super(
             new JcOp(
                 fan,
-                "fan cruise (" + fan.device().getName() + ")",
+                "fan cruise (" + fan.device().getRef() + ")",
                 new CruiseAlgorithm(fan, lifecycle, log)),
             INITIAL_MAX_DELAY,
             fan.interval());

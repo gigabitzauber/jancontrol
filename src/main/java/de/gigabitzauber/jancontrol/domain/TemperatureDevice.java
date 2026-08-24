@@ -1,7 +1,7 @@
 package de.gigabitzauber.jancontrol.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.gigabitzauber.jancontrol.domain.api.NamedDevice;
+import de.gigabitzauber.jancontrol.domain.api.ReferableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedReadableDevice;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
@@ -14,15 +14,15 @@ import lombok.experimental.Accessors;
 @ToString(callSuper = true)
 @Accessors(fluent = true)
 @EqualsAndHashCode(callSuper = true)
-public final class TemperatureDevice extends NamedDevice implements TypedReadableDevice<Integer> {
+public final class TemperatureDevice extends ReferableDevice implements TypedReadableDevice<Integer> {
     private static final int TEMP_CONVERSION_FACTOR = 1000;
 
     public TemperatureDevice() {
         super();
     }
 
-    public TemperatureDevice(String name, String sysPath) {
-        super(name, sysPath);
+    public TemperatureDevice(String ref, String sysPath) {
+        super(ref, sysPath);
     }
 
     @Override
@@ -35,7 +35,7 @@ public final class TemperatureDevice extends NamedDevice implements TypedReadabl
         try {
             readValue = Integer.parseInt(cleanValueStr);
         } catch (NumberFormatException e) {
-            throw new JcException("Value of device '" + getName() + "' is not a number.", e);
+            throw new JcException("Value of device '" + getRef() + "' is not a number.", e);
         }
 
         return readValue / TEMP_CONVERSION_FACTOR;

@@ -40,10 +40,10 @@ curve:
 fans:
   - interval: "3s"
     device:
-      name: "CPU Fan"
+      ref: "CPU Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
     dependsOn:
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
     curves:
       - ref: "CPU Temp"
@@ -91,10 +91,10 @@ used for gaming (CPU & GPU hot, case temperature rising):
 ```yaml
 fans:
   - device:
-      name: "CPU Fan"
+      ref: "CPU Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
     dependsOn:
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/devices/platform/asus-ec-sensors/hwmon/hwmon7/temp2_input"
     curves:
       - ref: "CPU Temp"
@@ -109,14 +109,14 @@ fans:
             rpm: 95
     interval: "20s"
   - device:
-      name: "Case Fan"
+      ref: "Case Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm1"
     dependsOn:
-      - name: "Case Temp"
+      - ref: "Case Temp"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp1_input"
-      - name: "GPU Temp"
+      - ref: "GPU Temp"
         sysPath: "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon/hwmon3/temp1_input"
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/devices/platform/asus-ec-sensors/hwmon/hwmon7/temp2_input"
     curves:
       - ref: "Case Temp"
@@ -180,10 +180,10 @@ fans:
     downSkip: 1
     n: 3
     device:
-      name: "CPU Fan"
+      ref: "CPU Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
     dependsOn:
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/class/hwmon/hwmon7/temp2_input"
     curves:
       - ref: "CPU Temp"
@@ -200,14 +200,14 @@ fans:
     downSkip: 4
     n: 5
     device:
-      name: "Case Fan"
+      ref: "Case Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm1"
     dependsOn:
-      - name: "Case Temp"
+      - ref: "Case Temp"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp1_input"
-      - name: "GPU Temp"
+      - ref: "GPU Temp"
         sysPath: "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon/hwmon3/temp1_input"
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/class/hwmon/hwmon7/temp2_input"
     curves:
       - ref: "Case Temp"

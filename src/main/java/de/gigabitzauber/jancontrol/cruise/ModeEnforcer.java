@@ -21,7 +21,7 @@ public final class ModeEnforcer extends JcSchedulable {
                 () -> {
                     var currentMode = fan.device().getMode();
                     if (currentMode != modeToEnforce) {
-                        log.info("Encountered external change of fan mode for {}. Enforcing mode {}", fan.device().getName(), modeToEnforce);
+                        log.info("Encountered external change of fan mode for {}. Enforcing mode {}", fan.device().getRef(), modeToEnforce);
                         fan.device().setMode(modeToEnforce);
                     }
                 }),

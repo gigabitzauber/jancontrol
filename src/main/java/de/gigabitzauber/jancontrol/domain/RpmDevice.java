@@ -6,7 +6,7 @@ import com.google.common.collect.Range;
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import de.gigabitzauber.jancontrol.domain.api.FanMode;
 import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
-import de.gigabitzauber.jancontrol.domain.api.NamedDevice;
+import de.gigabitzauber.jancontrol.domain.api.ReferableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedReadableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedWriteableDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 @ToString(callSuper = true)
 @Accessors(fluent = true)
 @EqualsAndHashCode(callSuper = true)
-public final class RpmDevice extends NamedDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
+public final class RpmDevice extends ReferableDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
     static final int DEFAULT_ACTIVATION_THRESHOLD_PERCENT = 20;
     /*
      * Seems like RPM values are stored in a byte. Full speed = 255, half speed = 127 etc.
@@ -82,7 +82,7 @@ public final class RpmDevice extends NamedDevice implements TypedReadableDevice<
         try {
             readValue = Integer.parseInt(cleanValueStr);
         } catch (NumberFormatException e) {
-            throw new JcException("Value of device '" + getName() + "' is not a number.", e);
+            throw new JcException("Value of device '" + getRef() + "' is not a number.", e);
         }
 
         if (VALID_READ_RANGE.contains(readValue)) {

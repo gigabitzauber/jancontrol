@@ -7,12 +7,12 @@ fans:
   - interval: "30s"
     allowIdle: true
     device:
-      name: "CPU Fan"
+      ref: "CPU Fan"
       sysPath: "/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon8/pwm1"
       driver: "thinkpad_acpi"
       activationThreshold: 15
     dependsOn:
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon8/temp1_input"
     curves:
       - ref: "CPU Temp"

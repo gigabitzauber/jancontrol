@@ -14,7 +14,7 @@ public final class RegisteredFan {
 
     private final Fan fan;
     @ToString.Include
-    private final String name;
+    private final String ref;
     private final int origRpmPercentage;
     private final FanMode origFanMode;
 
@@ -22,7 +22,7 @@ public final class RegisteredFan {
         Objects.requireNonNull(fan, "fan cannot be null");
 
         this.fan = fan;
-        this.name = fan.device().getName();
+        this.ref = fan.device().getRef();
         this.origRpmPercentage = fan.device().read();
         this.origFanMode = fan.device().getMode();
     }

@@ -4,10 +4,10 @@
 # AMD Ryzen 7 7800X3D CPU and an AMD Radeon RX 7900 XT GPU in a case with multiple 120mm Noctua fans.
 fans:
   - device:
-      name: "CPU Fan"
+      ref: "CPU Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
     dependsOn:
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
     curves:
       - ref: "CPU Temp"
@@ -22,14 +22,14 @@ fans:
             rpm: 95
     interval: "20s"
   - device:
-      name: "Case Fan"
+      ref: "Case Fan"
       sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm1"
     dependsOn:
-      - name: "Case Temp"
+      - ref: "Case Temp"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp1_input"
-      - name: "GPU Temp"
+      - ref: "GPU Temp"
         sysPath: "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon/hwmon3/temp1_input"
-      - name: "CPU Temp"
+      - ref: "CPU Temp"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
     curves:
       - ref: "Case Temp"

@@ -30,18 +30,18 @@ public final class CruiseAlgorithm implements Runnable {
     public void run() {
         var dependencies = fan.dependsOn();
         var curves = fan.curves();
-        var targetDeviceName = fan.device().getName();
+        var targetDeviceRef = fan.device().getRef();
         var currentRpm = fan.device().read();
         var rpmCandidates = new ArrayList<RpmCandidate>();
         for (var i = 0; i < dependencies.size() || Thread.currentThread().isInterrupted(); i++) {
             var dependency = dependencies.get(i);
-            curves.stream().filter(curve -> curve.ref().equals(dependency.getName()))
+            curves.stream().filter(curve -> curve.ref().equals(dependency.getRef()))
                 .findFirst()
                 .ifPresent(curve -> {
                     int measurement = dependency.read();
-                    lifecycle.record(dependency.getName(), measurement);
+                    lifecycle.record(dependency.getRef(), measurement);
                     var targetRpm = curve.getY(measurement);
-                    rpmCandidates.add(new RpmCandidate(dependency.getName(), measurement, currentRpm, targetRpm, targetDeviceName));
+                    rpmCandidates.add(new RpmCandidate(dependency.getRef(), measurement, currentRpm, targetRpm, targetDeviceRef));
                 });
         }
 
@@ -100,10 +100,10 @@ public final class CruiseAlgorithm implements Runnable {
     }
 
     public static record RpmCandidate(
-        String dependencyName, int measurement, int currentRpm, int targetRpm, String targetDeviceName) implements Comparable<RpmCandidate> {
+        String dependencyRef, int measurement, int currentRpm, int targetRpm, String targetDeviceName) implements Comparable<RpmCandidate> {
 
         public RpmCandidate(RpmCandidate other, int targetRpmOverride) {
-            this(other.dependencyName, other.measurement, other.currentRpm, targetRpmOverride, other.targetDeviceName);
+            this(other.dependencyRef, other.measurement, other.currentRpm, targetRpmOverride, other.targetDeviceName);
         }
 
         @Override
@@ -114,7 +114,7 @@ public final class CruiseAlgorithm implements Runnable {
         @Override
         @Nonnull
         public String toString() {
-            return "Setting %s = %d%% (was: %d%%) | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, currentRpm, dependencyName, measurement);
+            return "Setting %s = %d%% (was: %d%%) | Reason: %s: %d°".formatted(targetDeviceName, targetRpm, currentRpm, dependencyRef, measurement);
         }
     }
 

@@ -77,7 +77,7 @@ class CruiseAlgorithmTest {
         var expectedMidRpm = 50;
         var expectedHighRpmThreshold = 100;
         var curve = Curve.builder()
-            .ref(temperatureDevice.getName())
+            .ref(temperatureDevice.getRef())
             .points(Set.of(
                 new CurvePoint(lowTempExample, expectedLowerRpmThreshold / 2),
                 new CurvePoint(midTempExample, expectedMidRpm),
@@ -114,11 +114,11 @@ class CruiseAlgorithmTest {
         var rpmDevice = simulateRpmDevice("rpmDeviceMockA");
         var expectedDeviceRpm = 50;
         var curveA = Curve.builder()
-            .ref(dependencyA.getName())
+            .ref(dependencyA.getRef())
             .points(Set.of(new CurvePoint(tempA, expectedDeviceRpm / 2)))
             .build();
         var curveB = Curve.builder()
-            .ref(dependencyB.getName())
+            .ref(dependencyB.getRef())
             .points(Set.of(new CurvePoint(tempB, expectedDeviceRpm)))
             .build();
         var fan = Fan.builder()
@@ -158,7 +158,7 @@ class CruiseAlgorithmTest {
         var dependencyA = simulateTemperatureDevice("dependencyA", 50, 40, 30, 20);
         var rpmDevice = simulateRpmDevice("rpmDeviceMockA", 20, 50);
         var curveA = Curve.builder()
-            .ref(dependencyA.getName())
+            .ref(dependencyA.getRef())
             .points(Set.of(
                 new CurvePoint(20, 20),
                 new CurvePoint(30, 30),
@@ -192,7 +192,7 @@ class CruiseAlgorithmTest {
         var dependencyA = simulateTemperatureDevice("dependencyA", 40);
         var rpmDevice = simulateRpmDevice("rpmDeviceMockA", 100);
         var curveA = Curve.builder()
-            .ref(dependencyA.getName())
+            .ref(dependencyA.getRef())
             .points(Set.of(
                 new CurvePoint(40, x)))
             .build();
@@ -217,18 +217,18 @@ class CruiseAlgorithmTest {
         );
     }
 
-    private TemperatureDevice simulateTemperatureDevice(String name, Integer... measurements) {
+    private TemperatureDevice simulateTemperatureDevice(String ref, Integer... measurements) {
         var result = mock(TemperatureDevice.class);
-        when(result.getName()).thenReturn(name);
+        when(result.getRef()).thenReturn(ref);
         var otherMeasurements = Arrays.copyOfRange(measurements, 1, measurements.length);
         when(result.read()).thenReturn(measurements[0], otherMeasurements);
 
         return result;
     }
 
-    private RpmDevice simulateRpmDevice(String name, Integer... rpms) {
+    private RpmDevice simulateRpmDevice(String ref, Integer... rpms) {
         var result = mock(RpmDevice.class);
-        when(result.getName()).thenReturn(name);
+        when(result.getRef()).thenReturn(ref);
         lenient().when(result.safetyMargin()).thenReturn(Range.closed(20, 100));
 
         if (rpms.length > 1) {

@@ -104,7 +104,7 @@ class JcLifecycleTest {
         var oldRpm = "100";
         Files.writeString(targetDeviceRpmFile, oldRpm, CREATE_NEW, WRITE);
         var targetDevice = RpmDevice.builder()
-            .name("rpmTestDevice")
+            .ref("rpmTestDevice")
             .sysPath(targetDeviceRpmFile.toString())
             .build();
         var oldMode = "5";
@@ -148,13 +148,13 @@ class JcLifecycleTest {
         when(deviceMock.allowIdle()).thenReturn(expectedAllowIdle);
         var expectedActivationThreshold = 22;
         when(deviceMock.activationThreshold()).thenReturn(22);
-        var expectedDeviceName = "expectedDeviceName";
-        when(deviceMock.getName()).thenReturn(expectedDeviceName);
+        var expectedDeviceRef = "expectedDeviceRef";
+        when(deviceMock.getRef()).thenReturn(expectedDeviceRef);
 
         callRegister(fanMock);
 
         verify(logMock).info("Registering fan '{}' with allowIdle: {} and activation threshold: {}%",
-            expectedDeviceName, expectedAllowIdle, expectedActivationThreshold);
+            expectedDeviceRef, expectedAllowIdle, expectedActivationThreshold);
     }
 
     @Test
@@ -277,7 +277,7 @@ class JcLifecycleTest {
         var fanModeMock = mock(FanMode.class);
         var fanMock = mock(Fan.class);
         lenient().when(fanMock.device()).thenReturn(deviceMock);
-        lenient().when(deviceMock.getName()).thenReturn("testRpmDevice");
+        lenient().when(deviceMock.getRef()).thenReturn("testRpmDevice");
         lenient().when(deviceMock.getMode()).thenReturn(fanModeMock);
         return fanMock;
     }

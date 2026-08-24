@@ -45,13 +45,13 @@ import static org.awaitility.Awaitility.await;
 @ExtendWith(OutputCaptureExtension.class)
 class JanControlIT {
 
-    private static final String RPM_DEVICE_NAME_A = "rpmDeviceA";
-    private static final String TEMP_DEVICE_NAME_A = "tempDeviceA";
+    private static final String RPM_DEVICE_REF_A = "rpmDeviceRefA";
+    private static final String TEMP_DEVICE_REF_A = "tempDeviceRefA";
 
-    private static final String RPM_DEVICE_NAME_B = "rpmDeviceB";
-    private static final String TEMP_DEVICE_NAME_B = "tempDeviceB";
+    private static final String RPM_DEVICE_REF_B = "rpmDeviceRefB";
+    private static final String TEMP_DEVICE_REF_B = "tempDeviceRefB";
 
-    private static final String TEMP_DEVICE_NAME_C = "tempDeviceC";
+    private static final String TEMP_DEVICE_REF_C = "tempDeviceRefC";
 
     private static final Duration INTERVAL_EXAMPLE = Duration.ofSeconds(2);
     public static final Duration LOG_MESSAGE_ASSERTION_TIMEOUT = INTERVAL_EXAMPLE.multipliedBy(5);
@@ -79,15 +79,15 @@ class JanControlIT {
 
     @BeforeEach
     void setUp(@TempDir Path tempDir) {
-        rpmDeviceFilePathA = tempDir.resolve(RPM_DEVICE_NAME_A);
-        rpmDeviceModeFilePathA = tempDir.resolve(RPM_DEVICE_NAME_A + "_enable");
-        tempDeviceFilePathA = tempDir.resolve(TEMP_DEVICE_NAME_A);
+        rpmDeviceFilePathA = tempDir.resolve(RPM_DEVICE_REF_A);
+        rpmDeviceModeFilePathA = tempDir.resolve(RPM_DEVICE_REF_A + "_enable");
+        tempDeviceFilePathA = tempDir.resolve(TEMP_DEVICE_REF_A);
 
-        rpmDeviceFilePathB = tempDir.resolve(RPM_DEVICE_NAME_B);
-        rpmDeviceModeFilePathB = tempDir.resolve(RPM_DEVICE_NAME_B + "_enable");
-        tempDeviceFilePathB = tempDir.resolve(TEMP_DEVICE_NAME_B);
+        rpmDeviceFilePathB = tempDir.resolve(RPM_DEVICE_REF_B);
+        rpmDeviceModeFilePathB = tempDir.resolve(RPM_DEVICE_REF_B + "_enable");
+        tempDeviceFilePathB = tempDir.resolve(TEMP_DEVICE_REF_B);
 
-        tempDeviceFilePathC = tempDir.resolve(TEMP_DEVICE_NAME_C);
+        tempDeviceFilePathC = tempDir.resolve(TEMP_DEVICE_REF_C);
     }
 
     @AfterEach
@@ -133,19 +133,19 @@ class JanControlIT {
         startApp(configFilePath);
 
         assertOutput(output, "No watch flag found. NOT watching config file for changes.");
-        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_A));
-        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_NAME_B));
+        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_REF_A));
+        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_REF_B));
 
-        assertOutput(output, "Calculated RPM value for rpmDeviceA exceeds safe limits.");
-        assertOutput(output, "Setting RPM value for rpmDeviceA to lowest allowed value: 20");
-        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 20, RPM_DEVICE_NAME_A);
+        assertOutput(output, "Calculated RPM value for " + RPM_DEVICE_REF_A + " exceeds safe limits.");
+        assertOutput(output, "Setting RPM value for " + RPM_DEVICE_REF_A + " to lowest allowed value: 20");
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 30, 39, 20, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         write(tempDeviceFilePathB, "30000");
         write(tempDeviceFilePathC, "30000");
-        var expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 30, 33, 33, RPM_DEVICE_NAME_B);
+        var expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_B, 30, 33, 33, RPM_DEVICE_REF_B);
         assertAction(output, expectedActionOnB);
 
         discardOldOutput();
@@ -153,8 +153,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "40000");
         write(tempDeviceFilePathB, "40000");
         write(tempDeviceFilePathC, "40000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 20, 25, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 40, 33, 45, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 40, 20, 25, RPM_DEVICE_REF_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_C, 40, 33, 45, RPM_DEVICE_REF_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
@@ -163,8 +163,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "50000");
         write(tempDeviceFilePathB, "50000");
         write(tempDeviceFilePathC, "50000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 50, 45, 55, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 50, 25, 50, RPM_DEVICE_REF_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_B, 50, 45, 55, RPM_DEVICE_REF_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
@@ -173,8 +173,8 @@ class JanControlIT {
         write(tempDeviceFilePathA, "60000");
         write(tempDeviceFilePathB, "60000");
         write(tempDeviceFilePathC, "60000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 60, 50, 75, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_C, 60, 55, 70, RPM_DEVICE_NAME_B);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 60, 50, 75, RPM_DEVICE_REF_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_C, 60, 55, 70, RPM_DEVICE_REF_B);
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
@@ -183,10 +183,10 @@ class JanControlIT {
         write(tempDeviceFilePathA, "70000");
         write(tempDeviceFilePathB, "71000");
         write(tempDeviceFilePathC, "72000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 70, 75, 100, RPM_DEVICE_NAME_A);
-        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_B, 71, 70, 77, RPM_DEVICE_NAME_B);
-        assertOutput(output, "Calculated RPM value for rpmDeviceA exceeds safe limits.");
-        assertOutput(output, "Setting RPM value for rpmDeviceA to highest allowed value: 100");
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 70, 75, 100, RPM_DEVICE_REF_A);
+        expectedActionOnB = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_B, 71, 70, 77, RPM_DEVICE_REF_B);
+        assertOutput(output, "Calculated RPM value for " + RPM_DEVICE_REF_A + " exceeds safe limits.");
+        assertOutput(output, "Setting RPM value for " + RPM_DEVICE_REF_A + " to highest allowed value: 100");
         assertAction(output, expectedActionOnA);
         assertAction(output, expectedActionOnB);
 
@@ -195,9 +195,9 @@ class JanControlIT {
         ctx.get().close();
 
         assertOutput(output, "=== Stats ===");
-        assertOutput(output, "Highest measurement for tempDeviceA: 70");
-        assertOutput(output, "Highest measurement for tempDeviceB: 71");
-        assertOutput(output, "Highest measurement for tempDeviceC: 72");
+        assertOutput(output, "Highest measurement for " + TEMP_DEVICE_REF_A + ": 70");
+        assertOutput(output, "Highest measurement for " + TEMP_DEVICE_REF_B + ": 71");
+        assertOutput(output, "Highest measurement for " + TEMP_DEVICE_REF_C + ": 72");
 
         assertNotInFullOutput(output, "Encountered external change of fan mode");
     }
@@ -208,19 +208,19 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 40, 39, 25, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
-        assertOutput(output, "Encountered external change of fan mode for " + RPM_DEVICE_NAME_A + ". Enforcing mode " + Nct6775FanModes.MANUAL);
+        assertOutput(output, "Encountered external change of fan mode for " + RPM_DEVICE_REF_A + ". Enforcing mode " + Nct6775FanModes.MANUAL);
         assertFileContent(rpmDeviceModeFilePathA, Nct6775FanModes.MANUAL.rawValue());
 
         discardOldOutput();
 
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 25, 50, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 50, 25, 50, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
     }
 
@@ -230,16 +230,16 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "40000");
-        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 39, 25, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 40, 39, 25, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         Files.delete(tempDeviceFilePathA);
         assertOutput(output,
-            "exhausted error threshold of " + ERROR_THRESHOLD + " for error: fan cruise (" + RPM_DEVICE_NAME_A + ") "
+            "exhausted error threshold of " + ERROR_THRESHOLD + " for error: fan cruise (" + RPM_DEVICE_REF_A + ") "
                 + "ran into error: Path does not exist: " + tempDeviceFilePathA);
-        assertOutput(output, "Putting " + RPM_DEVICE_NAME_A + " into emergency mode.");
+        assertOutput(output, "Putting " + RPM_DEVICE_REF_A + " into emergency mode.");
     }
 
     @Test
@@ -249,23 +249,23 @@ class JanControlIT {
         startApp(configFilePath);
 
         write(tempDeviceFilePathA, "30000");
-        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 30, 39, 0, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 30, 39, 0, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         write(tempDeviceFilePathA, "40000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 40, 0, 0, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 40, 0, 0, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
 
         discardOldOutput();
 
         write(tempDeviceFilePathA, "50000");
-        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, 50, 0, expectedActivationThresholdPercent, RPM_DEVICE_NAME_A);
+        expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, 50, 0, expectedActivationThresholdPercent, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
 
-        assertNotInFullOutput(output, "Calculated RPM value for " + RPM_DEVICE_NAME_A + " exceeds safe limits.");
-        assertNotInFullOutput(output, "Setting RPM value for " + RPM_DEVICE_NAME_B + " to lowest allowed value: 20");
+        assertNotInFullOutput(output, "Calculated RPM value for " + RPM_DEVICE_REF_A + " exceeds safe limits.");
+        assertNotInFullOutput(output, "Setting RPM value for " + RPM_DEVICE_REF_B + " to lowest allowed value: 20");
     }
 
     @Test
@@ -273,24 +273,24 @@ class JanControlIT {
         var configFilePath = createConfig();
         startApp(List.of("-v", "-w"), configFilePath);
 
-        assertOutput(output, "Registering fan '" + RPM_DEVICE_NAME_A + "' with allowIdle: false and activation threshold: 20%");
+        assertOutput(output, "Registering fan '" + RPM_DEVICE_REF_A + "' with allowIdle: false and activation threshold: 20%");
         discardOldOutput();
-        assertOutput(output, "Setting " + RPM_DEVICE_NAME_A);
+        assertOutput(output, "Setting " + RPM_DEVICE_REF_A);
         discardOldOutput();
 
         int activationThresholdExample = 15;
         createConfigWithActiveIdleFlag(activationThresholdExample);
         assertOutput(output, "Encountered changes in config. Reloading..");
-        assertOutput(output, "Registering fan '" + RPM_DEVICE_NAME_A + "' with allowIdle: true and activation threshold: " + activationThresholdExample + "%");
+        assertOutput(output, "Registering fan '" + RPM_DEVICE_REF_A + "' with allowIdle: true and activation threshold: " + activationThresholdExample + "%");
 
         discardOldOutput();
 
         var newTemp = 45;
         write(tempDeviceFilePathA, newTemp * 1000 + "");
-        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_NAME_A, newTemp, 15, 15, RPM_DEVICE_NAME_A);
+        var expectedActionOnA = new CruiseAlgorithm.RpmCandidate(TEMP_DEVICE_REF_A, newTemp, 15, 15, RPM_DEVICE_REF_A);
         assertAction(output, expectedActionOnA);
         tearDown();
-        assertOutput(output, "Highest measurement for tempDeviceA: " + newTemp);
+        assertOutput(output, "Highest measurement for " + TEMP_DEVICE_REF_A + ": " + newTemp);
     }
 
     private void assertFileContent(Path filePath, String expectedContent) {
@@ -338,28 +338,28 @@ class JanControlIT {
 
     private Path createConfig() throws Exception {
         var rpmDeviceA = RpmDevice.builder()
-            .name(RPM_DEVICE_NAME_A)
+            .ref(RPM_DEVICE_REF_A)
             .sysPath(rpmDeviceFilePathA.toString())
             .build();
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
-        var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
+        var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_REF_A, tempDeviceFilePathA.toString());
         write(tempDeviceFilePathA, "30000");
 
         var rpmDeviceB = RpmDevice.builder()
-            .name(RPM_DEVICE_NAME_B)
+            .ref(RPM_DEVICE_REF_B)
             .sysPath(rpmDeviceFilePathB.toString())
             .build();
         write(rpmDeviceFilePathB, "100");
         write(rpmDeviceModeFilePathB, Nct6775FanModes.SMART_FAN_IV.rawValue());
-        var tempDeviceB = new TemperatureDevice(TEMP_DEVICE_NAME_B, tempDeviceFilePathB.toString());
+        var tempDeviceB = new TemperatureDevice(TEMP_DEVICE_REF_B, tempDeviceFilePathB.toString());
         write(tempDeviceFilePathB, "10000");
 
-        var tempDeviceC = new TemperatureDevice(TEMP_DEVICE_NAME_C, tempDeviceFilePathC.toString());
+        var tempDeviceC = new TemperatureDevice(TEMP_DEVICE_REF_C, tempDeviceFilePathC.toString());
         write(tempDeviceFilePathC, "10000");
 
         var curveA = Curve.builder()
-            .ref(TEMP_DEVICE_NAME_A)
+            .ref(TEMP_DEVICE_REF_A)
             .type(CurveTypes.LINEAR)
             .points(Set.of(
                 new CurvePoint(30, 10),
@@ -371,7 +371,7 @@ class JanControlIT {
             .build();
 
         var curveB = Curve.builder()
-            .ref(TEMP_DEVICE_NAME_B)
+            .ref(TEMP_DEVICE_REF_B)
             .type(CurveTypes.LINEAR)
             .points(Set.of(
                 new CurvePoint(30, 33),
@@ -383,7 +383,7 @@ class JanControlIT {
             .build();
 
         var curveC = Curve.builder()
-            .ref(TEMP_DEVICE_NAME_C)
+            .ref(TEMP_DEVICE_REF_C)
             .type(CurveTypes.LINEAR)
             .points(Set.of(
                 new CurvePoint(30, 30),
@@ -413,18 +413,18 @@ class JanControlIT {
 
     private Path createConfigWithActiveIdleFlag(int activationRpmPercent) throws Exception {
         var rpmDeviceA = RpmDevice.builder()
-            .name(RPM_DEVICE_NAME_A)
+            .ref(RPM_DEVICE_REF_A)
             .sysPath(rpmDeviceFilePathA.toString())
             .allowIdle(true)
             .activationThreshold(activationRpmPercent)
             .build();
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
-        var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_NAME_A, tempDeviceFilePathA.toString());
+        var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_REF_A, tempDeviceFilePathA.toString());
         write(tempDeviceFilePathA, "30000");
 
         var curveA = Curve.builder()
-            .ref(TEMP_DEVICE_NAME_A)
+            .ref(TEMP_DEVICE_REF_A)
             .type(CurveTypes.LINEAR)
             .points(Set.of(
                 new CurvePoint(30, 0),

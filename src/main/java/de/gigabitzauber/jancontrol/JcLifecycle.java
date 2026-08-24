@@ -102,7 +102,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
     public void register(Fan fan) {
         var fanDevice = fan.device();
         log.info("Registering fan '{}' with allowIdle: {} and activation threshold: {}%",
-            fanDevice.getName(), fanDevice.allowIdle(), fanDevice.activationThreshold());
+            fanDevice.getRef(), fanDevice.allowIdle(), fanDevice.activationThreshold());
         registeredFans.add(new RegisteredFan(fan));
 
         var manualMode = fanDevice.activateManualMode();
@@ -137,7 +137,7 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
 
                 var parent = failedSchedulable.op().parent();
                 if (parent instanceof Fan scheduledFan) {
-                    log.error("Putting {} into emergency mode.", scheduledFan.device().getName());
+                    log.error("Putting {} into emergency mode.", scheduledFan.device().getRef());
                     scheduledFan.emergency();
                 }
             } else {

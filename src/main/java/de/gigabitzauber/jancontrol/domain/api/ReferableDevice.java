@@ -9,16 +9,16 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public abstract class NamedDevice extends Device {
-    private final String name;
+public abstract class ReferableDevice extends Device {
+    private final String ref;
 
-    protected NamedDevice() {
+    protected ReferableDevice() {
         super((String) null);
-        this.name = null;
+        this.ref = null;
     }
 
-    protected NamedDevice(String name, String sysPath) {
+    protected ReferableDevice(String ref, String sysPath) {
         super(sysPath);
-        this.name = name;
+        this.ref = ref;
     }
 }
