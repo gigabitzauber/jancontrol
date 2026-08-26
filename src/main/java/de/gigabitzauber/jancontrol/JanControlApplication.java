@@ -93,6 +93,7 @@ public class JanControlApplication implements CommandLineRunner {
             var configResource = new FileSystemResource(rawConfigFilePath);
             var config = new CruiseConfig(configResource, mapper);
             configRoot = config.load();
+
             if (flagActive(args, WATCH_FLAG)) {
                 logger.info("Watch flag is active. Watching config file for changes.");
                 watchConfigCommand.execute(config);

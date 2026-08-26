@@ -343,7 +343,10 @@ class JanControlIT {
             .build();
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
-        var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_REF_A, tempDeviceFilePathA.toString());
+        var tempDeviceA = TemperatureDevice.builder()
+            .ref(TEMP_DEVICE_REF_A)
+            .sysPath(tempDeviceFilePathA.toString())
+            .build();
         write(tempDeviceFilePathA, "30000");
 
         var rpmDeviceB = RpmDevice.builder()
@@ -352,10 +355,16 @@ class JanControlIT {
             .build();
         write(rpmDeviceFilePathB, "100");
         write(rpmDeviceModeFilePathB, Nct6775FanModes.SMART_FAN_IV.rawValue());
-        var tempDeviceB = new TemperatureDevice(TEMP_DEVICE_REF_B, tempDeviceFilePathB.toString());
+        var tempDeviceB = TemperatureDevice.builder()
+            .ref(TEMP_DEVICE_REF_B)
+            .sysPath(tempDeviceFilePathB.toString())
+            .build();
         write(tempDeviceFilePathB, "10000");
 
-        var tempDeviceC = new TemperatureDevice(TEMP_DEVICE_REF_C, tempDeviceFilePathC.toString());
+        var tempDeviceC = TemperatureDevice.builder()
+            .ref(TEMP_DEVICE_REF_C)
+            .sysPath(tempDeviceFilePathC.toString())
+            .build();
         write(tempDeviceFilePathC, "10000");
 
         var curveA = Curve.builder()
@@ -420,7 +429,10 @@ class JanControlIT {
             .build();
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
-        var tempDeviceA = new TemperatureDevice(TEMP_DEVICE_REF_A, tempDeviceFilePathA.toString());
+        var tempDeviceA = TemperatureDevice.builder()
+            .ref(TEMP_DEVICE_REF_A)
+            .sysPath(tempDeviceFilePathA.toString())
+            .build();
         write(tempDeviceFilePathA, "30000");
 
         var curveA = Curve.builder()

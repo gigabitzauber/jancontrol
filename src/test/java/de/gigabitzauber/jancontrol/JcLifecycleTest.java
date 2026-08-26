@@ -149,7 +149,7 @@ class JcLifecycleTest {
         var expectedActivationThreshold = 22;
         when(deviceMock.activationThreshold()).thenReturn(22);
         var expectedDeviceRef = "expectedDeviceRef";
-        when(deviceMock.getRef()).thenReturn(expectedDeviceRef);
+        when(deviceMock.ref()).thenReturn(expectedDeviceRef);
 
         callRegister(fanMock);
 
@@ -277,7 +277,7 @@ class JcLifecycleTest {
         var fanModeMock = mock(FanMode.class);
         var fanMock = mock(Fan.class);
         lenient().when(fanMock.device()).thenReturn(deviceMock);
-        lenient().when(deviceMock.getRef()).thenReturn("testRpmDevice");
+        lenient().when(deviceMock.ref()).thenReturn("testRpmDevice");
         lenient().when(deviceMock.getMode()).thenReturn(fanModeMock);
         return fanMock;
     }

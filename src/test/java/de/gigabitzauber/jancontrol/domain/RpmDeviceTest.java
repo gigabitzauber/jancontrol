@@ -54,8 +54,8 @@ class RpmDeviceTest {
     @Test
     void test_no_args_builder() {
         var localUnderTest = RpmDevice.builder().build();
-        assertThat(localUnderTest.getRef()).isNull();
-        assertThat(localUnderTest.getSysPath()).isNull();
+        assertThat(localUnderTest.ref()).isNull();
+        assertThat(localUnderTest.sysPath()).isNull();
         assertThat(localUnderTest.driver()).isEqualTo(JcHwmonDrivers.NCT6775);
         assertThat(localUnderTest.allowIdle()).isFalse();
         assertThat(localUnderTest.activationThreshold()).isEqualTo(RpmDevice.DEFAULT_ACTIVATION_THRESHOLD_PERCENT);

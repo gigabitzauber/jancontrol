@@ -32,7 +32,7 @@ class DeviceTest {
 
     @Test
     void test_getSysFsPath() {
-        assertThat(underTest.getSysPath()).isEqualTo(rawSysFsPath);
+        assertThat(underTest.sysPath()).isEqualTo(rawSysFsPath);
     }
 
     @Test

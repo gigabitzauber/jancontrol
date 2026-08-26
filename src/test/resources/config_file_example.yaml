@@ -5,12 +5,14 @@ fans:
     thisKeyIsUnknown: "and should not cause a read exception"
     device:
       ref: "CPU Fan"
+      sysName: "thinkpad"
       driver: "thinkpad_acpi"
       allowIdle: true
       activationThreshold: 15
       sysPath: "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2"
     dependsOn:
       - ref: "CPU Temp"
+        sysName: "thinkpad"
         sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
     curves:
       - ref: "CPU Temp"

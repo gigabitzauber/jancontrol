@@ -30,18 +30,18 @@ public final class CruiseAlgorithm implements Runnable {
     public void run() {
         var dependencies = fan.dependsOn();
         var curves = fan.curves();
-        var targetDeviceRef = fan.device().getRef();
+        var targetDeviceRef = fan.device().ref();
         var currentRpm = fan.device().read();
         var rpmCandidates = new ArrayList<RpmCandidate>();
         for (var i = 0; i < dependencies.size() || Thread.currentThread().isInterrupted(); i++) {
             var dependency = dependencies.get(i);
-            curves.stream().filter(curve -> curve.ref().equals(dependency.getRef()))
+            curves.stream().filter(curve -> curve.ref().equals(dependency.ref()))
                 .findFirst()
                 .ifPresent(curve -> {
                     int measurement = dependency.read();
-                    lifecycle.record(dependency.getRef(), measurement);
+                    lifecycle.record(dependency.ref(), measurement);
                     var targetRpm = curve.getY(measurement);
-                    rpmCandidates.add(new RpmCandidate(dependency.getRef(), measurement, currentRpm, targetRpm, targetDeviceRef));
+                    rpmCandidates.add(new RpmCandidate(dependency.ref(), measurement, currentRpm, targetRpm, targetDeviceRef));
                 });
         }
 

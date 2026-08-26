@@ -20,6 +20,6 @@ class ReferableDeviceTest {
 
     @Test
     void test_getRef() {
-        assertThat(underTest.getRef()).isEqualTo(REF_EXAMPLE);
+        assertThat(underTest.ref()).isEqualTo(REF_EXAMPLE);
     }
 }

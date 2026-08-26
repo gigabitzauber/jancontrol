@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Range;
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import de.gigabitzauber.jancontrol.domain.api.FanMode;
+import de.gigabitzauber.jancontrol.domain.api.HwmonDevice;
 import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
-import de.gigabitzauber.jancontrol.domain.api.ReferableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedReadableDevice;
 import de.gigabitzauber.jancontrol.domain.api.TypedWriteableDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
@@ -19,7 +19,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
@@ -27,12 +26,11 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 @Data
-@Jacksonized
 @SuperBuilder
 @ToString(callSuper = true)
 @Accessors(fluent = true)
 @EqualsAndHashCode(callSuper = true)
-public final class RpmDevice extends ReferableDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
+public final class RpmDevice extends HwmonDevice implements TypedReadableDevice<Integer>, TypedWriteableDevice<Integer> {
     static final int DEFAULT_ACTIVATION_THRESHOLD_PERCENT = 20;
     /*
      * Seems like RPM values are stored in a byte. Full speed = 255, half speed = 127 etc.
@@ -51,7 +49,7 @@ public final class RpmDevice extends ReferableDevice implements TypedReadableDev
     @Builder.Default
     private final boolean allowIdle = false;
     @Builder.Default
-    // We want to explicitly write define min to not cause any confusion whether it is 0.
+    // We want to define min on purpose to not cause any confusion whether it is 0 or not.
     @SuppressWarnings("DefaultAnnotationParam")
     @Size(min = WRITE_LOWER_BOUND, max = WRITE_UPPER_BOUND)
     private final int activationThreshold = DEFAULT_ACTIVATION_THRESHOLD_PERCENT;
@@ -82,7 +80,7 @@ public final class RpmDevice extends ReferableDevice implements TypedReadableDev
         try {
             readValue = Integer.parseInt(cleanValueStr);
         } catch (NumberFormatException e) {
-            throw new JcException("Value of device '" + getRef() + "' is not a number.", e);
+            throw new JcException("Value of device '" + ref() + "' is not a number.", e);
         }
 
         if (VALID_READ_RANGE.contains(readValue)) {
@@ -107,7 +105,7 @@ public final class RpmDevice extends ReferableDevice implements TypedReadableDev
         return Optional.ofNullable(driver.toFanMode(rawModeValue))
             .orElseThrow(() ->
                 new IllegalArgumentException("%s contains fan mode unknown to configured driver '%s': %s"
-                    .formatted(modeFileHandle.getSysPath(), driver.name(), rawModeValue)));
+                    .formatted(modeFileHandle.sysPath(), driver.name(), rawModeValue)));
     }
 
     @JsonIgnore
@@ -129,6 +127,6 @@ public final class RpmDevice extends ReferableDevice implements TypedReadableDev
     }
 
     private @NonNull RwSysFile constructModeFileHandle() {
-        return new RwSysFile(getSysPath() + "_enable");
+        return new RwSysFile(sysPath() + "_enable");
     }
 }

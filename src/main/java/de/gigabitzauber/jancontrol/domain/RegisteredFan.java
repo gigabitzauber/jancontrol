@@ -22,7 +22,7 @@ public final class RegisteredFan {
         Objects.requireNonNull(fan, "fan cannot be null");
 
         this.fan = fan;
-        this.ref = fan.device().getRef();
+        this.ref = fan.device().ref();
         this.origRpmPercentage = fan.device().read();
         this.origFanMode = fan.device().getMode();
     }

@@ -40,7 +40,11 @@ class ConfigLoadIT {
                 .activationThreshold(15)
                 .build())
             .dependsOn(List.of(
-                new TemperatureDevice("CPU Temp", "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")))
+                TemperatureDevice.builder()
+                    .ref("CPU Temp")
+                    .sysPath("/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input")
+                    .build()
+            ))
             .curves(Set.of(Curve.builder()
                 .ref("CPU Temp")
                 .type(CurveTypes.LINEAR)

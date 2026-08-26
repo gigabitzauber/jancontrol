@@ -22,7 +22,10 @@ class TemperatureDeviceTest {
     private static final String SYS_FILE_EXAMPLE = "sysFileExample";
     private static final Path SYS_FILE_PATH_EXAMPLE = Paths.get(SYS_FILE_EXAMPLE);
 
-    private final TemperatureDevice underTest = new TemperatureDevice(REF_EXAMPLE, SYS_FILE_EXAMPLE);
+    private final TemperatureDevice underTest = TemperatureDevice.builder()
+        .ref(REF_EXAMPLE)
+        .sysPath(SYS_FILE_EXAMPLE)
+        .build();
 
     @Test
     void should_inherit_from_proper_parents() {
@@ -32,8 +35,8 @@ class TemperatureDeviceTest {
 
     @Test
     void when_constructed_with_all_args_then_properties_are_set() {
-        assertThat(underTest.getRef()).isEqualTo(REF_EXAMPLE);
-        assertThat(underTest.getSysPath()).isEqualTo(SYS_FILE_EXAMPLE);
+        assertThat(underTest.ref()).isEqualTo(REF_EXAMPLE);
+        assertThat(underTest.sysPath()).isEqualTo(SYS_FILE_EXAMPLE);
     }
 
     @ParameterizedTest

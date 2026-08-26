@@ -1,5 +1,6 @@
 package de.gigabitzauber.jancontrol.domain.api;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -13,11 +14,14 @@ import lombok.experimental.SuperBuilder;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor(force = true)
-public abstract class ReferableDevice extends Device {
-    private final String ref;
+public abstract class HwmonDevice extends ReferableDevice {
+    private final String sysName;
+    @Size(min = 1)
+    private final int slot;
 
-    protected ReferableDevice(String ref, String sysPath) {
-        super(sysPath);
-        this.ref = ref;
+    public HwmonDevice(String sysPath, String ref, String sysName, int slot) {
+        super(ref, sysPath);
+        this.sysName = sysName;
+        this.slot = slot;
     }
 }

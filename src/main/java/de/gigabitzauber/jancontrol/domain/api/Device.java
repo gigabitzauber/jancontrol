@@ -3,6 +3,8 @@ package de.gigabitzauber.jancontrol.domain.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.gigabitzauber.jancontrol.error.JcException;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
 import java.nio.file.Path;
@@ -13,12 +15,10 @@ import static de.gigabitzauber.jancontrol.util.JcIoUtil.assertWritable;
 
 @Data
 @SuperBuilder
+@Accessors(fluent = true)
+@NoArgsConstructor(force = true)
 public abstract class Device {
     private final String sysPath;
-
-    protected Device() {
-        this.sysPath = null;
-    }
 
     protected Device(String sysPath) {
         this.sysPath = sysPath;

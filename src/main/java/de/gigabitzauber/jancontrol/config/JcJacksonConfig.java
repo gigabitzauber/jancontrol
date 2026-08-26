@@ -7,29 +7,41 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.gigabitzauber.jancontrol.domain.CurveTypes;
+import de.gigabitzauber.jancontrol.domain.RpmDevice;
+import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import de.gigabitzauber.jancontrol.domain.api.CurveType;
 import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.error.JcException;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.annotation.DurationFormat;
 import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.Duration;
 
 @Configuration
 public class JcJacksonConfig {
+    @Value("${de.gigabitzauber.jancontrol.config.hwmonClassDir:/sys/class/hwmon}")
+    private String hwmonClassDir;
+
     @Bean
     public YAMLMapper yamlMapper() {
         var result = new YAMLMapper();
         result.registerModule(new JavaTimeModule());
         result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        var simpleModule = new SimpleModule();
+        simpleModule.addDeserializer(RpmDevice.class, new RpmDeviceDeserializer(Paths.get(hwmonClassDir)));
+        simpleModule.addDeserializer(TemperatureDevice.class, new TemperatureDeviceDeserializer(Paths.get(hwmonClassDir)));
+        result.registerModule(simpleModule);
         return result;
     }
 
