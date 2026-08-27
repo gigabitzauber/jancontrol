@@ -10,8 +10,8 @@ import lombok.experimental.SuperBuilder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static de.gigabitzauber.jancontrol.util.JcIoUtil.assertReadable;
-import static de.gigabitzauber.jancontrol.util.JcIoUtil.assertWritable;
+import static de.gigabitzauber.jancontrol.util.JcIoUtil.assertIsReadableFile;
+import static de.gigabitzauber.jancontrol.util.JcIoUtil.assertIsWritableFile;
 
 @Data
 @SuperBuilder
@@ -26,12 +26,12 @@ public abstract class Device {
 
     @JsonIgnore
     protected final Path safeReadableSysPath() {
-        return assertReadable(safeSysPath());
+        return assertIsReadableFile(safeSysPath());
     }
 
     @JsonIgnore
     protected final Path safeWritableSysPath() {
-        return assertWritable(safeSysPath());
+        return assertIsWritableFile(safeSysPath());
     }
 
     private Path safeSysPath() {

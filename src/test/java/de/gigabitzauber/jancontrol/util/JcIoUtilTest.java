@@ -38,16 +38,24 @@ class JcIoUtilTest {
     private Path tempDir;
     private Path fileExamplePath;
     private Resource fileExampleResource;
+    private Path dirExamplePath;
 
     @BeforeEach
     void setUp() {
         fileExamplePath = tempDir.resolve(this.getClass().getSimpleName() + ".file");
         fileExampleResource = new FileSystemResource(fileExamplePath);
+        dirExamplePath = tempDir.resolve(this.getClass().getSimpleName() + "_dir");
 
         try {
             Files.createFile(fileExamplePath);
         } catch (IOException e) {
             Assertions.fail("Could not create temp file.", e);
+        }
+
+        try {
+            Files.createDirectory(dirExamplePath);
+        } catch (IOException e) {
+            Assertions.fail("Could not create temp dir.", e);
         }
     }
 
@@ -186,16 +194,16 @@ class JcIoUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("assertReadableFailCombinations")
-    void test_assertReadable_failure_scenarios(boolean existsFlag,
-                                               boolean directoryFlag,
-                                               boolean readableFlag,
-                                               Function<Path, String> errorMsgFunc) {
+    @MethodSource("assertReadableFileFailCombinations")
+    void test_assertReadableFile_failure_scenarios(boolean existsFlag,
+                                                   boolean directoryFlag,
+                                                   boolean readableFlag,
+                                                   Function<Path, String> errorMsgFunc) {
         try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
             staticFilesMock.when(() -> Files.exists(fileExamplePath)).thenReturn(existsFlag);
             staticFilesMock.when(() -> Files.isDirectory(fileExamplePath)).thenReturn(directoryFlag);
             staticFilesMock.when(() -> Files.isReadable(fileExamplePath)).thenReturn(readableFlag);
-            assertThatThrownBy(() -> JcIoUtil.assertReadable(fileExamplePath))
+            assertThatThrownBy(() -> JcIoUtil.assertIsReadableFile(fileExamplePath))
                 .isInstanceOf(JcException.class)
                 .hasMessage(errorMsgFunc.apply(fileExamplePath))
                 .hasNoCause();
@@ -203,38 +211,77 @@ class JcIoUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("assertReadableSuccessCombinations")
-    void test_assertReadable_success_scenarios(boolean existsFlag,
-                                               boolean directoryFlag,
-                                               boolean readableFlag) {
+    @MethodSource("assertReadableDirFailCombinations")
+    void test_assertReadableDir_failure_scenarios(boolean existsFlag,
+                                                  boolean directoryFlag,
+                                                  boolean readableFlag,
+                                                  Function<Path, String> errorMsgFunc) {
+        try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
+            staticFilesMock.when(() -> Files.exists(dirExamplePath)).thenReturn(existsFlag);
+            staticFilesMock.when(() -> Files.isDirectory(dirExamplePath)).thenReturn(directoryFlag);
+            staticFilesMock.when(() -> Files.isReadable(dirExamplePath)).thenReturn(readableFlag);
+            assertThatThrownBy(() -> JcIoUtil.assertIsReadableDir(dirExamplePath))
+                .isInstanceOf(JcException.class)
+                .hasMessage(errorMsgFunc.apply(dirExamplePath))
+                .hasNoCause();
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("assertReadableFileSuccessCombinations")
+    void test_assertReadableFile_success_scenarios(boolean existsFlag,
+                                                   boolean directoryFlag,
+                                                   boolean readableFlag) {
         try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
             staticFilesMock.when(() -> Files.exists(fileExamplePath)).thenReturn(existsFlag);
             staticFilesMock.when(() -> Files.isDirectory(fileExamplePath)).thenReturn(directoryFlag);
             staticFilesMock.when(() -> Files.isReadable(fileExamplePath)).thenReturn(readableFlag);
             var actualResultRef = new AtomicReference<Path>();
-            assertThatNoException().isThrownBy(() -> actualResultRef.set(JcIoUtil.assertReadable(fileExamplePath)));
+            assertThatNoException().isThrownBy(() -> actualResultRef.set(JcIoUtil.assertIsReadableFile(fileExamplePath)));
             assertThat(actualResultRef.get()).isEqualTo(fileExamplePath);
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("assertReadableDirSuccessCombinations")
+    void test_assertReadableDir_success_scenarios(boolean existsFlag,
+                                                  boolean directoryFlag,
+                                                  boolean readableFlag) {
+        try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
+            staticFilesMock.when(() -> Files.exists(dirExamplePath)).thenReturn(existsFlag);
+            staticFilesMock.when(() -> Files.isDirectory(dirExamplePath)).thenReturn(directoryFlag);
+            staticFilesMock.when(() -> Files.isReadable(dirExamplePath)).thenReturn(readableFlag);
+            var actualResultRef = new AtomicReference<Path>();
+            assertThatNoException().isThrownBy(() -> actualResultRef.set(JcIoUtil.assertIsReadableDir(dirExamplePath)));
+            assertThat(actualResultRef.get()).isEqualTo(dirExamplePath);
+        }
+    }
+
     @Test
-    void when_path_is_null_then_assertReadable_throws_exception() {
-        assertThatThrownBy(() -> JcIoUtil.assertReadable(null))
+    void when_path_is_null_then_assertReadableFile_throws_exception() {
+        assertThatThrownBy(() -> JcIoUtil.assertIsReadableFile(null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("path must not be null");
+    }
+
+    @Test
+    void when_path_is_null_then_assertReadableDir_throws_exception() {
+        assertThatThrownBy(() -> JcIoUtil.assertIsReadableDir(null))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("path must not be null");
     }
 
     @ParameterizedTest
-    @MethodSource("assertWritableFailCombinations")
-    void test_assertWritable_failure_scenarios(boolean existsFlag,
-                                               boolean directoryFlag,
-                                               boolean writeableFlag,
-                                               Function<Path, String> errorMsgFunc) {
+    @MethodSource("assertWritableFileFailCombinations")
+    void test_assertWritableFile_failure_scenarios(boolean existsFlag,
+                                                   boolean directoryFlag,
+                                                   boolean writeableFlag,
+                                                   Function<Path, String> errorMsgFunc) {
         try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
             staticFilesMock.when(() -> Files.exists(fileExamplePath)).thenReturn(existsFlag);
             staticFilesMock.when(() -> Files.isDirectory(fileExamplePath)).thenReturn(directoryFlag);
-            staticFilesMock.when(() -> Files.isReadable(fileExamplePath)).thenReturn(writeableFlag);
-            assertThatThrownBy(() -> JcIoUtil.assertWritable(fileExamplePath))
+            staticFilesMock.when(() -> Files.isWritable(fileExamplePath)).thenReturn(writeableFlag);
+            assertThatThrownBy(() -> JcIoUtil.assertIsWritableFile(fileExamplePath))
                 .isInstanceOf(JcException.class)
                 .hasMessage(errorMsgFunc.apply(fileExamplePath))
                 .hasNoCause();
@@ -242,29 +289,68 @@ class JcIoUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("assertWritableSuccessCombinations")
-    void test_assertWritable_success_scenarios(boolean existsFlag,
-                                               boolean directoryFlag,
-                                               boolean writeableFlag) {
+    @MethodSource("assertWritableDirFailCombinations")
+    void test_assertWritableDir_failure_scenarios(boolean existsFlag,
+                                                  boolean directoryFlag,
+                                                  boolean writeableFlag,
+                                                  Function<Path, String> errorMsgFunc) {
+        try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
+            staticFilesMock.when(() -> Files.exists(dirExamplePath)).thenReturn(existsFlag);
+            staticFilesMock.when(() -> Files.isDirectory(dirExamplePath)).thenReturn(directoryFlag);
+            staticFilesMock.when(() -> Files.isWritable(dirExamplePath)).thenReturn(writeableFlag);
+            assertThatThrownBy(() -> JcIoUtil.assertIsWritableDir(dirExamplePath))
+                .isInstanceOf(JcException.class)
+                .hasMessage(errorMsgFunc.apply(dirExamplePath))
+                .hasNoCause();
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("assertWritableFileSuccessCombinations")
+    void test_assertWritableFile_success_scenarios(boolean existsFlag,
+                                                   boolean directoryFlag,
+                                                   boolean writeableFlag) {
         try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
             staticFilesMock.when(() -> Files.exists(fileExamplePath)).thenReturn(existsFlag);
             staticFilesMock.when(() -> Files.isDirectory(fileExamplePath)).thenReturn(directoryFlag);
             staticFilesMock.when(() -> Files.isWritable(fileExamplePath)).thenReturn(writeableFlag);
             var resultRef = new AtomicReference<Path>();
-            assertThatNoException().isThrownBy(() -> resultRef.set(JcIoUtil.assertWritable(fileExamplePath)));
+            assertThatNoException().isThrownBy(() -> resultRef.set(JcIoUtil.assertIsWritableFile(fileExamplePath)));
             assertThat(resultRef.get()).isEqualTo(fileExamplePath);
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("assertWritableDirSuccessCombinations")
+    void test_assertWritableDir_success_scenarios(boolean existsFlag,
+                                                  boolean directoryFlag,
+                                                  boolean writeableFlag) {
+        try (var staticFilesMock = Mockito.mockStatic(Files.class)) {
+            staticFilesMock.when(() -> Files.exists(dirExamplePath)).thenReturn(existsFlag);
+            staticFilesMock.when(() -> Files.isDirectory(dirExamplePath)).thenReturn(directoryFlag);
+            staticFilesMock.when(() -> Files.isWritable(dirExamplePath)).thenReturn(writeableFlag);
+            var resultRef = new AtomicReference<Path>();
+            assertThatNoException().isThrownBy(() -> resultRef.set(JcIoUtil.assertIsWritableDir(dirExamplePath)));
+            assertThat(resultRef.get()).isEqualTo(dirExamplePath);
+        }
+    }
+
     @Test
-    void when_path_is_null_then_assertWriteable_throws_exception() {
-        assertThatThrownBy(() -> JcIoUtil.assertWritable(null))
+    void when_path_is_null_then_assertWriteableFile_throws_exception() {
+        assertThatThrownBy(() -> JcIoUtil.assertIsWritableFile(null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("path must not be null");
+    }
+
+    @Test
+    void when_path_is_null_then_assertWriteableDir_throws_exception() {
+        assertThatThrownBy(() -> JcIoUtil.assertIsWritableDir(null))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("path must not be null");
     }
 
     // existsFlag, directoryFlag, readableFlag, errorMsgFunc
-    private static Stream<Arguments> assertReadableFailCombinations() {
+    private static Stream<Arguments> assertReadableFileFailCombinations() {
         Function<Path, String> pathDoesNotExistError = path -> "Path does not exist: " + path;
         Function<Path, String> pathIsNotAFileError = path -> "Path is not a file: " + path;
         Function<Path, String> pathIsNotReadableError = path -> "Path is not readable: " + path;
@@ -279,15 +365,38 @@ class JcIoUtilTest {
         );
     }
 
+    // existsFlag, directoryFlag, readableFlag, errorMsgFunc
+    private static Stream<Arguments> assertReadableDirFailCombinations() {
+        Function<Path, String> pathDoesNotExistError = path -> "Path does not exist: " + path;
+        Function<Path, String> pathIsNotADirError = path -> "Path is not a directory: " + path;
+        Function<Path, String> pathIsNotReadableError = path -> "Path is not readable: " + path;
+        return Stream.of(
+            arguments(false, false, false, pathDoesNotExistError),
+            arguments(false, false, true, pathDoesNotExistError),
+            arguments(false, true, false, pathDoesNotExistError),
+            arguments(false, true, true, pathDoesNotExistError),
+            arguments(true, false, false, pathIsNotADirError),
+            arguments(true, true, false, pathIsNotReadableError),
+            arguments(true, false, true, pathIsNotADirError)
+        );
+    }
+
     // existsFlag, directoryFlag, readableFlag
-    private static Stream<Arguments> assertReadableSuccessCombinations() {
+    private static Stream<Arguments> assertReadableFileSuccessCombinations() {
         return Stream.of(
             arguments(true, false, true)
         );
     }
 
-    // existsFlag, directoryFlag, readableFlag, errorMsgFunc
-    private static Stream<Arguments> assertWritableFailCombinations() {
+    // existsFlag, directoryFlag, readableFlag
+    private static Stream<Arguments> assertReadableDirSuccessCombinations() {
+        return Stream.of(
+            arguments(true, true, true)
+        );
+    }
+
+    // existsFlag, directoryFlag, writableFlag, errorMsgFunc
+    private static Stream<Arguments> assertWritableFileFailCombinations() {
         Function<Path, String> pathDoesNotExistError = path -> "Path does not exist: " + path;
         Function<Path, String> pathIsNotAFileError = path -> "Path is not a file: " + path;
         Function<Path, String> pathIsNotWritableError = path -> "Path is not writable: " + path;
@@ -302,10 +411,33 @@ class JcIoUtilTest {
         );
     }
 
-    // existsFlag, directoryFlag, readableFlag
-    private static Stream<Arguments> assertWritableSuccessCombinations() {
+    // existsFlag, directoryFlag, writableFlag, errorMsgFunc
+    private static Stream<Arguments> assertWritableDirFailCombinations() {
+        Function<Path, String> pathDoesNotExistError = path -> "Path does not exist: " + path;
+        Function<Path, String> pathIsNotADirError = path -> "Path is not a directory: " + path;
+        Function<Path, String> pathIsNotWritableError = path -> "Path is not writable: " + path;
+        return Stream.of(
+            arguments(false, false, false, pathDoesNotExistError),
+            arguments(false, false, true, pathDoesNotExistError),
+            arguments(false, true, false, pathDoesNotExistError),
+            arguments(false, true, true, pathDoesNotExistError),
+            arguments(true, false, false, pathIsNotADirError),
+            arguments(true, true, false, pathIsNotWritableError),
+            arguments(true, false, true, pathIsNotADirError)
+        );
+    }
+
+    // existsFlag, directoryFlag, writableFlag
+    private static Stream<Arguments> assertWritableFileSuccessCombinations() {
         return Stream.of(
             arguments(true, false, true)
+        );
+    }
+
+    // existsFlag, directoryFlag, writableFlag
+    private static Stream<Arguments> assertWritableDirSuccessCombinations() {
+        return Stream.of(
+            arguments(true, true, true)
         );
     }
 }

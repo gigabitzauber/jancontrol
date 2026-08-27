@@ -50,7 +50,7 @@ class DeviceTest {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
             underTest.safeReadableSysPath();
 
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(sysFsPath));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsReadableFile(sysFsPath));
         }
     }
 
@@ -59,7 +59,7 @@ class DeviceTest {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
             underTest.safeWritableSysPath();
 
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertWritable(sysFsPath));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsWritableFile(sysFsPath));
         }
     }
 }

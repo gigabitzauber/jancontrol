@@ -104,8 +104,8 @@ public class JcLifecycle implements Lifecycle, FutureCallback<Object> {
         log.info("Registering fan '{}' with allowIdle: {} and activation threshold: {}%",
             fanDevice.ref(), fanDevice.allowIdle(), fanDevice.activationThreshold());
 
-        log.debug("{} writing to: {}", fan.device().ref(), fan.device().sysPath());
-        fan.dependsOn().forEach(dependency -> log.debug("{} reading from {}", dependency.ref(), dependency.sysPath()));
+        log.info("{} writing to: {}", fan.device().ref(), fan.device().sysPath());
+        fan.dependsOn().forEach(dependency -> log.info("{} reading from {}", dependency.ref(), dependency.sysPath()));
 
         registeredFans.add(new RegisteredFan(fan));
 

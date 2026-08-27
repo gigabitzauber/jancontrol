@@ -73,7 +73,7 @@ class RpmDeviceTest {
     @MethodSource("writeSuccessCombinations")
     void test_write_happy_path(int inputPercentage, String expectedRawValue) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedRawValue))
                 .thenAnswer(_ -> null);
@@ -82,7 +82,7 @@ class RpmDeviceTest {
 
             var expectedPercentage = expectedRawValue.equals("0") ? 0 : inputPercentage;
             assertThat(actuallyWrittenValue).isEqualTo(expectedPercentage);
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verify(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedRawValue));
         }
     }
@@ -92,7 +92,7 @@ class RpmDeviceTest {
         var expectedException = new JcException("expected exception");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenThrow(expectedException);
 
             assertThatThrownBy(() -> underTest.write(0)).isSameAs(expectedException);
@@ -104,7 +104,7 @@ class RpmDeviceTest {
         var expectedException = new JcException("expected exception");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, "0"))
                 .thenThrow(expectedException);
@@ -125,14 +125,14 @@ class RpmDeviceTest {
     @MethodSource("readSuccessCombinations")
     void test_read_happy_path(String rawValue, int expectedPercentage) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenReturn(rawValue);
 
             var actualPercentage = underTest.read();
             assertThat(actualPercentage).isEqualTo(expectedPercentage);
 
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verify(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE));
         }
     }
@@ -142,7 +142,7 @@ class RpmDeviceTest {
         var expectedException = new JcException("expected exception");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenThrow(expectedException);
 
             assertThatThrownBy(underTest::read).isSameAs(expectedException);
@@ -154,7 +154,7 @@ class RpmDeviceTest {
         var expectedException = new JcException("expected exception");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE))
                 .thenThrow(expectedException);
@@ -167,7 +167,7 @@ class RpmDeviceTest {
     @ValueSource(strings = {"-1", "256"})
     void when_value_is_out_of_range_then_read_throws_exception(String rawValue) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(rawValue);
@@ -183,7 +183,7 @@ class RpmDeviceTest {
     @EmptySource
     void when_read_value_is_nan_then_exception_is_thrown(String rawValue) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(rawValue);

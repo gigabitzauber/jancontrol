@@ -1,6 +1,5 @@
-package de.gigabitzauber.jancontrol.config;
+package de.gigabitzauber.jancontrol.jackson;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,11 +7,12 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
-import io.micrometer.common.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
+
+import static de.gigabitzauber.jancontrol.util.JcNodeUtil.assertNode;
+import static de.gigabitzauber.jancontrol.util.JcNodeUtil.safeGetNode;
 
 public final class RpmDeviceDeserializer extends StdDeserializer<RpmDevice> {
 
@@ -59,23 +59,5 @@ public final class RpmDeviceDeserializer extends StdDeserializer<RpmDevice> {
             .ref(ref)
             .activationThreshold(activationThreshold)
             .build();
-    }
-
-    private String safeGetNode(JsonNode node, String fieldName) {
-        return Optional.ofNullable(node.get(fieldName)).map(JsonNode::asText).orElse(null);
-    }
-
-    private String assertNode(JsonNode node, String fieldName) throws JsonParseException {
-        var resultNode = node.get(fieldName);
-        if (resultNode == null) {
-            throw new JsonParseException("Field '" + fieldName + "' is missing.");
-        }
-
-        var result = resultNode.asText();
-        if (StringUtils.isBlank(result)) {
-            throw new JsonParseException("Field '" + fieldName + "' is missing a proper value.");
-        }
-
-        return result;
     }
 }

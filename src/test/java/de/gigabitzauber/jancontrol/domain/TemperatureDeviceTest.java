@@ -69,7 +69,7 @@ class TemperatureDeviceTest {
 
     private Integer executeReadOpSuccess(String contents) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenReturn(contents);
             return underTest.read();
@@ -78,7 +78,7 @@ class TemperatureDeviceTest {
 
     private void executeReadOpFail(RuntimeException expectedException) {
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenThrow(expectedException);
             underTest.read();

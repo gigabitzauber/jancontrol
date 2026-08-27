@@ -17,6 +17,8 @@ import de.gigabitzauber.jancontrol.domain.api.CurveType;
 import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.error.JcException;
+import de.gigabitzauber.jancontrol.jackson.RpmDeviceDeserializer;
+import de.gigabitzauber.jancontrol.jackson.TemperatureDeviceDeserializer;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

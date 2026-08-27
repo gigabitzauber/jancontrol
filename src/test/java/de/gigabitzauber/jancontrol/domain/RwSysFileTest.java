@@ -24,13 +24,13 @@ class RwSysFileTest {
         var expectedValue = "expectedValue";
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE)).thenReturn(SYS_FILE_PATH_EXAMPLE);
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE)).thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE)).thenReturn(expectedValue);
 
             var actualValue = underTest.readRaw();
 
             assertThat(actualValue).isEqualTo(expectedValue);
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verify(() -> JcIoUtil.readString(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verifyNoMoreInteractions();
         }
@@ -41,11 +41,11 @@ class RwSysFileTest {
         var expectedException = new JcException("expectedException");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenThrow(expectedException);
             assertThatThrownBy(underTest::readRaw).isSameAs(expectedException);
 
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertReadable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsReadableFile(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verifyNoMoreInteractions();
         }
     }
@@ -62,12 +62,12 @@ class RwSysFileTest {
         var expectedValue = "expectedValue";
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE)).thenReturn(SYS_FILE_PATH_EXAMPLE);
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE)).thenReturn(SYS_FILE_PATH_EXAMPLE);
             staticJcIoUtilMock.when(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedValue)).thenAnswer(_ -> null);
 
             underTest.writeRaw(expectedValue);
 
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verify(() -> JcIoUtil.writeString(SYS_FILE_PATH_EXAMPLE, expectedValue));
             staticJcIoUtilMock.verifyNoMoreInteractions();
         }
@@ -78,11 +78,11 @@ class RwSysFileTest {
         var expectedException = new JcException("expectedException");
 
         try (var staticJcIoUtilMock = Mockito.mockStatic(JcIoUtil.class)) {
-            staticJcIoUtilMock.when(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE))
+            staticJcIoUtilMock.when(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE))
                 .thenThrow(expectedException);
             assertThatThrownBy(() -> underTest.writeRaw("")).isSameAs(expectedException);
 
-            staticJcIoUtilMock.verify(() -> JcIoUtil.assertWritable(SYS_FILE_PATH_EXAMPLE));
+            staticJcIoUtilMock.verify(() -> JcIoUtil.assertIsWritableFile(SYS_FILE_PATH_EXAMPLE));
             staticJcIoUtilMock.verifyNoMoreInteractions();
         }
     }

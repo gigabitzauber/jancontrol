@@ -1,6 +1,5 @@
-package de.gigabitzauber.jancontrol.config;
+package de.gigabitzauber.jancontrol.jackson;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,10 +7,11 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import de.gigabitzauber.jancontrol.util.JcIoUtil;
-import io.micrometer.common.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
+import static de.gigabitzauber.jancontrol.util.JcNodeUtil.assertNode;
 
 public final class TemperatureDeviceDeserializer extends StdDeserializer<TemperatureDevice> {
 
@@ -38,19 +38,5 @@ public final class TemperatureDeviceDeserializer extends StdDeserializer<Tempera
             .sysPath(sysPath)
             .ref(ref)
             .build();
-    }
-
-    private String assertNode(JsonNode node, String fieldName) throws JsonParseException {
-        var resultNode = node.get(fieldName);
-        if (resultNode == null) {
-            throw new JsonParseException("Field '" + fieldName + "' is missing.");
-        }
-
-        var result = resultNode.asText();
-        if (StringUtils.isBlank(result)) {
-            throw new JsonParseException("Field '" + fieldName + "' is missing a proper value.");
-        }
-
-        return result;
     }
 }

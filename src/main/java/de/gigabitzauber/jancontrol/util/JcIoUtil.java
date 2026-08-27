@@ -50,35 +50,71 @@ public final class JcIoUtil {
         }
     }
 
-    public static Path assertReadable(Path path) {
+    public static Path assertIsReadableFile(Path path) {
         requireNonNull(path, "path must not be null");
 
         assertExistingFile(path);
+        assertReadable(path);
 
+        return path;
+    }
+
+    public static Path assertIsReadableDir(Path path) {
+        requireNonNull(path, "path must not be null");
+
+        assertExistingDir(path);
+        assertReadable(path);
+
+        return path;
+    }
+
+    public static Path assertIsWritableFile(Path path) {
+        requireNonNull(path, "path must not be null");
+
+        assertExistingFile(path);
+        assertWritable(path);
+
+        return path;
+    }
+
+    public static Path assertIsWritableDir(Path path) {
+        requireNonNull(path, "path must not be null");
+
+        assertExistingDir(path);
+        assertWritable(path);
+
+        return path;
+    }
+
+    private static void assertReadable(Path path) {
         if (!Files.isReadable(path)) {
             throw new JcException("Path is not readable: " + path);
         }
-
-        return path;
     }
 
-    public static Path assertWritable(Path path) {
-        requireNonNull(path, "path must not be null");
-
-        assertExistingFile(path);
-
+    private static void assertWritable(Path path) {
         if (!Files.isWritable(path)) {
             throw new JcException("Path is not writable: " + path);
         }
+    }
 
-        return path;
+    private static void assertExists(Path path) {
+        if (!Files.exists(path)) {
+            throw new JcException("Path does not exist: " + path);
+        }
     }
 
     private static void assertExistingFile(Path path) {
-        if (!Files.exists(path)) {
-            throw new JcException("Path does not exist: " + path);
-        } else if (Files.isDirectory(path)) {
+        assertExists(path);
+        if (Files.isDirectory(path)) {
             throw new JcException("Path is not a file: " + path);
+        }
+    }
+
+    private static void assertExistingDir(Path path) {
+        assertExists(path);
+        if (!Files.isDirectory(path)) {
+            throw new JcException("Path is not a directory: " + path);
         }
     }
 
