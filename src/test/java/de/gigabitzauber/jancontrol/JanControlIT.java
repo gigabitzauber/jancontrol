@@ -10,6 +10,7 @@ import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.Nct6775FanModes;
+import de.gigabitzauber.jancontrol.util.HwmonDirResolver;
 import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -461,7 +463,8 @@ class JanControlIT {
         var fanList = Arrays.asList(fans);
         var config = new CruiseConfigRoot(fanList);
 
-        var yamlMapper = new JcJacksonConfig().yamlMapper();
+        var hwmonResolverMock = Mockito.mock(HwmonDirResolver.class);
+        var yamlMapper = new JcJacksonConfig().yamlMapper(hwmonResolverMock);
         var configData = yamlMapper.writeValueAsString(config);
         return writeToConfigFile(configData);
     }

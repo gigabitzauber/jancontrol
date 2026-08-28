@@ -6,14 +6,14 @@ fans:
     device:
       ref: "CPU Fan"
       sysName: "thinkpad"
+      slot: 1
       driver: "thinkpad_acpi"
       allowIdle: true
       activationThreshold: 15
-      sysPath: "/sys/devices/platform/thinkpad_acpi/hwmon/hwmon2/pwm2"
     dependsOn:
       - ref: "CPU Temp"
         sysName: "thinkpad"
-        sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
+        slot: 2
     curves:
       - ref: "CPU Temp"
         type: "linear"

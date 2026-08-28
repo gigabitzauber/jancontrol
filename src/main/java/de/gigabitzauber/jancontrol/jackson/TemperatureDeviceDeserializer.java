@@ -6,20 +6,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
-import de.gigabitzauber.jancontrol.util.JcIoUtil;
+import de.gigabitzauber.jancontrol.util.HwmonDirResolver;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 import static de.gigabitzauber.jancontrol.util.JcNodeUtil.assertNode;
+import static java.util.Objects.requireNonNull;
 
 public final class TemperatureDeviceDeserializer extends StdDeserializer<TemperatureDevice> {
 
-    private final Path hwmonClassDir;
+    private final HwmonDirResolver hwmonDirResolver;
 
-    public TemperatureDeviceDeserializer(Path hwmonClassDir) {
+    public TemperatureDeviceDeserializer(HwmonDirResolver hwmonDirResolver) {
         super(RpmDevice.class);
-        this.hwmonClassDir = hwmonClassDir;
+        this.hwmonDirResolver = requireNonNull(hwmonDirResolver, "hwmonDirResolver must not be null");
     }
 
     @Override
@@ -29,7 +29,7 @@ public final class TemperatureDeviceDeserializer extends StdDeserializer<Tempera
         var sysName = assertNode(parent, "sysName");
         var slot = assertNode(parent, "slot");
 
-        var hwmonDir = JcIoUtil.findHwmonDir(hwmonClassDir, sysName);
+        var hwmonDir = hwmonDirResolver.findHwmonDir(sysName);
 
         var sysPath = hwmonDir.resolve("temp" + slot + "_input").toString();
         return TemperatureDevice.builder()

@@ -19,6 +19,7 @@ import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.jackson.RpmDeviceDeserializer;
 import de.gigabitzauber.jancontrol.jackson.TemperatureDeviceDeserializer;
+import de.gigabitzauber.jancontrol.util.HwmonDirResolver;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,22 +28,29 @@ import org.springframework.format.annotation.DurationFormat;
 import org.springframework.format.datetime.standard.DurationFormatterUtils;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.Duration;
 
 @Configuration
 public class JcJacksonConfig {
-    @Value("${de.gigabitzauber.jancontrol.config.hwmonClassDir:/sys/class/hwmon}")
+    public static final String HWMON_CLASS_DIR_PROP_KEY = "de.gigabitzauber.jancontrol.config.hwmonClassDir";
+
+    @Value("${" + HWMON_CLASS_DIR_PROP_KEY + ":/sys/class/hwmon}")
     private String hwmonClassDir;
 
     @Bean
-    public YAMLMapper yamlMapper() {
+    public HwmonDirResolver hwmonDirResolver() {
+        return new HwmonDirResolver(Path.of(this.hwmonClassDir));
+    }
+
+    @Bean
+    public YAMLMapper yamlMapper(HwmonDirResolver hwmonDirResolver) {
         var result = new YAMLMapper();
         result.registerModule(new JavaTimeModule());
         result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         var simpleModule = new SimpleModule();
-        simpleModule.addDeserializer(RpmDevice.class, new RpmDeviceDeserializer(Paths.get(hwmonClassDir)));
-        simpleModule.addDeserializer(TemperatureDevice.class, new TemperatureDeviceDeserializer(Paths.get(hwmonClassDir)));
+        simpleModule.addDeserializer(RpmDevice.class, new RpmDeviceDeserializer(hwmonDirResolver));
+        simpleModule.addDeserializer(TemperatureDevice.class, new TemperatureDeviceDeserializer(hwmonDirResolver));
         result.registerModule(simpleModule);
         return result;
     }

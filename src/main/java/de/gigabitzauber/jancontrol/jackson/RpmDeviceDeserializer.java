@@ -6,21 +6,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.JcHwmonDrivers;
-import de.gigabitzauber.jancontrol.util.JcIoUtil;
+import de.gigabitzauber.jancontrol.util.HwmonDirResolver;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 import static de.gigabitzauber.jancontrol.util.JcNodeUtil.assertNode;
 import static de.gigabitzauber.jancontrol.util.JcNodeUtil.safeGetNode;
+import static java.util.Objects.requireNonNull;
 
 public final class RpmDeviceDeserializer extends StdDeserializer<RpmDevice> {
 
-    private final Path hwmonClassDir;
+    private final HwmonDirResolver hwmonDirResolver;
 
-    public RpmDeviceDeserializer(Path hwmonClassDir) {
+    public RpmDeviceDeserializer(HwmonDirResolver hwmonDirResolver) {
         super(RpmDevice.class);
-        this.hwmonClassDir = hwmonClassDir;
+        this.hwmonDirResolver = requireNonNull(hwmonDirResolver, "hwmonDirResolver must not be null");
     }
 
     @Override
@@ -28,7 +28,8 @@ public final class RpmDeviceDeserializer extends StdDeserializer<RpmDevice> {
         JsonNode parent = ctxt.readTree(p);
         var ref = assertNode(parent, "ref");
         var sysName = assertNode(parent, "sysName");
-        var slot = assertNode(parent, "slot");
+        var rawSlot = assertNode(parent, "slot");
+        var slot = Integer.parseInt(rawSlot);
 
         var baseRpmDevice = RpmDevice.builder().build();
         var hwmonDriver = baseRpmDevice.driver();
@@ -49,14 +50,16 @@ public final class RpmDeviceDeserializer extends StdDeserializer<RpmDevice> {
             activationThreshold = Integer.parseInt(rawActivationThreshold);
         }
 
-        var hwmonDir = JcIoUtil.findHwmonDir(hwmonClassDir, sysName);
+        var hwmonDir = hwmonDirResolver.findHwmonDir(sysName);
 
         var sysPath = hwmonDir.resolve("pwm" + slot).toString();
         return RpmDevice.builder()
             .driver(hwmonDriver)
             .allowIdle(allowIdle)
-            .sysPath(sysPath)
             .ref(ref)
+            .sysName(sysName)
+            .slot(slot)
+            .sysPath(sysPath)
             .activationThreshold(activationThreshold)
             .build();
     }

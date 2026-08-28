@@ -1,16 +1,13 @@
 package de.gigabitzauber.jancontrol.util;
 
 import de.gigabitzauber.jancontrol.error.JcException;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -116,35 +113,5 @@ public final class JcIoUtil {
         if (!Files.isDirectory(path)) {
             throw new JcException("Path is not a directory: " + path);
         }
-    }
-
-    public static Path findHwmonDir(Path hwmonClassDir, String sysName) {
-        try (var hwmonDirStream = Files.find(hwmonClassDir, 1,
-            (path, attr) ->
-                attr.isDirectory() && Optional.ofNullable(path.getFileName()).orElse(Path.of("nullPath")).toString().startsWith("hwmon"),
-            FileVisitOption.FOLLOW_LINKS)) {
-            return hwmonDirStream.filter(path -> {
-                    var nameFile = path.resolve("name");
-                    if (Files.isReadable(nameFile)) {
-                        try {
-                            return StringUtils.stripToEmpty(Files.readString(nameFile)).equals(sysName);
-                        } catch (IOException e) {
-                            handleResolveException(e);
-                        }
-                    }
-                    return false;
-                })
-                .findFirst()
-                .orElseThrow(() -> new JcException("Could not find HWMON dir for sysName: " + sysName));
-        } catch (IOException e) {
-            handleResolveException(e);
-        }
-
-        throw new JcException("Implementation error: This location should have not been reached.");
-    }
-
-    private static void handleResolveException(Exception e) {
-        var msg = JcErrorUtil.safeGetMessage(e);
-        throw new JcException("Error while resolving device: " + msg, e);
     }
 }

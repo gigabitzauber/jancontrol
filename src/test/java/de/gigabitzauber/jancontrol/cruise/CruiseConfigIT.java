@@ -6,21 +6,19 @@ import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import de.gigabitzauber.jancontrol.domain.CruiseConfig;
 import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import de.gigabitzauber.jancontrol.error.JcException;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
+import de.gigabitzauber.jancontrol.test.JcHwmonTestHelper;
+import de.gigabitzauber.jancontrol.util.HwmonDirResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,27 +26,27 @@ import static org.assertj.core.api.InstanceOfAssertFactories.COLLECTION;
 
 class CruiseConfigIT {
 
-    private Path configFilePath;
+    @TempDir
+    private Path tempDir;
+
+    private Path configPath;
 
     private static final Resource RESOURCE_EXAMPLE = new ClassPathResource("/config_file_example.yaml");
-    private final YAMLMapper mapper = new JcJacksonConfig().yamlMapper();
+
+    private YAMLMapper mapper;
 
     private CruiseConfig underTest;
 
     @BeforeEach
     public void setUp() throws Exception {
-        var mapper = new JcJacksonConfig().yamlMapper();
-
-        configFilePath = Files.createTempFile(this.getClass().getSimpleName(), "yaml");
+        var hwmonClassDir = JcHwmonTestHelper.createHwmonClassDir(tempDir, "thinkpad");
+        var hwmonResolver = new HwmonDirResolver(hwmonClassDir);
+        mapper = new JcJacksonConfig().yamlMapper(hwmonResolver);
+        configPath = tempDir.resolve(this.getClass().getSimpleName() + ".yaml");
         setConfigFileContent(RESOURCE_EXAMPLE.getContentAsString(StandardCharsets.UTF_8));
-        var tempResource = new FileSystemResource(configFilePath);
+        var tempResource = new FileSystemResource(configPath);
 
         underTest = new CruiseConfig(tempResource, mapper);
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        Files.deleteIfExists(configFilePath);
     }
 
     @Test
@@ -119,10 +117,6 @@ class CruiseConfigIT {
     }
 
     private void setConfigFileContent(String expectedContent) {
-        try {
-            Files.writeString(configFilePath, expectedContent, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException e) {
-            Assertions.fail("Could not write temp config file contents", e);
-        }
+        JcHwmonTestHelper.safeWrite(configPath, expectedContent);
     }
 }
