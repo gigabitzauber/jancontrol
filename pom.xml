@@ -63,7 +63,7 @@
         <!--suppress UnresolvedMavenProperty -->
         <resource.delimiter>${*}</resource.delimiter>
 
-        <spotbugs.plugin.version>4.10.3.0</spotbugs.plugin.version>
+        <spotbugs.plugin.version>4.10.4.0</spotbugs.plugin.version>
         <spotbugs.version>4.10.3</spotbugs.version>
         <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
 
