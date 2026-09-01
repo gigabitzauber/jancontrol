@@ -68,7 +68,7 @@
         <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
 
         <spring-boot.version>4.1.0</spring-boot.version>
-        <equalsverifier.version>4.5</equalsverifier.version>
+        <equalsverifier.version>4.5.2</equalsverifier.version>
         <mockito-core.version>5.23.0</mockito-core.version>
         <guava.version>33.6.0-jre</guava.version>
         <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
