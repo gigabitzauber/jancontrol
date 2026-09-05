@@ -1,5 +1,6 @@
 package de.gigabitzauber.jancontrol;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import de.gigabitzauber.jancontrol.config.JcJacksonConfig;
 import de.gigabitzauber.jancontrol.cruise.CruiseAlgorithm;
 import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
@@ -10,6 +11,9 @@ import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.TemperatureDevice;
 import de.gigabitzauber.jancontrol.drivers.hwmon.Nct6775FanModes;
+import de.gigabitzauber.jancontrol.test.JcHwmonTestHelper;
+import de.gigabitzauber.jancontrol.test.RpmDeviceSerializer;
+import de.gigabitzauber.jancontrol.test.TemperatureDeviceSerializer;
 import de.gigabitzauber.jancontrol.util.HwmonDirResolver;
 import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.NonNull;
@@ -18,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -48,15 +51,20 @@ import static org.awaitility.Awaitility.await;
 class JanControlIT {
 
     private static final String RPM_DEVICE_REF_A = "rpmDeviceRefA";
+    private static final String RPM_DEVICE_NAME_A = "rpmDeviceA";
     private static final String TEMP_DEVICE_REF_A = "tempDeviceRefA";
+    private static final String TEMP_DEVICE_NAME_A = "tempDeviceA";
 
     private static final String RPM_DEVICE_REF_B = "rpmDeviceRefB";
+    private static final String RPM_DEVICE_NAME_B = "rpmDeviceB";
     private static final String TEMP_DEVICE_REF_B = "tempDeviceRefB";
+    private static final String TEMP_DEVICE_NAME_B = "tempDeviceB";
 
     private static final String TEMP_DEVICE_REF_C = "tempDeviceRefC";
+    private static final String TEMP_DEVICE_NAME_C = "tempDeviceC";
 
     private static final Duration INTERVAL_EXAMPLE = Duration.ofSeconds(2);
-    public static final Duration LOG_MESSAGE_ASSERTION_TIMEOUT = INTERVAL_EXAMPLE.multipliedBy(5);
+    private static final Duration LOG_MESSAGE_ASSERTION_TIMEOUT = INTERVAL_EXAMPLE.multipliedBy(5);
     private static final Duration EXECUTOR_SHUTDOWN_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration SPRING_SHUTDOWN_TIMEOUT = Duration.ofSeconds(40);
 
@@ -79,17 +87,28 @@ class JanControlIT {
 
     private Path tempDeviceFilePathC;
 
+    private Path hwmonClassDir;
+    private HwmonDirResolver hwmonResolver;
+
     @BeforeEach
     void setUp(@TempDir Path tempDir) {
-        rpmDeviceFilePathA = tempDir.resolve(RPM_DEVICE_REF_A);
-        rpmDeviceModeFilePathA = tempDir.resolve(RPM_DEVICE_REF_A + "_enable");
-        tempDeviceFilePathA = tempDir.resolve(TEMP_DEVICE_REF_A);
+        hwmonClassDir = JcHwmonTestHelper.createHwmonClassDir(tempDir,
+            RPM_DEVICE_NAME_A,
+            RPM_DEVICE_NAME_B,
+            TEMP_DEVICE_NAME_A,
+            TEMP_DEVICE_NAME_B,
+            TEMP_DEVICE_NAME_C);
+        hwmonResolver = new HwmonDirResolver(hwmonClassDir);
 
-        rpmDeviceFilePathB = tempDir.resolve(RPM_DEVICE_REF_B);
-        rpmDeviceModeFilePathB = tempDir.resolve(RPM_DEVICE_REF_B + "_enable");
-        tempDeviceFilePathB = tempDir.resolve(TEMP_DEVICE_REF_B);
+        rpmDeviceFilePathA = hwmonResolver.findHwmonDir(RPM_DEVICE_NAME_A).resolve("pwm1");
+        rpmDeviceModeFilePathA = rpmDeviceFilePathA.getParent().resolve("pwm1_enable");
+        tempDeviceFilePathA = hwmonResolver.findHwmonDir(TEMP_DEVICE_NAME_A).resolve("temp1_input");
 
-        tempDeviceFilePathC = tempDir.resolve(TEMP_DEVICE_REF_C);
+        rpmDeviceFilePathB = hwmonResolver.findHwmonDir(RPM_DEVICE_NAME_B).resolve("pwm1");
+        rpmDeviceModeFilePathB = rpmDeviceFilePathB.getParent().resolve("pwm1_enable");
+        tempDeviceFilePathB = hwmonResolver.findHwmonDir(TEMP_DEVICE_NAME_B).resolve("temp1_input");
+
+        tempDeviceFilePathC = hwmonResolver.findHwmonDir(TEMP_DEVICE_NAME_C).resolve("temp1_input");
     }
 
     @AfterEach
@@ -111,8 +130,10 @@ class JanControlIT {
             ctx.get().close();
         }
 
-        await().atMost(SPRING_SHUTDOWN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
-            .untilAsserted(() -> assertThat(ctx.get().isClosed()).isTrue());
+        if (ctx.get() != null) {
+            await().atMost(SPRING_SHUTDOWN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(ctx.get().isClosed()).isTrue());
+        }
     }
 
     @Test
@@ -335,37 +356,43 @@ class JanControlIT {
 
         testExecutor.submit(() -> ctx.set(new SpringApplicationBuilder(JanControlApplication.class)
             .web(WebApplicationType.NONE)
+            .properties(JcJacksonConfig.HWMON_CLASS_DIR_PROP_KEY + "=" + hwmonClassDir)
             .run(args.toArray(new String[0]))));
     }
 
     private Path createConfig() throws Exception {
         var rpmDeviceA = RpmDevice.builder()
             .ref(RPM_DEVICE_REF_A)
-            .sysPath(rpmDeviceFilePathA.toString())
+            .slot(1)
+            .sysName(RPM_DEVICE_NAME_A)
             .build();
         write(rpmDeviceFilePathA, "100");
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = TemperatureDevice.builder()
             .ref(TEMP_DEVICE_REF_A)
-            .sysPath(tempDeviceFilePathA.toString())
+            .slot(1)
+            .sysName(TEMP_DEVICE_NAME_A)
             .build();
         write(tempDeviceFilePathA, "30000");
 
         var rpmDeviceB = RpmDevice.builder()
             .ref(RPM_DEVICE_REF_B)
-            .sysPath(rpmDeviceFilePathB.toString())
+            .slot(1)
+            .sysName(RPM_DEVICE_NAME_B)
             .build();
         write(rpmDeviceFilePathB, "100");
         write(rpmDeviceModeFilePathB, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceB = TemperatureDevice.builder()
             .ref(TEMP_DEVICE_REF_B)
-            .sysPath(tempDeviceFilePathB.toString())
+            .slot(1)
+            .sysName(TEMP_DEVICE_NAME_B)
             .build();
         write(tempDeviceFilePathB, "10000");
 
         var tempDeviceC = TemperatureDevice.builder()
             .ref(TEMP_DEVICE_REF_C)
-            .sysPath(tempDeviceFilePathC.toString())
+            .slot(1)
+            .sysName(TEMP_DEVICE_NAME_C)
             .build();
         write(tempDeviceFilePathC, "10000");
 
@@ -425,7 +452,8 @@ class JanControlIT {
     private Path createConfigWithActiveIdleFlag(int activationRpmPercent) throws Exception {
         var rpmDeviceA = RpmDevice.builder()
             .ref(RPM_DEVICE_REF_A)
-            .sysPath(rpmDeviceFilePathA.toString())
+            .slot(1)
+            .sysName(RPM_DEVICE_NAME_A)
             .allowIdle(true)
             .activationThreshold(activationRpmPercent)
             .build();
@@ -433,7 +461,8 @@ class JanControlIT {
         write(rpmDeviceModeFilePathA, Nct6775FanModes.SMART_FAN_IV.rawValue());
         var tempDeviceA = TemperatureDevice.builder()
             .ref(TEMP_DEVICE_REF_A)
-            .sysPath(tempDeviceFilePathA.toString())
+            .slot(1)
+            .sysName(TEMP_DEVICE_NAME_A)
             .build();
         write(tempDeviceFilePathA, "30000");
 
@@ -463,8 +492,12 @@ class JanControlIT {
         var fanList = Arrays.asList(fans);
         var config = new CruiseConfigRoot(fanList);
 
-        var hwmonResolverMock = Mockito.mock(HwmonDirResolver.class);
-        var yamlMapper = new JcJacksonConfig().yamlMapper(hwmonResolverMock);
+        var yamlMapper = new JcJacksonConfig().yamlMapper(hwmonResolver);
+        var deviceSerializerModule = new SimpleModule("deviceSerializerModule");
+        deviceSerializerModule.addSerializer(RpmDevice.class, new RpmDeviceSerializer());
+        deviceSerializerModule.addSerializer(TemperatureDevice.class, new TemperatureDeviceSerializer());
+        yamlMapper.registerModule(deviceSerializerModule);
+
         var configData = yamlMapper.writeValueAsString(config);
         return writeToConfigFile(configData);
     }
