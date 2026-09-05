@@ -3,7 +3,8 @@
 An alternative for [fancontrol](https://github.com/lm-sensors/lm-sensors/blob/master/doc/fancontrol.txt) that supports a
 convenient and more powerful config DSL.
 
-It also supports more than one input per fan and does also work on Thinkapds, making it a possible alternative
+It also supports more than one input per fan, changing HWMON device numbers after reboots and does also work on
+Thinkapds, making it a possible alternative
 for [thinkfan](https://github.com/vmatare/thinkfan) as well.
 
 **WARNING:** Make sure, you are using proper values in the config! There are basic validations in place, but it is not
@@ -31,7 +32,6 @@ yet foolproof. In particular curve integrity is currently not checked at all. Yo
     * [Is there a debug mode / verbose output?](#is-there-a-debug-mode--verbose-output)
     * [Does it recognize config file changes?](#does-it-recognize-config-file-changes)
     * [Does it work on Thinkpads?](#does-it-work-on-thinkpads)
-    * [My temperature sensor file is not found anymore](#my-temperature-sensor-file-is-not-found-anymore)
 * [Note on chosen technology](#note-on-chosen-technology)
 
 <!--te-->
@@ -180,10 +180,6 @@ Please note that you may need to set `fan_control=1`as a module parameter to unl
 depends on your Thinkpad model.
 
 See [docs/how_to_use.md](docs/how_to_use.md) on how to configure Thinkpad support.
-
-### My temperature sensor file is not found anymore
-
-This may happen after a Kernel upgrade. In this case, hwmon numbering may be changed. Try to find out the new number.
 
 ## Note on chosen technology
 
