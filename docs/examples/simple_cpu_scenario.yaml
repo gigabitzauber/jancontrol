@@ -1,12 +1,14 @@
 # Real world scenario for an AMD Ryzen 7 7800X3D with a Noctua NH-U14S CPU cooler equipped with two NF-A15 140mm fans.
-fans:
-  - interval: "10s"
+ans:
+  - interval: "20s"
     device:
       ref: "CPU Fan"
-      sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/pwm2"
+      sysName: "nct6799"
+      slot: "2"
     dependsOn:
       - ref: "CPU Temp"
-        sysPath: "/sys/devices/platform/nct6775.656/hwmon/hwmon2/temp8_input"
+        sysName: "asusec"
+        slot: "2"
     curves:
       - ref: "CPU Temp"
         points:
@@ -16,5 +18,7 @@ fans:
             rpm: 33
           - temp: 78
             rpm: 75
+          - temp: 81
+            rpm: 81
           - temp: 95
             rpm: 95
