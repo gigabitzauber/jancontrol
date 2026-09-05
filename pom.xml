@@ -64,7 +64,7 @@
         <resource.delimiter>${*}</resource.delimiter>
 
         <spotbugs.plugin.version>4.10.4.0</spotbugs.plugin.version>
-        <spotbugs.version>4.10.3</spotbugs.version>
+        <spotbugs.version>4.10.4</spotbugs.version>
         <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
 
         <spring-boot.version>4.1.0</spring-boot.version>
