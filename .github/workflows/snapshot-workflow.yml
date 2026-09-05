@@ -23,7 +23,7 @@ jobs:
           cache: 'maven'
       - name: Build & Test
         run: |
-          mvn -B -U clean package
+          mvn -B -U clean verify
         env:
           # Fix warning about using sun.misc.Unsafe caused by Lombok
           MAVEN_OPTS: "--sun-misc-unsafe-memory-access=allow"
