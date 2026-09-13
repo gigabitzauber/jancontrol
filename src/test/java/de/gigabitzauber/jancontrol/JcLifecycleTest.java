@@ -10,6 +10,7 @@ import de.gigabitzauber.jancontrol.domain.CruiseConfigRoot;
 import de.gigabitzauber.jancontrol.domain.Fan;
 import de.gigabitzauber.jancontrol.domain.RpmDevice;
 import de.gigabitzauber.jancontrol.domain.api.FanMode;
+import de.gigabitzauber.jancontrol.domain.api.JcHwmonDriver;
 import de.gigabitzauber.jancontrol.error.JcException;
 import de.gigabitzauber.jancontrol.error.JcSchedulableException;
 import de.gigabitzauber.jancontrol.util.JcTime;
@@ -153,8 +154,24 @@ class JcLifecycleTest {
 
         callRegister(fanMock);
 
-        verify(logMock).info("Registering fan '{}' with allowIdle: {} and activation threshold: {}%",
-            expectedDeviceRef, expectedAllowIdle, expectedActivationThreshold);
+        verify(logMock).info("""
+                Registering fan '{}' with:
+                \tallowIdle: {}
+                \tactivation threshold: {}%
+                \tsysName: {}
+                \tdriver: {}
+                \tinterval: {}ms
+                \tdownSkip: {}
+                \tn: {}""",
+            expectedDeviceRef,
+            expectedAllowIdle,
+            expectedActivationThreshold,
+            fanMock.device().sysName(),
+            fanMock.device().driver().name(),
+            fanMock.interval().toMillis(),
+            fanMock.downSkip(),
+            fanMock.n()
+        );
     }
 
     @Test
@@ -274,11 +291,14 @@ class JcLifecycleTest {
 
     private static Fan mockFan() {
         var deviceMock = mock(RpmDevice.class);
+        var driverMock = mock(JcHwmonDriver.class);
         var fanModeMock = mock(FanMode.class);
         var fanMock = mock(Fan.class);
         lenient().when(fanMock.device()).thenReturn(deviceMock);
         lenient().when(deviceMock.ref()).thenReturn("testRpmDevice");
+        lenient().when(deviceMock.driver()).thenReturn(driverMock);
         lenient().when(deviceMock.getMode()).thenReturn(fanModeMock);
+        lenient().when(driverMock.name()).thenReturn("testDriver");
         return fanMock;
     }
 

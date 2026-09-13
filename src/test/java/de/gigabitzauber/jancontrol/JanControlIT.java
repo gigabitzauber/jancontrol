@@ -156,8 +156,24 @@ class JanControlIT {
         startApp(configFilePath);
 
         assertOutput(output, "No watch flag found. NOT watching config file for changes.");
-        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_REF_A));
-        assertOutput(output, "Registering fan '%s' with allowIdle: false and activation threshold: 20%%".formatted(RPM_DEVICE_REF_B));
+        assertOutput(output, """
+            Registering fan '%s' with:
+            \tallowIdle: false
+            \tactivation threshold: 20%%
+            \tsysName: %s
+            \tdriver: NCT6775
+            \tinterval: 2000ms
+            \tdownSkip: 0
+            \tn: 1""".formatted(RPM_DEVICE_REF_A, RPM_DEVICE_NAME_A));
+        assertOutput(output, """
+            Registering fan '%s' with:
+            \tallowIdle: false
+            \tactivation threshold: 20%%
+            \tsysName: %s
+            \tdriver: NCT6775
+            \tinterval: 2000ms
+            \tdownSkip: 0
+            \tn: 1""".formatted(RPM_DEVICE_REF_B, RPM_DEVICE_NAME_B));
 
         assertOutput(output, "Calculated RPM value for " + RPM_DEVICE_REF_A + " exceeds safe limits.");
         assertOutput(output, "Setting RPM value for " + RPM_DEVICE_REF_A + " to lowest allowed value: 20");
@@ -296,7 +312,15 @@ class JanControlIT {
         var configFilePath = createConfig();
         startApp(List.of("-v", "-w"), configFilePath);
 
-        assertOutput(output, "Registering fan '" + RPM_DEVICE_REF_A + "' with allowIdle: false and activation threshold: 20%");
+        assertOutput(output, """
+            Registering fan '%s' with:
+            \tallowIdle: false
+            \tactivation threshold: 20%%
+            \tsysName: %s
+            \tdriver: NCT6775
+            \tinterval: 2000ms
+            \tdownSkip: 0
+            \tn: 1""".formatted(RPM_DEVICE_REF_A, RPM_DEVICE_NAME_A));
         discardOldOutput();
         assertOutput(output, "Setting " + RPM_DEVICE_REF_A);
         discardOldOutput();
@@ -304,7 +328,15 @@ class JanControlIT {
         int activationThresholdExample = 15;
         createConfigWithActiveIdleFlag(activationThresholdExample);
         assertOutput(output, "Encountered changes in config. Reloading..");
-        assertOutput(output, "Registering fan '" + RPM_DEVICE_REF_A + "' with allowIdle: true and activation threshold: " + activationThresholdExample + "%");
+        assertOutput(output, """
+            Registering fan '%s' with:
+            \tallowIdle: true
+            \tactivation threshold: 15%%
+            \tsysName: %s
+            \tdriver: NCT6775
+            \tinterval: 2000ms
+            \tdownSkip: 0
+            \tn: 1""".formatted(RPM_DEVICE_REF_A, RPM_DEVICE_NAME_A));
 
         discardOldOutput();
 
