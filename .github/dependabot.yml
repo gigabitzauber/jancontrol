@@ -5,4 +5,4 @@ updates:
     schedule:
       interval: "monthly"
       timezone: "Europe/Berlin"
-    target-branch: "develop"
+    target-branch: "patch"
